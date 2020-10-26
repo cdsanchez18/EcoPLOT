@@ -13,7 +13,9 @@ downloadPlot <- function(id, plotid) {
           paste(input$plotfilename, input$plotfiletype, sep = ".")
         },
         content = function(file) {
-          ggplot2::ggsave(file, plot = plotid, device = input$plotfiletype)
+          ggplot2::ggsave(file, plot = plotid, device = input$plotfiletype,
+                          width = input$plotwidth, height = input$plotheight,
+                          units = input$plotdimunits)
         }
       )
     }

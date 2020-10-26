@@ -297,7 +297,7 @@ observeEvent(input$plantchangeclass,{
   } else if(input$plantclassoptions == "date"){
     phenotypedata$table[[input$plantcolnames]] <- lubridate::parse_date_time(phenotypedata$table[[input$plantcolnames]],
                                                                              orders = input$phenotypedateformat,
-                                                                             locale = "en_US.UTF-8") 
+                                                                             locale = "en_US.UTF-8")
       
   }else if(input$plantclassoptions == "time"){
     phenotypedata$table[[input$plantcolnames]] <- lubridate::parse_date_time(phenotypedata$table[[input$plantcolnames]],
@@ -350,7 +350,8 @@ output$phenotypefilteringoptionsUI1 <- renderUI({
   req(phenotypedata$table)
   output <- tagList(
   if(!is.null(av(input$phenotypefilteroption1))){
-    if(is.character(phenotypedata$table[[input$phenotypefilteroption1]])){
+    if(is.character(phenotypedata$table[[input$phenotypefilteroption1]]) || 
+       is.factor(phenotypedata$table[[input$phenotypefilteroption1]])){
       options <- as.list(unique(phenotypedata$table[[input$phenotypefilteroption1]]))
       
       selectInput("phenotypefilteroption2", "Filter Sub Category",
@@ -386,7 +387,8 @@ output$phenotypefilteringoptionsUI1 <- renderUI({
 observeEvent(input$phenotypefilterrendder, {
   req(phenotypedata$table)
   if(!is.null(av(input$phenotypefilteroption1))){
-    if(is.character(phenotypedata$table[[input$phenotypefilteroption1]])){
+    if(is.character(phenotypedata$table[[input$phenotypefilteroption1]]) ||
+       is.factor(phenotypedata$table[[input$phenotypefilteroption1]])){
       phenotypedata$filter <- phenotypedata$table %>% filter(!!as.symbol(input$phenotypefilteroption1) %in% input$phenotypefilteroption2)
     }else if(is.numeric(phenotypedata$table[[input$phenotypefilteroption1]]) || 
              is.integer(phenotypedata$table[[input$phenotypefilteroption1]])){
@@ -418,27 +420,20 @@ output$phenotypefiltertableUI <- renderUI({
     output <- tagList(
       tags$h3("Original Table")
       ,
-      dataTableOutput("phenotypeoriginaltable2")
+      splitLayout(dataTableOutput("phenotypeoriginaltable2"))
     )
   }else {
     output <- tagList(
       tags$h3("Filtered Table")
       ,
-      dataTableOutput("phenotypefilteredtable")
+      splitLayout(dataTableOutput("phenotypefilteredtable"))
       ,
       downloadTableUI("phenotypefiltertabledownload")
     )
   }
   return(output)
 })
-# output$testprint <- renderPrint({
-#   req(phenotypedata$table)
-#   if(!is.null(av(input$phenotypefilteroption1))){
-#   class(phenotypedata$table[[input$phenotypefilteroption1]])
-#   }else{
-#     NULL
-#   }
-# })
+
 ##phenotype plot UI Options-----
 output$phenotypeplotUI <- renderUI({
   req(phenotypedata$table)
@@ -446,14 +441,52 @@ output$phenotypeplotUI <- renderUI({
     shiny::selectInput("phenotypeplottype", "Select Plot Type",
                 choices = c("Histogram" = "histogram",
                             "Scatter" = "scatter",
-                            "Boxplot" = "boxplot"),
+                            "Boxplot" = "boxplot",
+                            "Barplot" = "barplot"),
                 selected = "histogram")
+    ,
+    conditionalPanel("input.phenotypeplottype == 'barplot'",
+                     radioButtons("phenotypebarplottype", "Select View",
+                                  choices = c("Count of Cases" = "bin",
+                                              "Values of Column" = "identity"),
+                                  selected = "bin",
+                                  inline = TRUE))
+    ,
+    conditionalPanel("input.phenotypeplottype == 'barplot'",
+                     selectInput("phenotypebarplotxaxis", "Select X Axis Variable",
+                                 choices = c("NULL", colnames(dplyr::select_if(phenotypedata$table, is.factor)),
+                                             colnames(dplyr::select_if(phenotypedata$table, is.character))),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel("input.phenotypeplottype == 'barplot' && input.phenotypebarplottype == 'identity'",
+                     selectInput("phenotypebarplotyaxis", "Select Y Axis Variable",
+                                 choices = c("NULL", colnames(phenotypedata$table)),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel("input.phenotypeplottype == 'barplot'",
+                     selectInput("phenotypebarplotfill", "Select Variable to Fill",
+                                 choices = c("NULL", colnames(phenotypedata$table)),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel("input.phenotypeplottype == 'barplot' && input.phenotypebarplotfill != 'NULL'",
+                     radioButtons("phenotypebarplotpos", "Bar Plot Type",
+                                  choices = c("Stacked" = "stacked",
+                                              "Dodged" = "dodge"),
+                                  selected = "stacked"))
+    ,
+    conditionalPanel("input.phenotypeplottype == 'barplot' && input.phenotypebarplottype == 'identity'",
+                    radioButtons("phenotypebarploterror", "Show Error Bars?",
+                                 choices = c("Yes" = "yes",
+                                             "No" = "no"),
+                                 selected = "no",
+                                 inline = TRUE))
     ,
     conditionalPanel(condition = "input.phenotypeplottype == 'histogram'",
                      radioButtons("phenotypehistplottype", "Select View",
                                   choices = c("Count" = "count",
                                               "Density" = "density"),
-                                  selected = "count"))
+                                  selected = "count",
+                                  inline = TRUE))
     ,
     conditionalPanel(condition = "input.phenotypeplottype == 'histogram'",
     selectInput("phenotypex", "Select Variable to Graph Along X-Axis:", 
@@ -509,7 +542,7 @@ output$phenotypeplotUI <- renderUI({
                                placeholder = "Legend Title"))
     ,
     conditionalPanel(condition = "input.phenotypeplottype == 'histogram'",
-                     colourInput("phenotypecolor", "Select Bar Color",
+                     colourpicker::colourInput("phenotypecolor", "Select Bar Color",
                                  value = "white"))
     ,
     conditionalPanel(condition = "input.phenotypeplottype == 'scatter' ||
@@ -533,7 +566,7 @@ output$phenotypeplotUI <- renderUI({
     ,
     conditionalPanel(condition = "input.phenotypeplottype == 'scatter' 
                      && input.phenotypecoloroption == 'NULL'",
-                     colourInput("phenotypecolor1", "Select Color",
+                     colourpicker::colourInput("phenotypecolor1", "Select Color",
                                  value = "black"))
     ,
     downloadPlotUI("phenotypeplotdownload")
@@ -620,6 +653,61 @@ phenotypeplot <- reactive({
     }else {
       plot <- NULL
     }
+  }else if(input$phenotypeplottype == "barplot"){
+    if(input$phenotypebarplottype == "identity"){
+      if(!is.null(av(input$phenotypebarplotxaxis)) && !is.null(av(input$phenotypebarplotyaxis))){
+        if(!is.null(av(input$phenotypebarplotfill))){
+          data1 <- data_summary(data = phenotypedata$table, varname = input$phenotypebarplotyaxis,
+                               groupnames = c(input$phenotypebarplotfill,
+                                              input$phenotypebarplotxaxis))
+          # paste0("c(", paste(input$phenotypebarpotfill,
+          #                    input$phenotypebarplotxaxis,
+          #                    sep = " , "), ")")
+          
+          plot <- ggplot(data1, aes(x = !!as.symbol(input$phenotypebarplotxaxis), 
+                                   y = !!as.symbol(input$phenotypebarplotyaxis),
+                                   fill = !!as.symbol(input$phenotypebarplotfill)))
+        }else {
+          data1 <- EcoPLOT::data_summary(data = phenotypedata$table, varname = input$phenotypebarplotyaxis,
+                               groupnames = input$phenotypebarplotxaxis)
+          
+          plot <- ggplot(data1, aes(x = !!as.symbol(input$phenotypebarplotxaxis), 
+                                   y = !!as.symbol(input$phenotypebarplotyaxis)))
+        }
+        if(input$phenotypebarplotpos == "dodge"){
+          plot <- plot + geom_bar(stat = "identity", position = position_dodge())
+        }else {
+          plot <- plot + geom_bar(stat = "identity")
+        }
+        if(input$phenotypebarploterror == "yes"){
+          plot <- plot + geom_errorbar(aes(ymin= !!as.symbol(input$phenotypebarplotyaxis) - sd,
+                                           ymax = !!as.symbol(input$phenotypebarplotyaxis) + sd),
+                                       position = "dodge")
+        }else{
+          plot <- plot
+        }
+      }else {
+        plot <- NULL
+      }
+    }else if(input$phenotypebarplottype == "bin"){
+        if(!is.null(av(input$phenotypebarplotxaxis))){
+          if(!is.null(av(input$phenotypebarplotfill))){
+            plot <- ggplot(phenotypedata$table, aes(x = !!as.symbol(input$phenotypebarplotxaxis),
+                                                    fill = !!as.symbol(input$phenotypebarplotfill)))
+          }else {
+            plot <- ggplot(phenotypedata$table, aes(x = !!as.symbol(input$phenotypebarplotxaxis)))
+          }
+          if(input$phenotypebarplotpos == "dodge"){
+            plot <- plot + geom_bar(position = position_dodge())
+          }else {
+            plot <- plot + geom_bar()
+          }
+        }else {
+          plot <- NULL
+        }
+      }
+  }else {
+    return(NULL)
   }
   return(plot)
 })
@@ -3255,7 +3343,7 @@ output$geochemistryplotUI <- renderUI({
                                placeholder = "Legend Title"))
     ,
     conditionalPanel(condition = "input.geochemistryplottype == 'histogram'",
-                     colourInput("geochemistrycolor", "Select Bar Color",
+                     colourpicker::colourInput("geochemistrycolor", "Select Bar Color",
                                  value = "white"))
     ,
     conditionalPanel(condition = "input.geochemistryplottype == 'scatter' ||
@@ -3279,7 +3367,7 @@ output$geochemistryplotUI <- renderUI({
     ,
     conditionalPanel(condition = "input.geochemistryplottype == 'scatter' 
                      && input.geochemistrycoloroption == 'NULL'",
-                     colourInput("geochemistrycolor1", "Select Color",
+                     colourpicker::colourInput("geochemistrycolor1", "Select Color",
                                  value = "black"))
     ,
     downloadPlotUI("geochemistryplotdownload")

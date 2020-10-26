@@ -11,7 +11,8 @@ downloadTableUI <- function(id) {
               value = "EcoPLOT")
     ,
     shiny::radioButtons(ns("tablefiletype"), "File type:",
-                 choices = c("csv", "tsv"))
+                 choices = c("csv", "tsv"),
+                 inline = TRUE)
     ,
     shiny::downloadButton(ns("downloadTable"), "Download File:")
   )

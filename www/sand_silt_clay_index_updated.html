@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+    <head>
+<style>
+    img {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        height: 600px;
+        width: 600px;
+        border-style: solid;
+        border-width: 1px;
+        border-color: gray;
+    }
+    #main_indic {
+        position: absolute;
+        opacity: 0;
+        background-color : blue;
+        height: 16px;
+        width: 16px;
+        border-radius: 8px;
+        top: 0px;
+        left: 0px;
+    }
+
+    #clay_label{
+        position:absolute;
+        top: 620px;
+        left: 10px;
+    }
+    #clay_inp {
+        position:absolute;
+        top: 640px;
+        left: 10px;
+    }
+    #sand_label{
+        position:absolute;
+        top: 670px;
+        left: 10px;
+    }
+    #sand_inp {
+        position:absolute;
+        top: 690px;
+        left: 10px;
+    }
+    #silt_label{
+        position:absolute;
+        top: 720px;
+        left: 10px;
+    }
+    #silt_inp {
+        position:absolute;
+        top: 740px;
+        left: 10px;
+    }
+    #submit_btn {
+        position:absolute;
+        top: 770px;
+        left: 10px;
+    }
+
+</style>
+    </head>
+<body>
+    <div id="sand_silt_clay_map_container">
+        <img id="triangle_img" src="sand_silt_clay_map.png" alt="Sand Silt Clay container Image">
+    </div>
+    <div id="responsive_display">
+        <label id="clay_label" for="clay_inp">Clay Percent</label><br>
+        <input type="text" id="clay_inp" name="clay_inp"><br>
+        <label id="sand_label" for="sand_inp">Sand Percent</label><br>
+        <input type="text" id="sand_inp" name="sand_inp"><br>
+        <label id="silt_label" for="silt_inp">Silt Percent</label><br>
+        <input type="text" id="silt_inp" name="silt_inp"><br>
+        <button id="submit_btn" onclick="submit_values()"> Submit </button>
+    </div>
+    <button id="main_indic"></button>
+    <script>
+        function submit_values() {
+            percent_values = get_and_check_percent_values();
+            move_indic_to_starting_location();
+            new_loc = calculate_new_loc(percent_values, triangle_info_obj)
+            move_indic_to_new_loc(new_loc)
+        }
+
+function get_and_check_percent_values() {
+            clay_percent = parseFloat(document.getElementById("clay_inp").value);
+            sand_percent = parseFloat(document.getElementById("sand_inp").value);
+            silt_percent = parseFloat(document.getElementById("silt_inp").value);
+            
+            total_perc = clay_percent +  sand_percent + silt_percent
+            if (Math.abs(total_perc - 100) > 0.01) {
+                alert("Percentages must add up to 100. Currently: " + total_perc.toString())
+            } else {
+                alert("Numbers add up to 100 as expected: " + total_perc.toString())
+            }
+            return [clay_percent, sand_percent, silt_percent]
+
+}
+
+function move_indic_to_starting_location() {
+
+    var triangle_info_obj = get_triangle_info()
+    main_indic = document.getElementById("main_indic")
+    main_indic.style.left = triangle_info_obj["starting_x"].toString() + "px"
+    main_indic.style.top = triangle_info_obj["starting_y"].toString() + "px"
+    main_indic.style.opacity = "1"
+
+}
+
+function get_triangle_info() {
+    // We get the position of bottom left corner of triangle within square image
+    // as well as the overall height and width of the triangle
+
+    var top_non_use_percent = 0.8333
+    var bottom_non_use_percent = 14.3333
+    var right_non_use_percent = 6.0 
+    var left_non_use_percent = 0
+
+    img_rect = document.getElementById("triangle_img").getBoundingClientRect()
+    // Subtract 2 for border/ getBoundingClientRect calculation
+    total_img_height = img_rect["height"] - 2
+    triangle_height = total_img_height * (1 - ((top_non_use_percent + bottom_non_use_percent)/100))
+    total_img_width = img_rect["width"] - 2
+    triangle_width = total_img_width * (1 - ((right_non_use_percent + left_non_use_percent)/100))
+    starting_y = img_rect["top"] + (total_img_height * (1 - (bottom_non_use_percent/100)))
+    starting_x = img_rect["left"] + (total_img_width * (left_non_use_percent/100))
+    triangle_info_obj = {
+
+        "triangle_height": triangle_height,
+        "triangle_width": triangle_width,
+        "starting_y": starting_y,
+        "starting_x": starting_x
+
+    }
+    
+    console.log("Triangle object info:")
+    console.log(triangle_info_obj)
+
+    return triangle_info_obj
+    
+}
+
+function calculate_new_loc(percent_values, triangle_info_obj) {
+
+    //percent_values is a list: [clay_percent, sand_percent, silt_percent]
+    // triangle_info_obj is an 'object' with keys as returned by 'get_triangle_info()'
+    // Ouputs new_loc list [new_x, new_y] in Absolute position
+
+    new_y = triangle_info_obj["starting_y"] - (triangle_info_obj["triangle_height"] * (percent_values[0]/100))
+
+    line_slope = (triangle_info_obj["triangle_height"]/(triangle_info_obj["triangle_width"]/2))
+    
+    //Cartesian coordinate calculation requires changing y
+    csn_y = triangle_info_obj["starting_y"] - new_y
+
+    new_x = ( (csn_y + ((percent_values[2]/100)* (triangle_info_obj["triangle_height"]*2)))/line_slope ) + triangle_info_obj['starting_x']
+
+    new_loc = [new_x, new_y]
+
+    return new_loc
+}
+
+//new_loc is list [new_x, new_y]
+function move_indic_to_new_loc(new_loc) {
+
+    main_indic = document.getElementById("main_indic")
+    main_indic.style.left = (new_loc[0]).toString() + "px"
+    main_indic.style.top = (new_loc[1]).toString() + "px"
+    main_indic.style.opacity = "1"
+
+
+}
+
+
+
+    </script>
+</body>
+</html>
