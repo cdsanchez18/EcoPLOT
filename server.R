@@ -182,7 +182,9 @@ output$sensorplot <- renderPlotly({
 #Plant Phenotype-------------------------------------------------------------------
 output$plantfileupload <- renderUI({
   output <- tagList(
-    fileInput("phenotypedata", "Choose CSV File",
+    h3("Upload File: EcoPLOT accepts .csv, .txt, .xlsx file formats.")
+    ,
+    fileInput("phenotypedata", "Select File",
               multiple = FALSE,
               accept = c("text/csv",
                          "text/comma-separated-values,text/plain",
@@ -201,55 +203,72 @@ output$plantfileupload <- renderUI({
                              "Double Quote" = '"',
                              "Single Quote" = "'"),
                  selected = '"')
-    ,
-    tags$hr(),
-    radioButtons("disp", "Display",
-                 choices = c(Head = "head",
-                             All = "all"),
-                 selected = "head"))
+    )
   return(output)
 })
 phenotypedata <- reactiveValues(path = NULL)
 observeEvent(input$phenotypedata, {
   req(input$phenotypedata)
-if(tolower(tools::file_ext(input$phenotypedata$datapath)) == "csv"){
+if(tolower(tools::file_ext(input$phenotypedata$datapath)) == "csv" ||
+   tolower(tools::file_ext(input$phenotypedata$datapath)) == "txt"){
   if(!is.null(geochemistrydata$table)){
     phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
-                                    header = input$header)
+                                    header = input$header
+                                    )
     if(length(intersect(names(phenotypedata$table), names(geochemistrydata$table))) >= 1){
     phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
-                                    header = input$header)
+                                    header = input$header
+                                    )
     phenotypedata$table <- left_join(phenotypedata$table, geochemistrydata$table) %>% na.omit()
     } else {
       phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
-                                      header = input$header)
+                                      header = input$header
+                                      )
       }
     }else if(is.null(geochemistrydata$table)){
       phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
-                                      header = input$header)
+                                      header = input$header
+                                      )
     }
-  }else{
-  showNotification("File Type Not Recognized", duration = 5, type = "error")
-}
+  }else if(tolower(tools::file_ext(input$phenotypedata$datapath)) == "xlsx"){
+    phenotypedata$table <- read_excel(path = input$phenotypedata$datapath)
+  } else {
+    showNotification("File Type Not Recognized. Please Select a Different File.", duration = 10, type = "error")
+  }
 })
 observe({
   req(phenotypedata$table)
-  names <- names(dplyr::select_if(phenotypedata$table, is.numeric))
-  phenotypedata$melt <- phenotypedata$table %>% pivot_longer(cols = all_of(names),
-                                                             names_to = "Measure",
-                                                             values_to = "Value")
+  phenotypedata$table1 <- phenotypedata$table
+  
 })
+observe({
+  req(phenotypedata$table)
+  names <- names(dplyr::select_if(phenotypedata$table1, is.numeric))
+  if(is.null(phenotypedata$filter)){
+    phenotypedata$melt <- phenotypedata$table1 %>% pivot_longer(cols = all_of(names),
+                                                                names_to = "Measure",
+                                                                values_to = "Value")
+  }else if(!is.null(phenotypedata$filter)){
+    if(input$phenotypedatasource == "Original"){
+      phenotypedata$melt <- phenotypedata$table1 %>% pivot_longer(cols = all_of(names),
+                                                                  names_to = "Measure",
+                                                                  values_to = "Value")
+    }else if(input$phenotypedatasource == "Filtered"){
+      phenotypedata$melt <- phenotypedata$filter %>% pivot_longer(cols = all_of(names),
+                                                                  names_to = "Measure",
+                                                                  values_to = "Value")
+    }
+  }
+  })
 output$plantvariableclassUI <- renderUI({
   req(phenotypedata$table)
   output <- tagList(
-    hr()
-    ,
     tags$h5("If R recognizes a column variable incorrectly, you may 
             alter it here")
     ,
     selectInput("plantcolnames", "Select Variable to Alter",
                 choices = c("NULL", 
-                            as.list(colnames(phenotypedata$table))),
+                            as.list(colnames(phenotypedata$table1))),
                 selected = "NULL")
     ,
     selectInput("plantclassoptions", "Desired Variable Class",
@@ -281,13 +300,15 @@ output$plantvariableclassUI <- renderUI({
                                               "Minute:Second" = "%M:%S")))
     ,
     actionButton("plantchangeclass", "Change Class", width = "100%")
+    ,
+    actionButton("plantresetclass", "Reset Class Changes", width = "100%")
   )
   return(output)
 })
 #code to change class
 observeEvent(input$plantchangeclass,{
   if(input$plantclassoptions != "time" && input$plantclassoptions != "date" && input$plantclassoptions != "timestamp"){
-  phenotypedata$table <- eval(parse(text = paste0("phenotypedata$table %>% mutate(",
+  phenotypedata$table1 <- eval(parse(text = paste0("phenotypedata$table1 %>% mutate(",
                                                   input$plantcolnames,
                                                   " = as.",
                                                   input$plantclassoptions,
@@ -295,41 +316,48 @@ observeEvent(input$plantchangeclass,{
                                                   input$plantcolnames,
                                                   "))")))
   } else if(input$plantclassoptions == "date"){
-    phenotypedata$table[[input$plantcolnames]] <- lubridate::parse_date_time(phenotypedata$table[[input$plantcolnames]],
+    phenotypedata$table1[[input$plantcolnames]] <- lubridate::parse_date_time(phenotypedata$table[[input$plantcolnames]],
                                                                              orders = input$phenotypedateformat,
                                                                              locale = "en_US.UTF-8")
       
   }else if(input$plantclassoptions == "time"){
-    phenotypedata$table[[input$plantcolnames]] <- lubridate::parse_date_time(phenotypedata$table[[input$plantcolnames]],
+    phenotypedata$table1[[input$plantcolnames]] <- lubridate::parse_date_time(phenotypedata$table[[input$plantcolnames]],
                                                                              orders = input$phenotypetimeformat,
                                                                              locale = "en_US.UTF-8")
   }else if(input$plantclassoptions == "timestamp"){
-    phenotypedata$table[[input$plantcolnames]] <- lubridate::parse_date_time(x = phenotypedata$table[[input$plantcolnames]], 
+    phenotypedata$table1[[input$plantcolnames]] <- lubridate::parse_date_time(x = phenotypedata$table[[input$plantcolnames]], 
                                                              orders = paste(input$phenotypedateformat, input$phenotypetimeformat),
                                                              locale = "en_US.UTF-8")
   }
 })
+observeEvent(input$plantresetclass,{
+  req(phenotypedata$table)
+  phenotypedata$table1 <- phenotypedata$table
+})
 #Test 
 output$testprint <- renderPrint({
   req(phenotypedata$table)
-  class(phenotypedata$table$Timestamp)
+  class(phenotypedata$table1$Timestamp)
 })
 #View Table of file
 output$phenotypedatatable <- renderDataTable({
   req(phenotypedata$table)
-  phenotypedata$table
+  phenotypedata$table1
 })
 #print summary of file
 output$plantdatasummary <- renderPrint({
   req(phenotypedata$table)
-  summary(phenotypedata$table)
+  summary(phenotypedata$table1)
 })
 output$plantuploadmain <- renderUI({
   req(phenotypedata$table)
   output <- tagList(
     splitLayout(dataTableOutput("phenotypedatatable"))
     ,
-    verbatimTextOutput("plantdatasummary")
+    tags$div(id="sidebar",
+    tags$h4("View a Summary of the Uploaded Data")
+    ,
+    verbatimTextOutput("plantdatasummary"))
   )
   return(output)
 })
@@ -337,7 +365,7 @@ output$plantuploadmain <- renderUI({
 ###Phenotype filtering options ----
 output$phenotypefilteringoptionsUI <- renderUI({
   req(phenotypedata$table)
-  colnames <- names(phenotypedata$table)
+  colnames <- names(phenotypedata$table1)
   output <- tagList(
     selectInput("phenotypefilteroption1", "Select Variable Category",
                 choices = c("NULL", colnames),
@@ -350,53 +378,53 @@ output$phenotypefilteringoptionsUI1 <- renderUI({
   req(phenotypedata$table)
   output <- tagList(
   if(!is.null(av(input$phenotypefilteroption1))){
-    if(is.character(phenotypedata$table[[input$phenotypefilteroption1]]) || 
-       is.factor(phenotypedata$table[[input$phenotypefilteroption1]])){
-      options <- as.list(unique(phenotypedata$table[[input$phenotypefilteroption1]]))
+    if(is.character(phenotypedata$table1[[input$phenotypefilteroption1]]) || 
+       is.factor(phenotypedata$table1[[input$phenotypefilteroption1]])){
+      options <- as.list(unique(phenotypedata$table1[[input$phenotypefilteroption1]]))
       
       selectInput("phenotypefilteroption2", "Filter Sub Category",
                   choices = c("NULL", options),
                   selected = "NULL",
                   multiple = TRUE)
-    }else if(is.numeric(phenotypedata$table[[input$phenotypefilteroption1]]) || 
-             is.integer(phenotypedata$table[[input$phenotypefilteroption1]])){
-      min <- min(phenotypedata$table[[input$phenotypefilteroption1]])
-      max <- max(phenotypedata$table[[input$phenotypefilteroption1]])
+    }else if(is.numeric(phenotypedata$table1[[input$phenotypefilteroption1]]) || 
+             is.integer(phenotypedata$table1[[input$phenotypefilteroption1]])){
+      min <- min(phenotypedata$table1[[input$phenotypefilteroption1]])
+      max <- max(phenotypedata$table1[[input$phenotypefilteroption1]])
       
       sliderInput("phenotypefilteroption2", "Filter Sub Category",
                   min = min,
                   max = max,
                   value = c(max/4, max/2),
                   step = 1)
-    }else if(is.POSIXct(phenotypedata$table[[input$phenotypefilteroption1]])){
+    }else if(is.POSIXct(phenotypedata$table1[[input$phenotypefilteroption1]])){
       sliderInput("phenotypefilteroption2", "Filter Sub Category",
-                  min = min(phenotypedata$table[[input$phenotypefilteroption1]]),
-                  max = max(phenotypedata$table[[input$phenotypefilteroption1]]),
-                  value = c(min(phenotypedata$table[[input$phenotypefilteroption1]]),
-                  max(phenotypedata$table[[input$phenotypefilteroption1]])))
+                  min = min(phenotypedata$table1[[input$phenotypefilteroption1]]),
+                  max = max(phenotypedata$table1[[input$phenotypefilteroption1]]),
+                  value = c(min(phenotypedata$table1[[input$phenotypefilteroption1]]),
+                  max(phenotypedata$table1[[input$phenotypefilteroption1]])))
     }
   } else {
     NULL
   }
   ,
   if(!is.null(av(input$phenotypefilteroption1))){
-  actionButton("phenotypefilterrendder", "Filter", width = "100%")
+  actionButton("phenotypefilterrender", "Filter", width = "100%")
   }else{NULL}
   )
 })
-observeEvent(input$phenotypefilterrendder, {
+observeEvent(input$phenotypefilterrender, {
   req(phenotypedata$table)
   if(!is.null(av(input$phenotypefilteroption1))){
-    if(is.character(phenotypedata$table[[input$phenotypefilteroption1]]) ||
-       is.factor(phenotypedata$table[[input$phenotypefilteroption1]])){
-      phenotypedata$filter <- phenotypedata$table %>% filter(!!as.symbol(input$phenotypefilteroption1) %in% input$phenotypefilteroption2)
-    }else if(is.numeric(phenotypedata$table[[input$phenotypefilteroption1]]) || 
-             is.integer(phenotypedata$table[[input$phenotypefilteroption1]])){
-      phenotypedata$filter <- phenotypedata$table %>% filter(!!as.symbol(input$phenotypefilteroption1) >= input$phenotypefilteroption2[1] &
+    if(is.character(phenotypedata$table1[[input$phenotypefilteroption1]]) ||
+       is.factor(phenotypedata$table1[[input$phenotypefilteroption1]])){
+      phenotypedata$filter <- phenotypedata$table1 %>% filter(!!as.symbol(input$phenotypefilteroption1) %in% input$phenotypefilteroption2)
+    }else if(is.numeric(phenotypedata$table1[[input$phenotypefilteroption1]]) || 
+             is.integer(phenotypedata$table1[[input$phenotypefilteroption1]])){
+      phenotypedata$filter <- phenotypedata$table1 %>% filter(!!as.symbol(input$phenotypefilteroption1) >= input$phenotypefilteroption2[1] &
                                                                !!as.symbol(input$phenotypefilteroption1) <= input$phenotypefilteroption2[2])
       
-    }else if(is.POSIXct(phenotypedata$table[[input$phenotypefilteroption1]])){
-      phenotypedata$filter <- phenotypedata$table %>% filter(!!as.symbol(input$phenotypefilteroption1) >= input$phenotypefilteroption2[1] &
+    }else if(is.POSIXct(phenotypedata$table1[[input$phenotypefilteroption1]])){
+      phenotypedata$filter <- phenotypedata$table1 %>% filter(!!as.symbol(input$phenotypefilteroption1) >= input$phenotypefilteroption2[1] &
                                                                !!as.symbol(input$phenotypefilteroption1) <= input$phenotypefilteroption2[2])
     }
   }else {
@@ -406,7 +434,7 @@ observeEvent(input$phenotypefilterrendder, {
 })
 output$phenotypeoriginaltable2 <- renderDataTable({
   req(phenotypedata$table)
-  phenotypedata$table
+  phenotypedata$table1
 })
 output$phenotypefilteredtable <- renderDataTable({
   req(phenotypedata$table)
@@ -433,6 +461,31 @@ output$phenotypefiltertableUI <- renderUI({
   }
   return(output)
 })
+# output$phenotypedatasourceUI <- renderUI({
+#   shiny::radioButtons("phenotypedatasource", "Select Dataset to Use:",
+#                      choices = c("Original"),
+#                      selected = "Original", inline = TRUE)
+# })
+
+observeEvent(input$phenotypefilterrender, {
+  updateRadioButtons(session, "phenotypedatasource", "Select Dataset to Use:",
+                     choices = c("Original" = "Original",
+                                 "Filtered" = "Filtered"),
+                     selected = "Original", inline = TRUE)
+})
+
+observe({
+  req(phenotypedata$table1)
+  if(is.null(phenotypedata$filter)){
+    phenotypedata$use <- phenotypedata$table1
+  }else{
+    if(input$phenotypedatasource == "Original"){
+      phenotypedata$use <- phenotypedata$table1
+    }else if(input$phenotypedatasource == "Filtered"){
+      phenotypedata$use <- phenotypedata$filter
+    }
+  }
+})
 
 ##phenotype plot UI Options-----
 output$phenotypeplotUI <- renderUI({
@@ -452,20 +505,22 @@ output$phenotypeplotUI <- renderUI({
                                   selected = "bin",
                                   inline = TRUE))
     ,
+    #phenotypedata$table1
     conditionalPanel("input.phenotypeplottype == 'barplot'",
                      selectInput("phenotypebarplotxaxis", "Select X Axis Variable",
-                                 choices = c("NULL", colnames(dplyr::select_if(phenotypedata$table, is.factor)),
-                                             colnames(dplyr::select_if(phenotypedata$table, is.character))),
+                                 choices = c("NULL", colnames(dplyr::select_if(phenotypedata$use, is.factor)),
+                                             colnames(dplyr::select_if(phenotypedata$use, is.character))
+                                             ),
                                  selected = "NULL"))
     ,
     conditionalPanel("input.phenotypeplottype == 'barplot' && input.phenotypebarplottype == 'identity'",
                      selectInput("phenotypebarplotyaxis", "Select Y Axis Variable",
-                                 choices = c("NULL", colnames(phenotypedata$table)),
+                                 choices = c("NULL", colnames(phenotypedata$use)),
                                  selected = "NULL"))
     ,
     conditionalPanel("input.phenotypeplottype == 'barplot'",
                      selectInput("phenotypebarplotfill", "Select Variable to Fill",
-                                 choices = c("NULL", colnames(phenotypedata$table)),
+                                 choices = c("NULL", colnames(phenotypedata$use)),
                                  selected = "NULL"))
     ,
     conditionalPanel("input.phenotypeplottype == 'barplot' && input.phenotypebarplotfill != 'NULL'",
@@ -490,32 +545,32 @@ output$phenotypeplotUI <- renderUI({
     ,
     conditionalPanel(condition = "input.phenotypeplottype == 'histogram'",
     selectInput("phenotypex", "Select Variable to Graph Along X-Axis:", 
-                choices = c("NULL", colnames(dplyr::select_if(phenotypedata$table, is.numeric))),
+                choices = c("NULL", colnames(dplyr::select_if(phenotypedata$use, is.numeric))),
                 selected = "NULL",
                 multiple = FALSE))
     ,
     conditionalPanel(condition =  "input.phenotypeplottype == 'scatter'",
                      selectInput("phenotypex1", "Select Variable to Graph Along X-Axis:", 
-                                 choices = c("NULL", colnames(phenotypedata$table)),
+                                 choices = c("NULL", colnames(phenotypedata$use)),
                                  selected = "NULL",
                                  multiple = FALSE))
     ,
     conditionalPanel(condition = "input.phenotypeplottype == 'boxplot'",
                      selectInput("phenotypex2", "Select Variable(s) to Graph Along X-Axis:",
-                                 choices = c("NULL", colnames(dplyr::select_if(phenotypedata$table, is.numeric))),
+                                 choices = c("NULL", colnames(dplyr::select_if(phenotypedata$use, is.numeric))),
                                  selected = "NULL",
                                  multiple = TRUE))
     ,
     conditionalPanel(condition = "input.phenotypeplottype == 'scatter'",
                      selectInput("phenotypey", "Select Variable to Graph Along Y Axis:",
-                                 choices = c("NULL", colnames(dplyr::select_if(phenotypedata$table, is.numeric))),
+                                 choices = c("NULL", colnames(dplyr::select_if(phenotypedata$use, is.numeric))),
                                  selected = "NULL",
                                  multiple = FALSE))
     ,
     conditionalPanel(condition = "input.phenotypeplottype == 'histogram'",
                      selectInput("phenotypefacet", "Select Variable to Facet Around",
-                                 choices = c("NULL", colnames(dplyr::select_if(phenotypedata$table, is.character)),
-                                             colnames(dplyr::select_if(phenotypedata$table, is.factor))),
+                                 choices = c("NULL", colnames(dplyr::select_if(phenotypedata$use, is.character)),
+                                             colnames(dplyr::select_if(phenotypedata$use, is.factor))),
                                  selected = "NULL",
                                  multiple = FALSE))
     ,
@@ -548,8 +603,8 @@ output$phenotypeplotUI <- renderUI({
     conditionalPanel(condition = "input.phenotypeplottype == 'scatter' ||
                      input.phenotypeplottype == 'boxplot'",
                      selectInput("phenotypecoloroption", "Select Factor to Color",
-                                 choices = c("NULL", names(dplyr::select_if(phenotypedata$table, is.character)),
-                                             names(dplyr::select_if(phenotypedata$table, is.factor))),
+                                 choices = c("NULL", names(dplyr::select_if(phenotypedata$use, is.character)),
+                                             names(dplyr::select_if(phenotypedata$use, is.factor))),
                                  selected = "NULL"))
     ,
     conditionalPanel(condition= "input.phenotypeplottype == 'scatter'",
@@ -579,19 +634,19 @@ phenotypeplot <- reactive({
   if(input$phenotypeplottype == "histogram"){
     if(!is.null(av(input$phenotypex))){
       if(input$phenotypehistplottype == "count"){
-  plot <- ggplot(phenotypedata$table, aes(x = !!as.symbol(input$phenotypex))) +
+  plot <- ggplot(phenotypedata$use, aes(x = !!as.symbol(input$phenotypex))) +
                    geom_histogram(fill = input$phenotypecolor, color = "black",
                                   binwidth = input$phenotypebinwidth) +
     labs(title = input$phenotypetitle, y = "Sample Count",
          x = input$phenotypexaxislabel)
     }else{
-      plot <- ggplot(phenotypedata$table, aes(x = !!as.symbol(input$phenotypex))) +
+      plot <- ggplot(phenotypedata$use, aes(x = !!as.symbol(input$phenotypex))) +
         geom_histogram(stat = "density",fill = input$phenotypecolor, color = "black") +
         labs(title = input$phenotypetitle, y = "Sample Count",
              x = input$phenotypexaxislabel)
     }
       if(!is.null(av(input$phenotypefacet))){
-        phenotypedata$table[[input$phenotypefacet]] %>% sort()
+        phenotypedata$use[[input$phenotypefacet]] %>% sort()
         plot <- plot + facet_wrap(paste("~", input$phenotypefacet))
       }else{
         plot <- plot
@@ -602,7 +657,7 @@ phenotypeplot <- reactive({
   }else if(input$phenotypeplottype == "scatter"){
       if(!is.null(av(input$phenotypex1)) && !is.null(av(input$phenotypey))){
         if(!is.null(av(input$phenotypecoloroption))){
-          plot <- ggplot(phenotypedata$table, aes(x = !!as.symbol(input$phenotypex1),
+          plot <- ggplot(phenotypedata$use, aes(x = !!as.symbol(input$phenotypex1),
                                                   y = !!as.symbol(input$phenotypey),
                                                   color = !!as.symbol(input$phenotypecoloroption))) + 
             geom_point() + 
@@ -616,7 +671,7 @@ phenotypeplot <- reactive({
             plot
           }
         }else{
-          plot <- ggplot(phenotypedata$table, aes(x = !!as.symbol(input$phenotypex1),
+          plot <- ggplot(phenotypedata$use, aes(x = !!as.symbol(input$phenotypex1),
                                                   y = !!as.symbol(input$phenotypey))) +
             geom_point(color = input$phenotypecolor1) + 
             labs(title= input$phenotypetitle, x = input$phenotypexaxislabel1,
@@ -657,7 +712,7 @@ phenotypeplot <- reactive({
     if(input$phenotypebarplottype == "identity"){
       if(!is.null(av(input$phenotypebarplotxaxis)) && !is.null(av(input$phenotypebarplotyaxis))){
         if(!is.null(av(input$phenotypebarplotfill))){
-          data1 <- data_summary(data = phenotypedata$table, varname = input$phenotypebarplotyaxis,
+          data1 <- data_summary(data = phenotypedata$use, varname = input$phenotypebarplotyaxis,
                                groupnames = c(input$phenotypebarplotfill,
                                               input$phenotypebarplotxaxis))
           # paste0("c(", paste(input$phenotypebarpotfill,
@@ -668,7 +723,7 @@ phenotypeplot <- reactive({
                                    y = !!as.symbol(input$phenotypebarplotyaxis),
                                    fill = !!as.symbol(input$phenotypebarplotfill)))
         }else {
-          data1 <- EcoPLOT::data_summary(data = phenotypedata$table, varname = input$phenotypebarplotyaxis,
+          data1 <- EcoPLOT::data_summary(data = phenotypedata$use, varname = input$phenotypebarplotyaxis,
                                groupnames = input$phenotypebarplotxaxis)
           
           plot <- ggplot(data1, aes(x = !!as.symbol(input$phenotypebarplotxaxis), 
@@ -692,10 +747,10 @@ phenotypeplot <- reactive({
     }else if(input$phenotypebarplottype == "bin"){
         if(!is.null(av(input$phenotypebarplotxaxis))){
           if(!is.null(av(input$phenotypebarplotfill))){
-            plot <- ggplot(phenotypedata$table, aes(x = !!as.symbol(input$phenotypebarplotxaxis),
+            plot <- ggplot(phenotypedata$use, aes(x = !!as.symbol(input$phenotypebarplotxaxis),
                                                     fill = !!as.symbol(input$phenotypebarplotfill)))
           }else {
-            plot <- ggplot(phenotypedata$table, aes(x = !!as.symbol(input$phenotypebarplotxaxis)))
+            plot <- ggplot(phenotypedata$use, aes(x = !!as.symbol(input$phenotypebarplotxaxis)))
           }
           if(input$phenotypebarplotpos == "dodge"){
             plot <- plot + geom_bar(position = position_dodge())
@@ -723,46 +778,128 @@ output$phenotypecorrelation <- renderPrint({
   req(phenotypedata$table)
   if(input$phenotypeplottype == "scatter"){
     if(!is.null(av(input$phenotypex1)) && !is.null(av(input$phenotypey))){
-      paste("Pearson's Correlation Coefficient:", cor(phenotypedata$table[[input$phenotypex1]], phenotypedata$table[[input$phenotypey]]))
+      paste("Pearson's Correlation Coefficient:", cor(phenotypedata$use[[input$phenotypex1]], phenotypedata$use[[input$phenotypey]]))
     }else{
       "Pearson's Correlation Coefficient: NA"
     }
   }else{
+    "Pearson's Correlation Coefficient: NA"
+  }
+})
+output$correlationoutput <- renderUI({
+  req(phenotypedata$table)
+  if(input$phenotypeplottype == "scatter"){
+    verbatimTextOutput("phenotypecorrelation")
+  }else if(input$phenotypeplottype != "scatter"){
     NULL
   }
 })
+
+observeEvent(input$phenotypefilterrender, {
+  updateRadioButtons(session, "phenotypedatasource1", "Select Dataset to Use:",
+                     choices = c("Original",
+                                 "Filtered"),
+                     selected = "Original", inline = TRUE)
+})
+observe({
+  req(phenotypedata$table)
+  req(input$phenotypefilterrender)
+  if(input$phenotypedatasource1 == "Original"){
+    updateRadioButtons(session, "phenotypedatasource", "Select Dataset to Use:",
+                       choices = c("Original",
+                                   "Filtered"),
+                       selected = "Original", inline = TRUE)
+  }else if(input$phenotypedatasource1 == "Filtered"){
+    updateRadioButtons(session, "phenotypedatasource", "Select Dataset to Use:",
+                       choices = c("Original",
+                                   "Filtered"),
+                       selected = "Filtered", inline = TRUE)
+  }
+})
+observe({
+  req(phenotypedata$table)
+  req(input$phenotypefilterrender)
+  if(input$phenotypedatasource == "Original"){
+    updateRadioButtons(session, "phenotypedatasource1", "Select Dataset to Use:",
+                       choices = c("Original",
+                                   "Filtered"),
+                       selected = "Original", inline = TRUE)
+  }else if(input$phenotypedatasource == "Filtered"){
+    updateRadioButtons(session, "phenotypedatasource1", "Select Dataset to Use:",
+                       choices = c("Original",
+                                   "Filtered"),
+                       selected = "Filtered", inline = TRUE)
+  }
+})
+
+observe({
+  req(phenotypedata$table1)
+  if(is.null(phenotypedata$filter)){
+    phenotypedata$use <- phenotypedata$table1
+  }else{
+    if(input$phenotypedatasource1 == "Original"){
+      phenotypedata$use <- phenotypedata$table1
+    }else if(input$phenotypedatasource1 == "Filtered"){
+      phenotypedata$use <- phenotypedata$filter
+    }
+  }
+})
+#parametric
 output$phenotypeparametricUI <- renderUI({
   req(phenotypedata$table)
   output <- tagList(
-    selectInput("phenotypeparametrictesttype", "Select Parametric Test to View",
+    selectInput("phenotypeparametrictesttype", "Select Parametric Test",
                 choices = c("T-Test" = "ttest",
-                            "ANOVA", "anova"),
+                            "One-Way ANOVA" = "1anova",
+                            "Two-Way ANOVA" = "2anova",
+                            "Tukey HSD" = "tukeyhsd"),
                 selected = "ttest")
     ,
     selectInput("phenotypeparametricvar1", "Select Continuous Variable:",
-                choices = c("NULL", names(dplyr::select_if(phenotypedata$table, is.numeric))),
+                choices = c("NULL", names(dplyr::select_if(phenotypedata$use, is.numeric))),
                 selected = "NULL")
     ,
-    selectInput("phenotypeparametricvar2", "Select Categorical Variable (or leave NULL):",
+    selectInput("phenotypeparametricvar2", "Select Categorical Variable:",
                 choices = c("NULL", names(dplyr::select_if(phenotypedata$table, is.character)),
-                            names(dplyr::select_if(phenotypedata$table, is.factor))),
+                            names(dplyr::select_if(phenotypedata$use, is.factor))),
                 selected = "NULL")
+    ,
+    conditionalPanel(condition = "input.phenotypeparametrictesttype == '2anova' || 
+                     input.phenotypeparametrictesttype == 'tukeyhsd'",
+                     selectInput("phenotypeparametricvar3", "Select Categorical Variable:",
+                                 choices = c("NULL", names(dplyr::select_if(phenotypedata$table, is.character)),
+                                             names(dplyr::select_if(phenotypedata$use, is.factor))),
+                                 selected = "NULL"))
   )
+  return(output)
 })
 output$phenotypeparametricwork <- renderPrint({
   req(phenotypedata$table)
   if(input$phenotypeparametrictesttype == "ttest"){
     if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2))){
-      #var1 <- input$phenotypeparametricvar1
-      #var2 <- input$phenotypeparametricvar2
       t.test(phenotypedata$table[[input$phenotypeparametricvar1]] ~ phenotypedata$table[[input$phenotypeparametricvar2]])
     }else if(!is.null(av(input$phenotypeparametricvar1)) && is.null(av(input$phenotypeparametricvar2))){
       t.test(phenotypedata$table[[input$phenotypeparametricvar1]])
     }else {
       NULL
     }
-  }else if(input$phenotypeparametrictesttype == "anova"){
-    NULL
+  }else if(input$phenotypeparametrictesttype == "1anova"){
+    if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2))){
+      summary(aov(phenotypedata$use[[input$phenotypeparametricvar1]] ~ phenotypedata$use[[input$phenotypeparametricvar2]], data = phenotypedata$use))
+      }
+  }else if(input$phenotypeparametrictesttype == "2anova"){
+    if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2)) && !is.null(av(input$phenotypeparametricvar3))){
+      summary(aov(phenotypedata$use[[input$phenotypeparametricvar1]] ~ phenotypedata$use[[input$phenotypeparametricvar2]] + phenotypedata$use[[input$phenotypeparametricvar3]],
+                  data = phenotypedata$use))
+      }
+  }else if(input$phenotypeparametrictesttype == "tukeyhsd"){
+    if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2))){
+      if(!is.null(av(input$phenotypeparametricvar3))){
+        TukeyHSD(aov(phenotypedata$use[[input$phenotypeparametricvar1]] ~ phenotypedata$use[[input$phenotypeparametricvar2]] + phenotypedata$use[[input$phenotypeparametricvar3]], data = phenotypedata$use))
+      }else {
+        TukeyHSD(aov(phenotypedata$use[[input$phenotypeparametricvar1]] ~ phenotypedata$use[[input$phenotypeparametricvar2]], data = phenotypedata$use))
+        }
+      }
   }
 })
 output$phenotypeparametricMain <- renderUI({
@@ -770,7 +907,39 @@ output$phenotypeparametricMain <- renderUI({
     verbatimTextOutput("phenotypeparametricwork")
   )
 })
-
+#non parametric
+output$phenotypenonparametricUI <- renderUI({
+  req(phenotypedata$table)
+  output <- tagList(
+    selectInput("phenotypenonparametrictesttype", "Select Non-Parametric Test",
+                choices = c("Kruskal Wallis" = "kw"))
+    ,
+    selectInput("phenotypenonparametricvar1", "Select Continuous Variable:",
+                choices = c("NULL", names(dplyr::select_if(phenotypedata$use, is.numeric))),
+                selected = "NULL")
+    ,
+    selectInput("phenotypenonparametricvar2", "Select Grouping Variable:",
+                choices = c("NULL", names(dplyr::select_if(phenotypedata$use, is.character)),
+                            names(dplyr::select_if(phenotypedata$use, is.factor))),
+                selected = "NULL")
+  )
+  return(output)
+})
+output$phenotypenonparametricwork <- renderPrint({
+  req(phenotypedata$table)
+  if(input$phenotypenonparametrictesttype == "kw"){
+    if(!is.null(av(input$phenotypenonparametricvar1)) && !is.null(av(input$phenotypenonparametricvar2))){
+      kruskal.test(phenotypedata$use[[input$phenotypenonparametricvar1]], phenotypedata$use[[input$phenotypenonparametricvar2]])
+    }
+  }else {
+    NULL
+  }
+})
+output$phenotypenonparametricMain <- renderUI({
+  output <- tagList(
+    verbatimTextOutput("phenotypenonparametricwork")
+  )
+})
 
 # #MICROBIOME ----------------------------------------------------------
 # #saves uploaded file as a dataframe
@@ -2024,7 +2193,7 @@ output$originalsamplecounthist <- renderPlot({
 })
 output$counthistsummaryorigsample <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
-  avg <- paste("Average Number of Counts:", mean(sample_sums(phyloseqobj())))
+  avg <- paste("Average Number of Counts:", round(mean(sample_sums(phyloseqobj())), 3))
   min <- paste("Minimum number of Counts:", min(sample_sums(phyloseqobj())))
   max <- paste("Maximum Number of Counts:", max(sample_sums(phyloseqobj())))
   HTML(
@@ -2045,7 +2214,7 @@ output$originaltaxacounthist <- renderPlot({
 })
 output$counthisttaxa <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
-  avg <- paste("Average Number of Counts:", mean(taxa_sums(phyloseqobj())))
+  avg <- paste("Average Number of Counts:", round(mean(taxa_sums(phyloseqobj())), 3))
   min <- paste("Minimum number of Counts:", min(taxa_sums(phyloseqobj())))
   max <- paste("Maximum Number of Counts:", max(taxa_sums(phyloseqobj())))
   HTML(paste(avg, min, max, sep = '<br/>'))
@@ -2064,7 +2233,7 @@ output$updatedsamplecounthist <- renderPlot({
 })
 output$counthistsummaryorigsampleupdated <- renderUI({
   if(is.null(updatedphyloseq()))return(NULL)
-  avg <- paste("Average Number of Counts:", mean(sample_sums(updatedphyloseq())))
+  avg <- paste("Average Number of Counts:", round(mean(sample_sums(updatedphyloseq())),3))
   min <- paste("Minimum number of Counts:", min(sample_sums(updatedphyloseq())))
   max <- paste("Maximum Number of Counts:", max(sample_sums(updatedphyloseq())))
   HTML(
@@ -2085,7 +2254,7 @@ output$updatedtaxacounthist <- renderPlot({
 })
 output$counthisttaxaupdated <- renderUI({
   if(is.null(updatedphyloseq()))return(NULL)
-  avg <- paste("Average Number of Counts:", mean(taxa_sums(updatedphyloseq())))
+  avg <- paste("Average Number of Counts:", round(mean(taxa_sums(updatedphyloseq())), 3))
   min <- paste("Minimum number of Counts:", min(taxa_sums(updatedphyloseq())))
   max <- paste("Maximum Number of Counts:", max(taxa_sums(updatedphyloseq())))
   HTML(paste(avg, min, max, sep = '<br/>'))
@@ -2213,7 +2382,7 @@ output$heatmapoptions1 <- renderUI({
                              "DPCoA" = "dpcoa",
                              "JSD" = "jsd"),
                 Require_Phylogenetic_Tree = c(
-                  "Unifrac" = "unifrac",
+                  "Unweighted Unifrac" = "unifrac",
                   "Weighted Unifrac" = "wunifrac"
                 )),
               selected = "NULL")
@@ -2367,7 +2536,7 @@ output$phyloseqdistanceoptions <- renderUI({
                              "DPCoA" = "dpcoa",
                              "JSD" = "jsd"),
                 Require_Phylogenetic_Tree = c(
-                  "Unifrac (Unweighted)" = "uunifrac",
+                  "Unweighted Unifrac" = "uunifrac",
                   "Weighted Unifrac" = "wunifrac"
                 )),
               selected = "bray")
@@ -2394,7 +2563,8 @@ output$distancematrixtable <- renderDataTable({
   if(is.null(distancematrix()))return(NULL)
   as.matrix(distancematrix())
 })
-downloadTable(id = "distancematrixtabledownload", tableid = distancematrix())
+downloadTable(id = "distancematrixtabledownload", tableid = as.matrix(distancematrix()))
+
 output$dispersionUI <- renderUI({
   if(is.null(distancematrix()))return(NULL)
   output<- tagList(
@@ -2469,9 +2639,19 @@ output$adonisUI <- renderUI({
     tags$div(tags$h4("You are Viewing the", paste(input$ordinationdataset), "Dataset"),
              align = "center")
     ,
-    selectInput("adonisoptions1", "Select Variable to Compare",
-                choices = sample_variables(ordinationdatasetuse()),
-                multiple = FALSE)
+    textInput("adonisoptions1", "Write Formula",
+              placeholder = "A + B*C", width = "100%")
+    ,
+    # selectInput("adonisoptions1", "Select Variable to Compare",
+    #             choices = sample_variables(ordinationdatasetuse()),
+    #             multiple = FALSE)
+    # ,
+    selectInput("adonisstrata", "Groups Within Which to Constrain Permutations",
+                choices = c("NULL", sample_variables(ordinationdatasetuse())),
+                selected = "NULL")
+    ,
+    numericInput("adonispermutations", "Select Number of Permutations",
+                 value = 999, min =1, width = "100%")
     ,
     actionButton("adonisrender1", "Perform Adonis:")
   )
@@ -2490,12 +2670,19 @@ output$adonisUI <- renderUI({
 # actionButton("adonisrender1", "Perform Adonis:")
 # })
 ordinationadonis <- eventReactive(input$adonisrender1, {
+  if(!is.null(av(input$adonisstrata))){
   withProgress(message = "Performing Adonis", {
       adonis(as.formula(paste("distancematrix() ~", paste(input$adonisoptions1))), 
+             strata = sample_data(ordinationdatasetuse())[[input$adonisstrata]], permutations = input$adonispermutations,
              data = as(sample_data(ordinationdatasetuse()), "data.frame"))
-                                        
-               
   })
+  }else{
+    withProgress(message = "Performing Adonis", {
+    adonis(as.formula(paste("distancematrix() ~", paste(input$adonisoptions1))), 
+           permutations = input$adonispermutations,
+           data = as(sample_data(ordinationdatasetuse()), "data.frame"))
+    })
+  }
 })
 output$adonisphyloseq <- renderPrint({
   if(is.null(phyloseqobj()))return(NULL)

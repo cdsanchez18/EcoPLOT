@@ -25,120 +25,15 @@ library(DT)
 library(DESeq2)
 library(EcoPLOT)
 
-#EcoPOD data----------------------------------------------------------------------
 shinyUI(navbarPage("Singer Lab",
   useShinyjs(),
   tabPanel("Instructions"),
-  navbarMenu("Environment",
-    tabPanel("EcoPOD Sensors", 
-            tabsetPanel(
-              tabPanel("Upload",
-              titlePanel(""),
-              fluidPage(theme = shinytheme("yeti"),
-              titlePanel("Menu"),
-              sidebarLayout(
-                sidebarPanel("",
-                  fileInput("ecopoddata", "Browse for Excel File:",
-                          multiple = FALSE,
-                          accept = c(".xlsx"))),
-                mainPanel("",
-                  tabsetPanel(
-                    tabPanel("Uploaded Data",
-                      splitLayout(tableOutput("ecopoddatatable"))),
-                    tabPanel("Melted Data",
-                      splitLayout(tableOutput("ecopodmelt1")))))))),
-              tabPanel("Plot Data",
-                fluidPage(
-                  titlePanel("Menu"),
-                    sidebarLayout(
-                      sidebarPanel("",
-                        uiOutput("ecopodx"),
-                        numericInput("size0", "Point size", 1, min = 1),
-                        uiOutput("slider0"),
-                        textInput("ecopodspace", "Tick Spacing", "6 hours"),
-                        h5("NOTE: You may use hours, days, or years"),
-                        textInput("title0", "Graph Title", ""),
-                        textInput("ecopodxaxis", "Label X-Axis", ""),
-                        textInput("ecopodyaxis", "Label Y-Axis", ""),
-                        actionButton("ecopodrender", "Render:"),
-                        h5("NOTE: This button will create both the graph and
-                            the fitered dataset.")),
-                      mainPanel(
-                        tabsetPanel(
-                          tabPanel("EcoPod Graph",
-                            plotlyOutput("ecopodplot")),
-                          tabPanel("Filtered Data Table",
-                            tableOutput("ecopodfiltertable"),
-                            downloadButton("downloadecopoddata",
-                                          "Download Filtered Dataset"))))))))),
-#Additional Sensors ----------------------------------------------------------------
-    tabPanel("Additional Sensors",
-      tabsetPanel(
-        tabPanel("Upload CSV File",
-          titlePanel(""),
-          fluidPage(
-            titlePanel("Menu"),
-            sidebarLayout(
-              sidebarPanel("",
-                fileInput("sensordata", "Choose CSV/Excel File",
-                          multiple = FALSE,
-                          accept = c(".xlsx",
-                                    "text/csv",
-                                    "text/comma-separated-values,text/plain",
-                                    ".csv")),
-                tags$hr(),
-                checkboxInput("header", "Header", TRUE),
-                radioButtons("sep", "Separator",
-                            choices = c(Comma = ",",
-                                        Semicolon = ";",
-                                        Tab = "\t"),
-                                        selected = ","),
-                radioButtons("quote", "Quote",
-                            choices = c(None = "",
-                                        "Double Quote" = '"',
-                                        "Single Quote" = "'"),
-                                        selected = '"'),
-                tags$hr(),
-                radioButtons("disp", "Display",
-                            choices = c(Head = "head",
-                                        All = "all"),
-                                        selected = "head")),
-              mainPanel("",
-                tabsetPanel(
-                  tabPanel("Uploaded Data",
-                    splitLayout(tableOutput("sensordatatable"))),
-                  tabPanel("Melted Data",
-                    splitLayout(tableOutput("sensormelt1")))))))),
-          tabPanel("Plot Data",
-            fluidPage(
-              titlePanel("Menu"),
-                sidebarLayout(
-                  sidebarPanel("",
-                    uiOutput("sensorx"),
-                    textInput("title1", "Graph Title", ""),
-                    numericInput("size1", "Point size", 1, min = 1),
-                    uiOutput("sensorrange"),
-                    uiOutput("slider1"),
-                    textInput("sensorspace", "Tick Spacing", "6 hours"),
-                    h5("NOTE: You may use hours, days, or years"),
-                    textInput("sensorxaxis", "Label X-Axis", ""),
-                    actionButton("sensorrender", "Render:"),
-                    h5("NOTE: This button will create both the graph and
-                        the fitered dataset.")),
-                  mainPanel(
-                    tabsetPanel(
-                      tabPanel("Sensor Graph",
-                        plotlyOutput("sensorplot")),
-                      tabPanel("Filtered Data Table",
-                        tableOutput("sensorfiltertable"),
-                        downloadButton("downloadsensordata",
-                                      "Download Filtered Dataset"))))))))),
 #Geochemistry-----------------------------------------------------------------------
     tabPanel("Geochemistry",
       tabsetPanel(
         tabPanel("Upload File",
           titlePanel(""),
-          fluidPage(
+          fluidPage(theme = shinytheme("yeti"),
             titlePanel("Menu"),
               sidebarLayout(
                 sidebarPanel("",
@@ -186,19 +81,40 @@ shinyUI(navbarPage("Singer Lab",
                                tabsetPanel(id ="geochemistrystats",
                                            tabPanel("Parametric"),
                                            tabPanel("Non-Parametric"))))))
-      ))),
+      )),
   #Phenotype data---------------------------------------------------------------------
-  navbarMenu("Plant",
              tabPanel("Phenotype Data",
                    tabsetPanel(
                    tabPanel("Upload File",
                        titlePanel(""),
                        fluidPage(
+                         tags$head(
+                           tags$style(
+                             HTML(".shiny-notification {
+                                  position:fixed;
+                                  top: calc(25%);
+                                  font-size:2vmin;
+                                  text-align:center;
+                                  left: calc(25%);
+                                  width: 50%;
+                             }
+                                  #sidebar {
+                                  background-color: #4C9F93;
+
+                                  }          
+                                            ")
+                             # padding:5px;
+                             # border: 1px;
+                             # border-style: solid;
+                           )
+                         ),
                            titlePanel("Menu"),
                            sidebarLayout(
                                sidebarPanel("",
                                             uiOutput("plantfileupload"),
-                                            uiOutput("plantvariableclassUI")),
+                                            hr(),
+                                            tags$div(id = "sidebar",
+                                            uiOutput("plantvariableclassUI"))),
                                mainPanel("",
                                             uiOutput("plantuploadmain"))))),
                    tabPanel("Filter",
@@ -218,28 +134,39 @@ shinyUI(navbarPage("Singer Lab",
                               titlePanel("Menu"),
                               sidebarLayout(
                                 sidebarPanel("",
+                                            #uiOutput("phenotypedatasourceUI"),
+                                            shiny::radioButtons("phenotypedatasource", "Select Dataset to Use:",
+                                                                choices = c("Original"),
+                                                                selected = "Original", inline = TRUE),
                                             uiOutput("phenotypeplotUI")),
                                 mainPanel("",
-                                            verbatimTextOutput("phenotypecorrelation"),
+                                            uiOutput("correlationoutput"),
+                                            #verbatimTextOutput("phenotypecorrelation"),
                                             uiOutput("phenotypeplotmainUI"))))),
                    tabPanel("Statistics",
                             fluidPage(
                               titlePanel("Menu"),
                               sidebarLayout(
                                 sidebarPanel(
-                                  uiOutput("phenotypeparametricUI")
+                                  shiny::radioButtons("phenotypedatasource1", "Select Dataset to Use:",
+                                                      choices = c("Original"),
+                                                      selected = "Original", inline = TRUE),
+                                  #uiOutput("phenotypedatasource1UI"),
+                                  conditionalPanel("input.plantstats == 1",
+                                                   uiOutput("phenotypeparametricUI")),
+                                  conditionalPanel("input.plantstats == 2",
+                                                   uiOutput("phenotypenonparametricUI"))
                                 ),
                                 mainPanel("",
                                           tabsetPanel(id ="plantstats",
-                                                      tabPanel("Parametric",
-                                                        uiOutput("phenotypeparametricMain")
-                                                               ),
-                                                      tabPanel("Non-Parametric")))
+                                                      tabPanel(value = 1, "Parametric",
+                                                        uiOutput("phenotypeparametricMain")),
+                                                      tabPanel(value = 2, "Non-Parametric",
+                                                        uiOutput("phenotypenonparametricMain"))))
                               )
                             ))
-                   ))),
+                   )),
   #Microbiome 2--------
-  navbarMenu("Microbiome",
   tabPanel("Amplicon Data",
     tabsetPanel(
       tabPanel("Upload Files",
@@ -325,13 +252,13 @@ shinyUI(navbarPage("Singer Lab",
                                           downloadPlotUI("updatedsamplecounthistplot"),
                                           downloadPlotUI("updatedtaxacounthistplot")
                                         )),
-                               tabPanel(value= 2 , title = "Updated ASV Table",
+                               tabPanel(value= 2 , title = "Filtered ASV Table",
                                         uiOutput("updatedphyloseqtableoutput")),
-                               tabPanel(value = 3, title = "Updated Taxonomy Table",
+                               tabPanel(value = 3, title = "Filtered Taxonomy Table",
                                         uiOutput("updatedtaxtableoutput")),
-                               tabPanel(value = 4, title = "Updated Mapping Table",
+                               tabPanel(value = 4, title = "Filtered Mapping Table",
                                         uiOutput("updatedmappingtableoutput")),
-                               tabPanel(value = 5, title = "Updated Tree Table",
+                               tabPanel(value = 5, title = "Filtered Tree Table",
                                         uiOutput("updatedtreetableoutput"))
                              ), id = "filtermain"))
                )),
@@ -392,24 +319,24 @@ shinyUI(navbarPage("Singer Lab",
                                uiOutput("makedistancematrixtable"),
                                hr(),
                                downloadTableUI(id = "distancematrixtabledownload")),
-              conditionalPanel(condition = "input.ordinationstart == 2",
-                               uiOutput("dispersionUI")),
+              #conditionalPanel(condition = "input.ordinationstart == 2",
+               #                uiOutput("dispersionUI")),
               conditionalPanel(condition= "input.ordinationstart == 3",
                               uiOutput("adonisUI")),
-              conditionalPanel(condition= "input.ordinationstart == 4",
+              conditionalPanel(condition= "input.ordinationstart == 2",
                 uiOutput("ordinationplotoptions"))
               ),
             mainPanel("",
                       tabsetPanel(id = "ordinationstart",
                         tabPanel(value = 1, "Step 1: Create Distance Matrix",
                                  splitLayout(dataTableOutput("distancematrixtable"))),
-                        tabPanel(value = 2, "Dispersion",
-                                 uiOutput("betadispersionplot2"),
-                                 verbatimTextOutput("betadisptable")),
-                        tabPanel(value = 3, "Statistics",
-                                 verbatimTextOutput("adonisphyloseq")),
-                        tabPanel(value = 4, "Plot",
-                                 uiOutput("ordinationplotoutputUI"))
+                        tabPanel(value = 2, "Step 2: Plot Ordination",
+                                 uiOutput("ordinationplotoutputUI")),
+                        #tabPanel(value = 2, "Dispersion",
+                        #         uiOutput("betadispersionplot2"),
+                        #         verbatimTextOutput("betadisptable")),
+                        tabPanel(value = 3, "Step 3: Perform Statistics",
+                                 verbatimTextOutput("adonisphyloseq"))
                       )
             )
           )
@@ -473,7 +400,7 @@ shinyUI(navbarPage("Singer Lab",
                       tabPanel(value=3, "Log2FoldChange Plot",
                                plotOutput("log2foldchangegraph"))))
           )
-        )),
+        ))
       # tabPanel("Normalize",
       #          fluidPage(
       #            titlePanel("Normalize"),
@@ -488,36 +415,17 @@ shinyUI(navbarPage("Singer Lab",
       #                   splitLayout(uiOutput("taxmaptable3"))))),
       #              )
       #            )),
-      tabPanel("IRF",
-               fluidPage(
-                 titlePanel("Menu"),
-                 sidebarLayout(
-                   sidebarPanel(""),
-                   mainPanel()
-                 )
-               ))
-      )),
-  tabPanel("Shotgun Data")),
-tabPanel("Statistics",
-         fluidPage(
-           titlePanel(""),
-           sidebarLayout(
-             sidebarPanel("Menu",
-                          uiOutput("statselect"),
-                          uiOutput("stataction")),
-             mainPanel(
-               tabsetPanel(
-                 tabPanel("Data Table",
-                          splitLayout(dataTableOutput("stattable")),
-                          verbatimTextOutput("stattest")),
-                 tabPanel("Stat Table",
-                          splitLayout(dataTableOutput("statresulttable")))))
-             ))
-           )
+    )),
+tabPanel("IRF",
+                    fluidPage(
+                      titlePanel("Menu"),
+                      sidebarLayout(
+                        sidebarPanel(""),
+                        mainPanel()
+                      )
+                    )
+                    )
          ))
-#))
-
-
 
 # 
 
