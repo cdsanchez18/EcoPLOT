@@ -1,5 +1,6 @@
 #packages----------
 library(shiny)
+library(shinyEventLogger)
 library(phyloseq)
 library(readxl)
 library(treeio)
@@ -25,63 +26,152 @@ library(DT)
 library(DESeq2)
 library(EcoPLOT)
 
-shinyUI(navbarPage("Singer Lab",
-  useShinyjs(),
-  tabPanel("Instructions"),
+shinyUI(navbarPage(title = "EcoPLOT", theme = shinythemes::shinytheme("yeti"),
+  tabPanel("Instructions",
+        useShinyjs(),
+        fluidPage(
+          #includeHTML("www/README.html")
+        #uiOutput("homepagereadme")
+        )
+        ),
 #Geochemistry-----------------------------------------------------------------------
-    tabPanel("Geochemistry",
+    tabPanel("Environmental Data",
       tabsetPanel(
         tabPanel("Upload File",
-          titlePanel(""),
-          fluidPage(theme = shinytheme("yeti"),
-            titlePanel("Menu"),
-              sidebarLayout(
-                sidebarPanel("",
-                             uiOutput("geochemistryfileupload"),
-                             uiOutput("geochemistryvariableclassUI")),
-                mainPanel("",
-                          uiOutput("geochemistryuploadmain"))))),
-        tabPanel("Filter"),
+                 titlePanel(""),
+                 fluidPage(
+                   tags$head(
+                     tags$style(
+                       # HTML(".shiny-notification-error {
+                       #            position:fixed;
+                       #            top: calc(25%);
+                       #            font-size:2vmin;
+                       #            background: red;
+                       #            color: rgba(0, 0, 0, 1);
+                       #            border:solid;
+                       #            border-color:black;
+                       #            border-size: 3px;
+                       #            text-align:center;
+                       #            left: calc(40%);
+                       #            width: 35%;
+                       #       }
+                       #                      
+                       #       #class-change {
+                       #        
+                       #         }"
+                       # )
+                       #background-color: #4C9F93;
+                       #padding:5px;
+                       #border: 1px;
+                       #border-style: solid;
+                     )
+                   ),
+                   titlePanel("Menu"),
+                   sidebarLayout(
+                     sidebarPanel("",
+                                  uiOutput("environmentfileupload")),
+                     # ,
+                     # hr(),
+                     # tags$div(id = "sidebar",
+                     # ),
+                     mainPanel("",
+                               uiOutput("environmentuploadmain")))),
+                 uiOutput("environmentchangeclassUI")
+        ),
+        tabPanel("Filter",
+                 titlePanel(""),
+                 fluidPage(
+                   titlePanel("Menu"),
+                   sidebarLayout(
+                     sidebarPanel("",
+                                  uiOutput("environmentfilteringoptionsUI"),
+                                  uiOutput("environmentfilteringoptionsUI1"),
+                                  uiOutput("environmentfilteringoptionsUI2")),
+                     mainPanel("",
+                               uiOutput("environmentfiltertableUI"))
+                   )
+                 )),
         tabPanel("Soil Index Ratios",
-          titlePanel(""),
-            fluidPage(
-              fluidRow(
-                column(width = 12,
-              splitLayout(tableOutput("geochemtable")))),
-              fluidRow(
-              column(width = 6,
-              h5("This is your C to N to P Ratio:"),
-              wellPanel(textOutput("CNP"))),
-              column(width = 6,
-              h5("This is your N to P to K Ratio:"),
-              wellPanel(textOutput("NPK")))),
-              fluidRow(
-              column(width = 6, offset = 5,
-              h5("Sand, Silt, Clay Particle Sizes"),
-              splitLayout(tableOutput("ssc")))))),
+                 titlePanel(""),
+                 fluidPage(
+                   fluidRow(
+                     column(width = 12,
+                            splitLayout(tableOutput("environmenttable")))),
+                   fluidRow(
+                     column(width = 6,
+                            h5("This is your C to N to P Ratio:"),
+                            wellPanel(textOutput("CNP"))),
+                     column(width = 6,
+                            h5("This is your N to P to K Ratio:"),
+                            wellPanel(textOutput("NPK")))),
+                   fluidRow(
+                     column(width = 6, offset = 5,
+                            h5("Sand, Silt, Clay Particle Sizes"),
+                            splitLayout(tableOutput("ssc")))))),
         tabPanel("Soil Texture Triangle",
-          titlePanel(""),
-          tags$div(
-                uiOutput("texturetriangle"),
-                align = "center")),
+                 titlePanel(""),
+                 tags$div(
+                   uiOutput("texturetriangle"),
+                   align = "center")),
         tabPanel("Create Plot",
                  fluidPage(
                    titlePanel("Menu"),
                    sidebarLayout(
                      sidebarPanel("",
-                               uiOutput("geochemistryplotUI")),
+                                  shiny::radioButtons("environmentdatasource", "Select Dataset to Use:",
+                                                      choices = c("Original"),
+                                                      selected = "Original", inline = TRUE),
+                                  uiOutput("environmentplotUI")),
                      mainPanel("",
-                               uiOutput("geochemistryplotmainUI"))))),
+                               uiOutput("environmentcorrelationoutput"),
+                               #verbatimTextOutput("phenotypecorrelation"),
+                               uiOutput("environmentplotmainUI"))))),
         tabPanel("Statistics",
                  fluidPage(
                    titlePanel("Menu"),
                    sidebarLayout(
-                     sidebarPanel(),
+                     sidebarPanel(id = "environmentstatssidebar",
+                                  shiny::radioButtons("environmentdatasource1", "Select Dataset to Use:",
+                                                      choices = c("Original"),
+                                                      selected = "Original", inline = TRUE),
+                                  conditionalPanel("input.environmentstats == 2",
+                                                   uiOutput("environmentparametricUI")),
+                                  conditionalPanel("input.environmentstats == 3",
+                                                   uiOutput("environmentnonparametricUI"))
+                     ),
                      mainPanel("",
-                               tabsetPanel(id ="geochemistrystats",
-                                           tabPanel("Parametric"),
-                                           tabPanel("Non-Parametric"))))))
+                               tabsetPanel(id ="environmentstats",
+                                           tabPanel(value = 1, "Guide"),
+                                           tabPanel(value = 2, "Parametric",
+                                                    uiOutput("environmentparametricMain")),
+                                           tabPanel(value = 3, "Non-Parametric",
+                                                    uiOutput("environmentnonparametricMain"))), id = "environmentstats1")
+                   )
+                 ))
       )),
+# tabPanel("Soil Index Ratios",
+#          titlePanel(""),
+#          fluidPage(
+#            fluidRow(
+#              column(width = 12,
+#                     splitLayout(tableOutput("geochemtable")))),
+#            fluidRow(
+#              column(width = 6,
+#                     h5("This is your C to N to P Ratio:"),
+#                     wellPanel(textOutput("CNP"))),
+#              column(width = 6,
+#                     h5("This is your N to P to K Ratio:"),
+#                     wellPanel(textOutput("NPK")))),
+#            fluidRow(
+#              column(width = 6, offset = 5,
+#                     h5("Sand, Silt, Clay Particle Sizes"),
+#                     splitLayout(tableOutput("ssc")))))),
+# tabPanel("Soil Texture Triangle",
+#          titlePanel(""),
+#          tags$div(
+#            uiOutput("texturetriangle"),
+#            align = "center")),
+
   #Phenotype data---------------------------------------------------------------------
              tabPanel("Phenotype Data",
                    tabsetPanel(
@@ -90,33 +180,42 @@ shinyUI(navbarPage("Singer Lab",
                        fluidPage(
                          tags$head(
                            tags$style(
-                             HTML(".shiny-notification {
+                             HTML(".shiny-notification-error {
                                   position:fixed;
                                   top: calc(25%);
                                   font-size:2vmin;
+                                  background: red;
+                                  color: rgba(0, 0, 0, 1);
+                                  border:solid;
+                                  border-color:black;
+                                  border-size: 3px;
                                   text-align:center;
-                                  left: calc(25%);
-                                  width: 50%;
+                                  left: calc(40%);
+                                  width: 35%;
                              }
-                                  #sidebar {
-                                  background-color: #4C9F93;
-
-                                  }          
-                                            ")
-                             # padding:5px;
-                             # border: 1px;
-                             # border-style: solid;
+                                            
+                             #class-change {
+                              
+                               }"
+                             )
+                             #background-color: #4C9F93;
+                             #padding:5px;
+                             #border: 1px;
+                             #border-style: solid;
                            )
                          ),
                            titlePanel("Menu"),
                            sidebarLayout(
                                sidebarPanel("",
-                                            uiOutput("plantfileupload"),
-                                            hr(),
-                                            tags$div(id = "sidebar",
-                                            uiOutput("plantvariableclassUI"))),
+                                            uiOutput("plantfileupload")),
+                                            # ,
+                                            # hr(),
+                                            # tags$div(id = "sidebar",
+                                            # ),
                                mainPanel("",
-                                            uiOutput("plantuploadmain"))))),
+                                            uiOutput("plantuploadmain")))),
+                       uiOutput("changeclassUI")
+                       ),
                    tabPanel("Filter",
                             titlePanel(""),
                             fluidPage(
@@ -124,7 +223,8 @@ shinyUI(navbarPage("Singer Lab",
                               sidebarLayout(
                                 sidebarPanel("",
                                              uiOutput("phenotypefilteringoptionsUI"),
-                                             uiOutput("phenotypefilteringoptionsUI1")),
+                                             uiOutput("phenotypefilteringoptionsUI1"),
+                                             uiOutput("phenotypefilteringoptionsUI2")),
                                 mainPanel("",
                                           uiOutput("phenotypefiltertableUI"))
                               )
@@ -134,7 +234,6 @@ shinyUI(navbarPage("Singer Lab",
                               titlePanel("Menu"),
                               sidebarLayout(
                                 sidebarPanel("",
-                                            #uiOutput("phenotypedatasourceUI"),
                                             shiny::radioButtons("phenotypedatasource", "Select Dataset to Use:",
                                                                 choices = c("Original"),
                                                                 selected = "Original", inline = TRUE),
@@ -147,22 +246,22 @@ shinyUI(navbarPage("Singer Lab",
                             fluidPage(
                               titlePanel("Menu"),
                               sidebarLayout(
-                                sidebarPanel(
+                                sidebarPanel(id = "plantstatssidebar",
                                   shiny::radioButtons("phenotypedatasource1", "Select Dataset to Use:",
                                                       choices = c("Original"),
                                                       selected = "Original", inline = TRUE),
-                                  #uiOutput("phenotypedatasource1UI"),
-                                  conditionalPanel("input.plantstats == 1",
-                                                   uiOutput("phenotypeparametricUI")),
                                   conditionalPanel("input.plantstats == 2",
+                                                   uiOutput("phenotypeparametricUI")),
+                                  conditionalPanel("input.plantstats == 3",
                                                    uiOutput("phenotypenonparametricUI"))
                                 ),
                                 mainPanel("",
                                           tabsetPanel(id ="plantstats",
-                                                      tabPanel(value = 1, "Parametric",
+                                                      tabPanel(value = 1, "Guide"),
+                                                      tabPanel(value = 2, "Parametric",
                                                         uiOutput("phenotypeparametricMain")),
-                                                      tabPanel(value = 2, "Non-Parametric",
-                                                        uiOutput("phenotypenonparametricMain"))))
+                                                      tabPanel(value = 3, "Non-Parametric",
+                                                        uiOutput("phenotypenonparametricMain"))), id = "plantstats1")
                               )
                             ))
                    )),

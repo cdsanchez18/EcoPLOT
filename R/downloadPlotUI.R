@@ -27,6 +27,6 @@ downloadPlotUI <- function(id) {
                             "millimeters" = "mm"),
                 selected = "in")
     ,
-    shiny::downloadButton(ns("downloadPlot"), "Download Plot:")
+    shiny::downloadButton(ns("downloadPlot"), "Download Plot:", width = "100%")
   )
 }

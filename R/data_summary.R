@@ -1,4 +1,4 @@
-#' data_sunmary
+#' data_summary
 #' One line command to create summary of mean and SD
 #'
 #' @param data input identifier

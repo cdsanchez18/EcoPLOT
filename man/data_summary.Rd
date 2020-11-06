@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_summary.R
 \name{data_summary}
 \alias{data_summary}
-\title{data_sunmary
+\title{data_summary
 One line command to create summary of mean and SD}
 \usage{
 data_summary(data, varname, groupnames)
@@ -15,6 +15,6 @@ data_summary(data, varname, groupnames)
 \item{groupnames}{vector of grouping variables to include}
 }
 \description{
-data_sunmary
+data_summary
 One line command to create summary of mean and SD
 }

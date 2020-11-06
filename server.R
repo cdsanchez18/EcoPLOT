@@ -1,7 +1,135 @@
 ##The following code presents the server side processing of EcoPLOT
+#runGitHub("EcoPLOT", "CDSanchez18")
 
+set_logging(js_console = FALSE)#file = TRUE)
 shinyServer(function(input, output, session){
   options(shiny.maxRequestSize=100*1024^4)
+  set_logging_session()
+###logging section ===============================================================================
+##Log Section, this section makes a recording of events that occur within shiny
+  #Informs user of which dataset was selected at the time of their analysis
+  observe({
+    req(phenotypedata$table1)
+    if(is.null(phenotypedata$filter)){
+      log_event("Using the Original Dataset", name = "", type = "", status = "")
+    }else{
+      if(input$phenotypedatasource1 == "Original"){
+        log_event("Using the Original Dataset", name = "", type = "", status = "")
+      }else if(input$phenotypedatasource1 == "Filtered"){
+        log_event("Using the Filtered Dataset", name = "", type = "", status = "")
+      }
+    }
+  })
+  #informs users of variable class changes and if/when they are reset
+  observeEvent(input$plantchangeclass, {
+    req(phenotypedata$table)
+    if(!is.null(av(input$plantcolnames))){
+      if(input$plantclassoptions == "date"){
+        log_event(paste(input$plantcolnames, "to class", input$plantclassoptions, "in the format of", input$phenotypedateformat),
+                  name = "", type = "", status = "")
+      }else if(input$plantclassoptions == "time"){
+        log_event(paste(input$plantcolnames, "to class", input$plantclassoptions, "in the format of", input$phenotypetimeformat),
+                  name = "", type = "", status = "")
+      }else if(input$plantclassoptions == "timestamp"){
+        log_event(paste(input$plantcolnames, "to class", input$plantclassoptions, "in the format of", input$phenotypedateformat, input$phenotypetimeformat),
+                  name = "", type = "", status = "")
+      }else {
+        log_event(input$plantcolnames, "to class", input$plantclassoptions, name = "", type = "", status = "")
+      }
+    }
+  })
+  observeEvent(input$plantresetclass, {
+    req(phenotypedata$table)
+    log_event("Plant Classes Reset", name = "", type = "", status = "")
+  })
+  #record filtering options applied and message when they are reset
+  observeEvent(input$phenotypefilterrender, {
+    req(phenotypedata$table)
+    if(!is.null(av(input$phenotypefilteroption1)) && !is.null(av(input$phenotypefilteroption2))){
+    log_event(input$phenotypefilteroption1, input$phenotypefilteroption2, name = "Applied Phenotype Filtering Options", type = "", status = "")
+    }
+  })
+  observeEvent(input$phenotypefilterrenderreset,{
+    req(phenotypedata$table)
+    log_event("Reset Phenotype Filters", type = "", status = "")
+  })
+#store results of plant parametric tests
+  observe({
+    req(phenotypedata$table)
+    req(input$phenotypeparametrictesttype)
+    if(!is.null(av(input$phenotypeparametrictesttype))){
+      if(input$phenotypeparametrictesttype == "1ttest"){
+        if(!is.null(av(input$phenotypeparametricvar1))){
+        log_event(input$phenotypeparametrictesttype, input$phenotypeparametricvar1, phenotypeparametricwork1(),
+                  name = "One Way T-Test", type = "Parametric Test", status = "")
+        } 
+      }else if(input$phenotypeparametrictesttype == "2ttest"){
+        if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2))){
+        log_event(input$phenotypeparametrictesttype, input$phenotypeparametricvar1, input$phenotypeparametricvar2, phenotypeparametricwork1(),
+                  name = "Two Way T-Test", type = "", status = "")
+        }
+      }else if(input$phenotypeparametrictesttype == "pttest"){
+        if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar3))){
+        log_event(input$phenotypeparametrictesttype, input$phenotypeparametricvar1, input$phenotypeparametricvar3, phenotypeparametricwork1(),
+                  name = "Paired T-Test", type = "Parametric Test", status = "")
+        }
+      }else if(input$phenotypeparametrictesttype == "1anova"){
+        if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2))){
+        log_event(input$phenotypeparametrictesttype, input$phenotypeparametricvar1, input$phenotypeparametricvar2, phenotypeparametricwork1(),
+                  name = "One Way ANOVA", type = "Parametric Test", status = "")
+        }
+      }else if(input$phenotypeparametrictesttype == "2anova"){
+        if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2)) && !is.null(av(input$phenotypeparametricvar4))){
+        log_event(input$phenotypeparametrictesttype, input$phenotypeparametricvar1, input$phenotypeparametricvar2, input$phenotypeparametricvar4, phenotypeparametricwork1(),
+                  name = "Two Way ANOVA", type = "Parametric Test", status = "")
+        }
+      }else if(input$phenotypeparametrictesttype == "tukeyhsd"){
+        if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2))){
+        log_event(input$phenotypeparametrictesttype, input$phenotypeparametricvar1, input$phenotypeparametricvar2, phenotypeparametricwork1(),
+                  name = "Tukey HSD", type = "Parametric Test", status = "")
+        }
+      }
+    }
+  })
+#store results of plant non-parametric tests
+  observe({
+    req(phenotypedata$table)
+    req(input$phenotypenonparametrictesttype)
+    if(!is.null(av(input$phenotypenonparametrictesttype))){
+      if(input$phenotypenonparametrictesttype == "1WRS"){
+        if(!is.null(av(input$phenotypenonparametricvar1))){
+          log_event(input$phenotypenonparametricvar1, phenotypenonparametricwork1(),
+                    name = "One Sample Wilcoxon Rank-Sum", type = "Non Parametric Test", status = "")
+        } 
+      }else if(input$phenotypenonparametrictesttype == "2SW"){
+        if(!is.null(av(input$phenotypenonparametricvar1)) && !is.null(av(input$phenotypenonparametricvar2))){
+          log_event(input$phenotypenonparametricvar1, input$phenotypenonparametricvar2, phenotypenonparametricwork1(),
+                    name = "Two Sample Wilcoxon Rank-Sum", type = "Non Parametric Test", status = "")
+        }
+      }else if(input$phenotypenonparametrictesttype == "UWSR"){
+        if(!is.null(av(input$phenotypenonparametricvar1)) && !is.null(av(input$phenotypenonparametricvar2))){
+          log_event(input$phenotypenonparametricvar1, input$phenotypenonparametricvar2, phenotypenonparametricwork1(),
+                    name = "Wilcoxon Sign-Rank", type = "Non Parametric Test", status = "")
+        }
+      }else if(input$phenotypenonparametrictesttype == "PWSR"){
+        if(!is.null(av(input$phenotypenonparametricvar1)) && !is.null(av(input$phenotypenonparametricvar3))){
+          log_event(input$phenotypenonparametricvar1, input$phenotypenonparametricvar3, phenotypenonparametricwork1(),
+                    name = "Paired Wilcxon Sign-Rank", type = "Non Parametric Test", status = "")
+        }
+      }else if(input$phenotypenonparametrictesttype == "kw"){
+        if(!is.null(av(input$phenotypenonparametricvar1)) && !is.null(av(input$phenotypenonparametricvar2))){
+          log_event(input$phenotypenonparametricvar1, input$phenotypenonparametricvar2, phenotypenonparametricwork1(),
+                    name = "Kruskal Wallis", type = "Non Parametric Test", status = "")
+        }
+      }
+    }
+  })
+# output$homepagereadme <- renderUI({
+#   wellPanel(
+#   includeHTML("www/README.html")
+#   )
+# })
+    
 #EcoPOD Data-----------------------------------------------------------------------
   ##upload dataset and save as dataframe
 ecopoddata <- reactive({
@@ -206,26 +334,28 @@ output$plantfileupload <- renderUI({
     )
   return(output)
 })
+#create reactive values object
 phenotypedata <- reactiveValues(path = NULL)
+#code to upload file and display error message if an error occurs
 observeEvent(input$phenotypedata, {
   req(input$phenotypedata)
 if(tolower(tools::file_ext(input$phenotypedata$datapath)) == "csv" ||
    tolower(tools::file_ext(input$phenotypedata$datapath)) == "txt"){
-  if(!is.null(geochemistrydata$table)){
+  if(!is.null(environmentdata$table)){
     phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
                                     header = input$header
                                     )
-    if(length(intersect(names(phenotypedata$table), names(geochemistrydata$table))) >= 1){
+    if(length(intersect(names(phenotypedata$table), names(environmentdata$table))) >= 1){
     phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
                                     header = input$header
                                     )
-    phenotypedata$table <- left_join(phenotypedata$table, geochemistrydata$table) %>% na.omit()
+    phenotypedata$table <- left_join(phenotypedata$table, environmentdata$table) %>% na.omit()
     } else {
       phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
                                       header = input$header
                                       )
       }
-    }else if(is.null(geochemistrydata$table)){
+    }else if(is.null(environmentdata$table)){
       phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
                                       header = input$header
                                       )
@@ -233,14 +363,17 @@ if(tolower(tools::file_ext(input$phenotypedata$datapath)) == "csv" ||
   }else if(tolower(tools::file_ext(input$phenotypedata$datapath)) == "xlsx"){
     phenotypedata$table <- read_excel(path = input$phenotypedata$datapath)
   } else {
-    showNotification("File Type Not Recognized. Please Select a Different File.", duration = 10, type = "error")
+
+    showNotification("File Type Not Recognized. Please Select a Different File.", duration = NULL, type = "error")
   }
 })
+#maintains main file, but creates copy for downstream work
 observe({
   req(phenotypedata$table)
   phenotypedata$table1 <- phenotypedata$table
   
 })
+#code to melt dataframe for boxplot (required for plotting)
 observe({
   req(phenotypedata$table)
   names <- names(dplyr::select_if(phenotypedata$table1, is.numeric))
@@ -260,12 +393,10 @@ observe({
     }
   }
   })
+#UI for changing variable class
 output$plantvariableclassUI <- renderUI({
   req(phenotypedata$table)
   output <- tagList(
-    tags$h5("If R recognizes a column variable incorrectly, you may 
-            alter it here")
-    ,
     selectInput("plantcolnames", "Select Variable to Alter",
                 choices = c("NULL", 
                             as.list(colnames(phenotypedata$table1))),
@@ -301,6 +432,8 @@ output$plantvariableclassUI <- renderUI({
     ,
     actionButton("plantchangeclass", "Change Class", width = "100%")
     ,
+    hr()
+    ,
     actionButton("plantresetclass", "Reset Class Changes", width = "100%")
   )
   return(output)
@@ -330,14 +463,10 @@ observeEvent(input$plantchangeclass,{
                                                              locale = "en_US.UTF-8")
   }
 })
+#code to reset changes upon "reset"
 observeEvent(input$plantresetclass,{
   req(phenotypedata$table)
   phenotypedata$table1 <- phenotypedata$table
-})
-#Test 
-output$testprint <- renderPrint({
-  req(phenotypedata$table)
-  class(phenotypedata$table1$Timestamp)
 })
 #View Table of file
 output$phenotypedatatable <- renderDataTable({
@@ -348,16 +477,43 @@ output$phenotypedatatable <- renderDataTable({
 output$plantdatasummary <- renderPrint({
   req(phenotypedata$table)
   summary(phenotypedata$table1)
+  
+})
+#code block for change class UI
+output$changeclassUI <- renderUI({
+  req(phenotypedata$table)
+  output <- tagList(
+    tags$div(id = "class-change",
+    fluidRow(
+    column(2,
+           hr()),
+    column(8,
+           wellPanel(
+             tags$h4(
+             "Variable classes affect how variables can be used in plots or statistical analyses. EcoPLOT recognizes quantitative variables as", tags$b("Factors"), "or as", tags$b("Characters"), 
+             "and continuous variables as", tags$b("Numeric"), "or as", tags$b("Integers"),".", tags$b("Time, Date, and Timestamp"), 
+             "classes require additional formatting options.", align = "center"),
+             tags$h4("If EcoPLOT recognizes a variable incorrectly, you may alter it here.", align = "center")
+           )),
+    column(2,
+           hr())
+  )
+  ,
+  fluidRow(
+    column(4,
+           wellPanel(
+             uiOutput("plantvariableclassUI"))),
+    column(8,
+           wellPanel(
+             verbatimTextOutput("plantdatasummary"))))
+    )
+  )
+  return(output)
 })
 output$plantuploadmain <- renderUI({
   req(phenotypedata$table)
   output <- tagList(
     splitLayout(dataTableOutput("phenotypedatatable"))
-    ,
-    tags$div(id="sidebar",
-    tags$h4("View a Summary of the Uploaded Data")
-    ,
-    verbatimTextOutput("plantdatasummary"))
   )
   return(output)
 })
@@ -381,7 +537,6 @@ output$phenotypefilteringoptionsUI1 <- renderUI({
     if(is.character(phenotypedata$table1[[input$phenotypefilteroption1]]) || 
        is.factor(phenotypedata$table1[[input$phenotypefilteroption1]])){
       options <- as.list(unique(phenotypedata$table1[[input$phenotypefilteroption1]]))
-      
       selectInput("phenotypefilteroption2", "Filter Sub Category",
                   choices = c("NULL", options),
                   selected = "NULL",
@@ -390,7 +545,6 @@ output$phenotypefilteringoptionsUI1 <- renderUI({
              is.integer(phenotypedata$table1[[input$phenotypefilteroption1]])){
       min <- min(phenotypedata$table1[[input$phenotypefilteroption1]])
       max <- max(phenotypedata$table1[[input$phenotypefilteroption1]])
-      
       sliderInput("phenotypefilteroption2", "Filter Sub Category",
                   min = min,
                   max = max,
@@ -403,14 +557,26 @@ output$phenotypefilteringoptionsUI1 <- renderUI({
                   value = c(min(phenotypedata$table1[[input$phenotypefilteroption1]]),
                   max(phenotypedata$table1[[input$phenotypefilteroption1]])))
     }
-  } else {
-    NULL
   }
-  ,
-  if(!is.null(av(input$phenotypefilteroption1))){
-  actionButton("phenotypefilterrender", "Filter", width = "100%")
-  }else{NULL}
   )
+  return(output)
+})
+output$phenotypefilteringoptionsUI2 <- renderUI({
+  req(phenotypedata$table)
+  if(!is.null(av(input$phenotypefilteroption1))){
+    output <- tagList(
+    actionButton("phenotypefilterrender", "Filter", width = "100%")
+    ,
+    hr()
+    ,
+    actionButton("phenotypefilterrenderreset", "Reset Filters", width = "100%")
+    )
+    return(output)
+  }
+})
+observeEvent(input$phenotypefilterrenderreset, {
+  req(phenotypedata$table)
+  phenotypedata$filter <- phenotypedata$table1
 })
 observeEvent(input$phenotypefilterrender, {
   req(phenotypedata$table)
@@ -442,6 +608,7 @@ output$phenotypefilteredtable <- renderDataTable({
   phenotypedata$filter
 })
 downloadTable(id = "phenotypefiltertabledownload", tableid = phenotypedata$filter)
+#table output, updates when filters are applied
 output$phenotypefiltertableUI <- renderUI({
   req(phenotypedata$table)
   if(is.null(phenotypedata$filter)){
@@ -461,19 +628,13 @@ output$phenotypefiltertableUI <- renderUI({
   }
   return(output)
 })
-# output$phenotypedatasourceUI <- renderUI({
-#   shiny::radioButtons("phenotypedatasource", "Select Dataset to Use:",
-#                      choices = c("Original"),
-#                      selected = "Original", inline = TRUE)
-# })
-
+#Updates radio buttons to display filtered dataset after filters are applied
 observeEvent(input$phenotypefilterrender, {
   updateRadioButtons(session, "phenotypedatasource", "Select Dataset to Use:",
                      choices = c("Original" = "Original",
                                  "Filtered" = "Filtered"),
                      selected = "Original", inline = TRUE)
 })
-
 observe({
   req(phenotypedata$table1)
   if(is.null(phenotypedata$filter)){
@@ -628,7 +789,9 @@ output$phenotypeplotUI <- renderUI({
   )
   return(output)
 })
+#download phenotype plot
 downloadPlot("phenotypeplotdownload", phenotypeplot())
+#Phenotype plot
 phenotypeplot <- reactive({
   req(phenotypedata$table)
   if(input$phenotypeplottype == "histogram"){
@@ -770,10 +933,12 @@ output$phenotypeplot1 <- renderPlot({
   req(phenotypedata$table)
   phenotypeplot()
 })
+##ui options for phenotype plot
 output$phenotypeplotmainUI <- renderUI({
   req(phenotypedata$table)
   plotOutput("phenotypeplot1")
 })
+#prints correlation coefficient when viewing a scatter plot
 output$phenotypecorrelation <- renderPrint({
   req(phenotypedata$table)
   if(input$phenotypeplottype == "scatter"){
@@ -790,11 +955,9 @@ output$correlationoutput <- renderUI({
   req(phenotypedata$table)
   if(input$phenotypeplottype == "scatter"){
     verbatimTextOutput("phenotypecorrelation")
-  }else if(input$phenotypeplottype != "scatter"){
-    NULL
   }
 })
-
+##Add reactivity to dataset choice, if one option changes so will the other 
 observeEvent(input$phenotypefilterrender, {
   updateRadioButtons(session, "phenotypedatasource1", "Select Dataset to Use:",
                      choices = c("Original",
@@ -831,7 +994,6 @@ observe({
                        selected = "Filtered", inline = TRUE)
   }
 })
-
 observe({
   req(phenotypedata$table1)
   if(is.null(phenotypedata$filter)){
@@ -844,43 +1006,80 @@ observe({
     }
   }
 })
-#parametric
+#parametric test options
 output$phenotypeparametricUI <- renderUI({
   req(phenotypedata$table)
   output <- tagList(
     selectInput("phenotypeparametrictesttype", "Select Parametric Test",
-                choices = c("T-Test" = "ttest",
+                choices = list(
+                  "Tests" = c("NULL",
+                            "One Sample T-Test" = "1ttest",
+                            "Two Sample T-Test" = "2ttest",
+                            "Paired T-Test" = "pttest",
                             "One-Way ANOVA" = "1anova",
-                            "Two-Way ANOVA" = "2anova",
-                            "Tukey HSD" = "tukeyhsd"),
-                selected = "ttest")
+                            "Two-Way ANOVA" = "2anova"),
+                  "Post-Hoc Tests" = c("Tukey" = "tukeyhsd")),
+                selected = "NULL")
     ,
-    selectInput("phenotypeparametricvar1", "Select Continuous Variable:",
+    conditionalPanel(condition = "input.phenotypeparametrictesttype == '1ttest' ||
+                     input.phenotypeparametrictesttype == '2ttest' || input.phenotypeparametrictesttype == 'pttest' ||
+                     input.phenotypeparametrictesttype == '1anova' || input.phenotypeparametrictesttype == '2anova' || input.phenotypeparametrictesttype == 'tukeyhsd'",
+                     selectInput("phenotypeparametricvar1", "Select Continuous Variable:",
+                                 choices = c("NULL", names(dplyr::select_if(phenotypedata$use, is.numeric))),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.phenotypeparametrictesttype == '2ttest' ||
+                     input.phenotypeparametrictesttype == '1anova' || input.phenotypeparametrictesttype == '2anova' || input.phenotypeparametrictesttype == 'tukeyhsd'",
+                     selectInput("phenotypeparametricvar2", "Select Categorical Variable:",
+                     choices = c("NULL", names(dplyr::select_if(phenotypedata$table, is.character)),
+                                 names(dplyr::select_if(phenotypedata$use, is.factor))),
+                     selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.phenotypeparametrictesttype == 'pttest'",
+    selectInput("phenotypeparametricvar3", "Select Continuous Variable:",
                 choices = c("NULL", names(dplyr::select_if(phenotypedata$use, is.numeric))),
-                selected = "NULL")
+                selected = "NULL"))
     ,
-    selectInput("phenotypeparametricvar2", "Select Categorical Variable:",
-                choices = c("NULL", names(dplyr::select_if(phenotypedata$table, is.character)),
-                            names(dplyr::select_if(phenotypedata$use, is.factor))),
-                selected = "NULL")
-    ,
-    conditionalPanel(condition = "input.phenotypeparametrictesttype == '2anova' || 
-                     input.phenotypeparametrictesttype == 'tukeyhsd'",
-                     selectInput("phenotypeparametricvar3", "Select Categorical Variable:",
-                                 choices = c("NULL", names(dplyr::select_if(phenotypedata$table, is.character)),
+    conditionalPanel(condition = "input.phenotypeparametrictesttype == '2anova'",
+                     selectInput("phenotypeparametricvar4", "Select Categorical Variable:",
+                                 choices = c("NULL", names(dplyr::select_if(phenotypedata$use, is.character)),
                                              names(dplyr::select_if(phenotypedata$use, is.factor))),
                                  selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.phenotypeparametrictesttype == '1ttest' ||
+                     input.phenotypeparametrictesttype == '2ttest' || input.phenotypeparametrictesttype == 'pttest'",
+                     numericInput("phenotypetestmu", "True Value of the Mean (or Difference in Mean if 2 Sample T-Test)",
+                                  value = 0),
+                     radioButtons("phenotypettesthypothesis", "Select Alternative Hypothesis",
+                                  choices = c("Two Sided" = "two.sided",
+                                              "Less" = "less",
+                                              "Greater" = "greater"),
+                                  selected = "two.sided"))
   )
   return(output)
 })
-output$phenotypeparametricwork <- renderPrint({
+#parametric tests
+phenotypeparametricwork1 <- reactive({
   req(phenotypedata$table)
-  if(input$phenotypeparametrictesttype == "ttest"){
-    if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2))){
-      t.test(phenotypedata$table[[input$phenotypeparametricvar1]] ~ phenotypedata$table[[input$phenotypeparametricvar2]])
-    }else if(!is.null(av(input$phenotypeparametricvar1)) && is.null(av(input$phenotypeparametricvar2))){
-      t.test(phenotypedata$table[[input$phenotypeparametricvar1]])
+  if(input$phenotypeparametrictesttype == "1ttest"){
+    if(!is.null(av(input$phenotypeparametricvar1))){
+      t.test(phenotypedata$table[[input$phenotypeparametricvar1]], alternative = input$phenotypettesthypothesis,
+             mu = input$phenotypetestmu)
     }else {
+      NULL
+    }
+  }else if(input$phenotypeparametrictesttype == "2ttest"){
+    if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2))){
+      t.test(phenotypedata$table[[input$phenotypeparametricvar1]] ~ phenotypedata$table[[input$phenotypeparametricvar2]],
+             alternative = input$phenotypettesthypothesis, mu = input$phenotypetestmu)
+    }else {
+      NULL
+    }
+  }else if(input$phenotypeparametrictesttype == "pttest"){
+    if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar3))){
+      t.test(phenotypedata$table[[input$phenotypeparametricvar1]], phenotypedata$table[[input$phenotypeparametricvar3]],
+             alternative = input$phenotypettesthypothesis, paired = TRUE, mu = input$phenotypetestmu)
+    }else{
       NULL
     }
   }else if(input$phenotypeparametrictesttype == "1anova"){
@@ -888,57 +1087,1067 @@ output$phenotypeparametricwork <- renderPrint({
       summary(aov(phenotypedata$use[[input$phenotypeparametricvar1]] ~ phenotypedata$use[[input$phenotypeparametricvar2]], data = phenotypedata$use))
       }
   }else if(input$phenotypeparametrictesttype == "2anova"){
-    if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2)) && !is.null(av(input$phenotypeparametricvar3))){
-      summary(aov(phenotypedata$use[[input$phenotypeparametricvar1]] ~ phenotypedata$use[[input$phenotypeparametricvar2]] + phenotypedata$use[[input$phenotypeparametricvar3]],
+    if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2)) && !is.null(av(input$phenotypeparametricvar4))){
+      summary(aov(phenotypedata$use[[input$phenotypeparametricvar1]] ~ phenotypedata$use[[input$phenotypeparametricvar2]] + phenotypedata$use[[input$phenotypeparametricvar4]],
                   data = phenotypedata$use))
-      }
+    }
   }else if(input$phenotypeparametrictesttype == "tukeyhsd"){
     if(!is.null(av(input$phenotypeparametricvar1)) && !is.null(av(input$phenotypeparametricvar2))){
-      if(!is.null(av(input$phenotypeparametricvar3))){
-        TukeyHSD(aov(phenotypedata$use[[input$phenotypeparametricvar1]] ~ phenotypedata$use[[input$phenotypeparametricvar2]] + phenotypedata$use[[input$phenotypeparametricvar3]], data = phenotypedata$use))
-      }else {
-        TukeyHSD(aov(phenotypedata$use[[input$phenotypeparametricvar1]] ~ phenotypedata$use[[input$phenotypeparametricvar2]], data = phenotypedata$use))
-        }
-      }
+      TukeyHSD(aov(phenotypedata$use[[input$phenotypeparametricvar1]] ~ phenotypedata$use[[input$phenotypeparametricvar2]], data = phenotypedata$use))
+    }
   }
+})
+output$phenotypeparametricwork <- renderPrint({
+  req(phenotypedata$table)
+  phenotypeparametricwork1()
 })
 output$phenotypeparametricMain <- renderUI({
   output <- tagList(
     verbatimTextOutput("phenotypeparametricwork")
   )
 })
-#non parametric
+#non parametric test options
 output$phenotypenonparametricUI <- renderUI({
   req(phenotypedata$table)
   output <- tagList(
     selectInput("phenotypenonparametrictesttype", "Select Non-Parametric Test",
-                choices = c("Kruskal Wallis" = "kw"))
+                choices = c("NULL",
+                            "One Sample Wilcoxon Rank-Sum" = "1WRS",
+                            "Two-Sample Wilcoxon Rank-Sum (Mann-Whitney U Test)" = "2SW",
+                            "Wilcoxon Sign-Rank (Unpaired Samples)" = "UWSR",
+                            "Wilcoxon Sign-Rank (Paired Samples)" = "PWSR",
+                            "Kruskal Wallis" = "kw"),
+                selected = "NULL")
     ,
+    conditionalPanel(condition = "input.phenotypenonparametrictesttype == '1WRS' || 
+                     input.phenotypenonparametrictesttype == '2SW' || input.phenotypenonparametrictesttype == 'UWSR' ||
+                     input.phenotypenonparametrictesttype == 'PWSR' || input.phenotypenonparametrictesttype == 'kw'",
     selectInput("phenotypenonparametricvar1", "Select Continuous Variable:",
                 choices = c("NULL", names(dplyr::select_if(phenotypedata$use, is.numeric))),
-                selected = "NULL")
+                selected = "NULL"))
     ,
-    selectInput("phenotypenonparametricvar2", "Select Grouping Variable:",
+    conditionalPanel(condition = "input.phenotypenonparametrictesttype == '2SW' ||
+                     input.phenotypenonparametrictesttype == 'UWSR' || input.phenotypenonparametrictesttype == 'kw'",
+                     selectInput("phenotypenonparametricvar2", "Select Continuous Variable:",
+                                 choices = c("NULL", names(dplyr::select_if(phenotypedata$use, is.numeric))),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.phenotypenonparametrictesttype == 'PWSR'",
+    selectInput("phenotypenonparametricvar3", "Select Grouping Variable:",
                 choices = c("NULL", names(dplyr::select_if(phenotypedata$use, is.character)),
                             names(dplyr::select_if(phenotypedata$use, is.factor))),
-                selected = "NULL")
+                selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.phenotypenonparametrictesttype == '1WRS' ||
+                     input.phenotypenonparametrictesttype == '2SW' || input.phenotypenonparametrictesttype == 'UWSR' ||
+                     input.phenotypenonparametrictesttype == 'PWSR'",
+                     numericInput("phenotypenonparametrictestmu", "True Value of the Mean (or Difference in Mean if 2 Sample T-Test)",
+                                  value = 0),
+                     radioButtons("phenotypenonparametrictesthypothesis", "Select Alternative Hypothesis",
+                                  choices = c("Two Sided" = "two.sided",
+                                              "Less" = "less",
+                                              "Greater" = "greater"),
+                                  selected = "two.sided"))
   )
   return(output)
 })
-output$phenotypenonparametricwork <- renderPrint({
+#non parametric tests
+phenotypenonparametricwork1 <- reactive({
   req(phenotypedata$table)
-  if(input$phenotypenonparametrictesttype == "kw"){
-    if(!is.null(av(input$phenotypenonparametricvar1)) && !is.null(av(input$phenotypenonparametricvar2))){
-      kruskal.test(phenotypedata$use[[input$phenotypenonparametricvar1]], phenotypedata$use[[input$phenotypenonparametricvar2]])
+  if(input$phenotypenonparametrictesttype == "1WRS"){
+    if(!is.null(av(input$phenotypenonparametricvar1))){
+    wilcox.test(phenotypedata$use[[input$phenotypenonparametricvar1]], alternative = input$phenotypenonparametrictesthypothesis,
+                mu = input$phenotypenonparametrictestmu)
+    }else{
+      NULL
     }
-  }else {
-    NULL
+  }else if(input$phenotypenonparametrictesttype == "2SW"){
+    if(!is.null(av(input$phenotypenonparametricvar1)) && !is.null(av(input$phenotypenonparametricvar2))){
+      wilcox.test(phenotypedata$use[[input$phenotypenonparametricvar1]], phenotypedata$use[[input$phenotypenonparametricvar2]], alternative = input$phenotypenonparametrictesthypothesis,
+                  mu = input$phenotypenonparametrictestmu)
+    }else{
+      NULL
+    }
+  }else if(input$phenotypenonparametrictesttype == "UWSR"){
+    if(!is.null(av(input$phenotypenonparametricvar1)) && !is.null(av(input$phenotypenonparametricvar2))){
+      wilcox.test(phenotypedata$use[[input$phenotypenonparametricvar1]], phenotypedata$use[[input$phenotypenonparametricvar2]], alternative = input$phenotypenonparametrictesthypothesis,
+                  mu = input$phenotypenonparametrictestmu, paired = TRUE)
+    }else{
+      NULL
+    }
+  }else if(input$phenotypenonparametrictesttype == "PWSR"){
+    if(!is.null(av(input$phenotypenonparametricvar1)) && !is.null(av(input$phenotypenonparametricvar3))){
+      wilcox.test(phenotypedata$use[[input$phenotypenonparametricvar1]] ~ phenotypedata$use[[input$phenotypenonparametricvar3]], alternative = input$phenotypenonparametrictesthypothesis,
+                  mu = input$phenotypenonparametrictestmu, paired = TRUE)
+    }else{
+      NULL
+    }
+  }else if(input$phenotypenonparametrictesttype == "kw"){
+    if(!is.null(av(input$phenotypenonparametricvar1)) && !is.null(av(input$phenotypenonparametricvar2))){
+      kruskal.test(phenotypedata$use[[input$phenotypenonparametricvar1]] ~ phenotypedata$use[[input$phenotypenonparametricvar2]])
+    }
   }
 })
+output$phenotypenonparametricwork <- renderPrint({
+  req(phenotypedata$table)
+  phenotypenonparametricwork1()
+  })
 output$phenotypenonparametricMain <- renderUI({
   output <- tagList(
     verbatimTextOutput("phenotypenonparametricwork")
   )
+})
+#hide sidebar panel to read instructions for performing statistics 
+observeEvent(input[["plantstats"]], {
+  if(input[["plantstats"]] == 1){
+    hideElement(selector = "#plantstatssidebar")
+    removeCssClass("plantstats1", "col-sm-8")
+    addCssClass("plantstats1", "col-sm-12")
+  }else {
+    showElement(selector = "#plantstatssidebar")
+    removeCssClass("plantstats1", "col-sm-12")
+    addCssClass("plantstats1", "col-sm-8")
+  }
+})
+
+##Geochemistry Server Section ========================================================================
+output$environmentfileupload <- renderUI({
+  output <- tagList(
+    h3("Upload File: EcoPLOT accepts .csv, .txt, .xlsx file formats.")
+    ,
+    fileInput("environmentdata", "Select File",
+              multiple = FALSE,
+              accept = c("text/csv",
+                         "text/comma-separated-values,text/plain",
+                         ".csv"))
+    ,
+    tags$hr(),
+    checkboxInput("header", "Header", TRUE),
+    radioButtons("sep", "Separator",
+                 choices = c(Comma = ",",
+                             Semicolon = ";",
+                             Tab = "\t"),
+                 selected = ",")
+    ,
+    radioButtons("quote", "Quote",
+                 choices = c(None = "",
+                             "Double Quote" = '"',
+                             "Single Quote" = "'"),
+                 selected = '"')
+  )
+  return(output)
+})
+#create reactive values object
+environmentdata <- reactiveValues(path = NULL)
+#code to upload file and display error message if an error occurs
+observeEvent(input$environmentdata, {
+  req(input$environmentdata)
+  if(tolower(tools::file_ext(input$environmentdata$datapath)) == "csv" ||
+     tolower(tools::file_ext(input$environmentdata$datapath)) == "txt"){
+    if(!is.null(phenotypedata$table)){
+      environmentdata$table <- read.csv(input$environmentdata$datapath, sep = input$sep, quote = input$quote, 
+                                      header = input$header
+      )
+      if(length(intersect(names(environmentdata$table), names(phenotypedata$table))) >= 1){
+        environmentdata$table <- read.csv(input$environmentdata$datapath, sep = input$sep, quote = input$quote, 
+                                        header = input$header
+        )
+        environmentdata$table <- left_join(environmentdata$table, phenotypedata$table) %>% na.omit()
+      } else {
+        environmentdata$table <- read.csv(input$environmentdata$datapath, sep = input$sep, quote = input$quote, 
+                                        header = input$header
+        )
+      }
+    }else if(is.null(phenotypedata$table)){
+      environmentdata$table <- read.csv(input$environmentdata$datapath, sep = input$sep, quote = input$quote, 
+                                      header = input$header
+      )
+    }
+  }else if(tolower(tools::file_ext(input$environmentdata$datapath)) == "xlsx"){
+    environmentdata$table <- read_excel(path = input$environmentdata$datapath)
+  } else {
+    
+    showNotification("File Type Not Recognized. Please Select a Different File.", duration = NULL, type = "error")
+  }
+})
+#maintains main file, but creates copy for downstream work
+observe({
+  req(environmentdata$table)
+  environmentdata$table1 <- environmentdata$table
+  
+})
+#code to melt dataframe for boxplot (required for plotting)
+observe({
+  req(environmentdata$table)
+  names <- names(dplyr::select_if(environmentdata$table1, is.numeric))
+  if(is.null(environmentdata$filter)){
+    environmentdata$melt <- environmentdata$table1 %>% pivot_longer(cols = all_of(names),
+                                                                names_to = "Measure",
+                                                                values_to = "Value")
+  }else if(!is.null(environmentdata$filter)){
+    if(input$environmentdatasource == "Original"){
+      environmentdata$melt <- environmentdata$table1 %>% pivot_longer(cols = all_of(names),
+                                                                  names_to = "Measure",
+                                                                  values_to = "Value")
+    }else if(input$environmentdatasource == "Filtered"){
+      environmentdata$melt <- environmentdata$filter %>% pivot_longer(cols = all_of(names),
+                                                                  names_to = "Measure",
+                                                                  values_to = "Value")
+    }
+  }
+})
+#UI for changing variable class
+output$environmentvariableclassUI <- renderUI({
+  req(environmentdata$table)
+  output <- tagList(
+    selectInput("environmentcolnames", "Select Variable to Alter",
+                choices = c("NULL", 
+                            as.list(colnames(environmentdata$table1))),
+                selected = "NULL")
+    ,
+    selectInput("environmentclassoptions", "Desired Variable Class",
+                choices = c("NULL" = "NULL",
+                            "Numeric" = "numeric",
+                            "Factor" = "factor",
+                            "Character" = "character",
+                            "Logical" = "logical",
+                            "Date" = "date",
+                            "Time" = "time",
+                            "Timestamp (Date + Time)" = "timestamp"),
+                selected = "NULL")
+    ,
+    conditionalPanel(condition = "input.environmentclassoptions == 'date' || 
+                     input.environmentclassoptions == 'timestamp'",
+                     radioButtons("environmentdateformat", "Select Date Format",
+                                  choices = c("Year/Month/Day" = "ymd",
+                                              "Year/Day/Month" = "ydm",
+                                              "Month/Day/Year" = "mdy",
+                                              "Month/Year/Day" = "myd",
+                                              "Day/Month/Year" = "dmy",
+                                              "Day/Year/Month" = "dym")))
+    ,
+    conditionalPanel(condition = "input.environmentclassoptions == 'time' || 
+                     input.environmentclassoptions == 'timestamp'",
+                     radioButtons("environmenttimeformat", "Select Time Format",
+                                  choices = c("Hour:Minute:Second" = "%H:%M:%S",
+                                              "Hour:Minute" = "%H:%M",
+                                              "Minute:Second" = "%M:%S")))
+    ,
+    actionButton("environmentchangeclass", "Change Class", width = "100%")
+    ,
+    hr()
+    ,
+    actionButton("environmentresetclass", "Reset Class Changes", width = "100%")
+  )
+  return(output)
+})
+#code to change class
+observeEvent(input$environmentchangeclass,{
+  if(input$environmentclassoptions != "time" && input$environmentclassoptions != "date" && input$environmentclassoptions != "timestamp"){
+    environmentdata$table1 <- eval(parse(text = paste0("environmentdata$table1 %>% mutate(",
+                                                     input$environmentcolnames,
+                                                     " = as.",
+                                                     input$environmentclassoptions,
+                                                     "(",
+                                                     input$environmentcolnames,
+                                                     "))")))
+  } else if(input$environmentclassoptions == "date"){
+    environmentdata$table1[[input$environmentcolnames]] <- lubridate::parse_date_time(environmentdata$table[[input$environmentcolnames]],
+                                                                              orders = input$environmentdateformat,
+                                                                              locale = "en_US.UTF-8")
+    
+  }else if(input$environmentclassoptions == "time"){
+    environmentdata$table1[[input$environmentcolnames]] <- lubridate::parse_date_time(environmentdata$table[[input$environmentcolnames]],
+                                                                              orders = input$environmenttimeformat,
+                                                                              locale = "en_US.UTF-8")
+  }else if(input$environmentclassoptions == "timestamp"){
+    environmentdata$table1[[input$environmentcolnames]] <- lubridate::parse_date_time(x = environmentdata$table[[input$environmentcolnames]], 
+                                                                              orders = paste(input$environmentdateformat, input$environmenttimeformat),
+                                                                              locale = "en_US.UTF-8")
+  }
+})
+#code to reset changes upon "reset"
+observeEvent(input$environmentresetclass,{
+  req(environmentdata$table)
+  environmentdata$table1 <- environmentdata$table
+})
+#View Table of file
+output$environmentdatatable <- renderDataTable({
+  req(environmentdata$table)
+  environmentdata$table1
+})
+#print summary of file
+output$environmentdatasummary <- renderPrint({
+  req(environmentdata$table)
+  summary(environmentdata$table1)
+  
+})
+#code block for change class UI
+output$environmentchangeclassUI <- renderUI({
+  req(environmentdata$table)
+  output <- tagList(
+    tags$div(id = "class-change",
+             fluidRow(
+               column(2,
+                      hr()),
+               column(8,
+                      wellPanel(
+                        tags$h4(
+                          "Variable classes affect how variables can be used in plots or statistical analyses. EcoPLOT recognizes quantitative variables as", tags$b("Factors"), "or as", tags$b("Characters"), 
+                          "and continuous variables as", tags$b("Numeric"), "or as", tags$b("Integers"),".", tags$b("Time, Date, and Timestamp"), 
+                          "classes require additional formatting options.", align = "center"),
+                        tags$h4("If EcoPLOT recognizes a variable incorrectly, you may alter it here.", align = "center")
+                      )),
+               column(2,
+                      hr())
+             )
+             ,
+             fluidRow(
+               column(4,
+                      wellPanel(
+                        uiOutput("environmentvariableclassUI"))),
+               column(8,
+                      wellPanel(
+                        verbatimTextOutput("environmentdatasummary"))))
+    )
+  )
+  return(output)
+})
+output$environmentuploadmain <- renderUI({
+  req(environmentdata$table)
+  output <- tagList(
+    splitLayout(dataTableOutput("environmentdatatable"))
+  )
+  return(output)
+})
+##outputs unique to geochemistry tab
+geochemCNP <- reactive({
+  req(environmentdata$table)
+  select(environmentdata$table,"sampleID", "Nitrate", "Phosphorus", "Total_Carbon", "Potassium")
+})
+output$environmenttable <- renderTable({
+  req(environmentdata$table)
+  head(environmentdata$table)
+})
+output$CNP <- renderText({
+  req(environmentdata$table)
+  minimum <- min(c(environmentdata$table$Nitrate, environmentdata$table$Phosphorus, environmentdata$table$Total_Carbon))
+  A <- ceiling(mean(environmentdata$table$Total_Carbon)/minimum)
+  B <- ceiling(mean(environmentdata$table$Nitrate)/minimum)
+  C <- ceiling(mean(environmentdata$table$Phosphorus)/minimum)
+  paste(A, B, C, sep = ":")
+})
+output$NPK <- renderText({
+  req(environmentdata$table)
+  minimum <- min(c(environmentdata$table$Nitrate, environmentdata$table$Phosphorus, environmentdata$table$Potassium))
+  A1 <- ceiling(mean(environmentdata$table$Nitrate)/minimum)
+  B1 <- ceiling(mean(environmentdata$table$Phosphorus)/minimum)
+  C2 <- ceiling(mean(environmentdata$table$Potassium)/minimum)
+  paste(A1,B1,C2, sep = ":")
+})
+output$ssc <- renderTable({
+  req(environmentdata$table)
+  sand <- mean(environmentdata$table$Sand)
+  silt <- mean(environmentdata$table$Silt)
+  clay <- mean(environmentdata$table$Clay)
+  ssc <- data.frame(name = c("Sand", "Silt", "Clay"), 
+                    grain_size = c(sand, silt, clay))
+  ssc
+})
+
+output$texturetriangle <- renderUI({
+  includeHTML("www/sand_silt_clay_index.html")
+})
+###Geochemistry filtering options ----
+output$environmentfilteringoptionsUI <- renderUI({
+  req(environmentdata$table)
+  colnames <- names(environmentdata$table1)
+  output <- tagList(
+    selectInput("environmentfilteroption1", "Select Variable Category",
+                choices = c("NULL", colnames),
+                selected = "NULL",
+                multiple = FALSE)
+  )
+  return(output)
+})
+output$environmentfilteringoptionsUI1 <- renderUI({
+  req(environmentdata$table)
+  output <- tagList(
+    if(!is.null(av(input$environmentfilteroption1))){
+      if(is.character(environmentdata$table1[[input$environmentfilteroption1]]) || 
+         is.factor(environmentdata$table1[[input$environmentfilteroption1]])){
+        options <- as.list(unique(environmentdata$table1[[input$environmentfilteroption1]]))
+        selectInput("environmentfilteroption2", "Filter Sub Category",
+                    choices = c("NULL", options),
+                    selected = "NULL",
+                    multiple = TRUE)
+      }else if(is.numeric(environmentdata$table1[[input$environmentfilteroption1]]) || 
+               is.integer(environmentdata$table1[[input$environmentfilteroption1]])){
+        min <- min(environmentdata$table1[[input$environmentfilteroption1]])
+        max <- max(environmentdata$table1[[input$environmentfilteroption1]])
+        sliderInput("environmentfilteroption2", "Filter Sub Category",
+                    min = min,
+                    max = max,
+                    value = c(max/4, max/2),
+                    step = 1)
+      }else if(is.POSIXct(environmentdata$table1[[input$environmentfilteroption1]])){
+        sliderInput("environmentfilteroption2", "Filter Sub Category",
+                    min = min(environmentdata$table1[[input$environmentfilteroption1]]),
+                    max = max(environmentdata$table1[[input$environmentfilteroption1]]),
+                    value = c(min(environmentdata$table1[[input$environmentfilteroption1]]),
+                              max(environmentdata$table1[[input$environmentfilteroption1]])))
+      }
+    }
+  )
+  return(output)
+})
+output$environmentfilteringoptionsUI2 <- renderUI({
+  req(environmentdata$table)
+  if(!is.null(av(input$environmentfilteroption1))){
+    output <- tagList(
+      actionButton("environmentfilterrender", "Filter", width = "100%")
+      ,
+      hr()
+      ,
+      actionButton("environmentfilterrenderreset", "Reset Filters", width = "100%")
+    )
+    return(output)
+  }
+})
+observeEvent(input$environmentfilterrenderreset, {
+  req(environmentdata$table)
+  environmentdata$filter <- environmentdata$table1
+})
+observeEvent(input$environmentfilterrender, {
+  req(environmentdata$table)
+  if(!is.null(av(input$environmentfilteroption1))){
+    if(is.character(environmentdata$table1[[input$environmentfilteroption1]]) ||
+       is.factor(environmentdata$table1[[input$environmentfilteroption1]])){
+      environmentdata$filter <- environmentdata$table1 %>% filter(!!as.symbol(input$environmentfilteroption1) %in% input$environmentfilteroption2)
+    }else if(is.numeric(environmentdata$table1[[input$environmentfilteroption1]]) || 
+             is.integer(environmentdata$table1[[input$environmentfilteroption1]])){
+      environmentdata$filter <- environmentdata$table1 %>% filter(!!as.symbol(input$environmentfilteroption1) >= input$environmentfilteroption2[1] &
+                                                                !!as.symbol(input$environmentfilteroption1) <= input$environmentfilteroption2[2])
+      
+    }else if(is.POSIXct(environmentdata$table1[[input$environmentfilteroption1]])){
+      environmentdata$filter <- environmentdata$table1 %>% filter(!!as.symbol(input$environmentfilteroption1) >= input$environmentfilteroption2[1] &
+                                                                !!as.symbol(input$environmentfilteroption1) <= input$environmentfilteroption2[2])
+    }
+  }else {
+    environmentdata$filter <- NULL
+  }
+  return(environmentdata$filter)
+})
+output$environmentoriginaltable2 <- renderDataTable({
+  req(environmentdata$table)
+  environmentdata$table1
+})
+output$environmentfilteredtable <- renderDataTable({
+  req(environmentdata$table)
+  req(environmentdata$filter)
+  environmentdata$filter
+})
+downloadTable(id = "environmentfiltertabledownload", tableid = environmentdata$filter)
+#table output, updates when filters are applied
+output$environmentfiltertableUI <- renderUI({
+  req(environmentdata$table)
+  if(is.null(environmentdata$filter)){
+    output <- tagList(
+      tags$h3("Original Table")
+      ,
+      splitLayout(dataTableOutput("environmentoriginaltable2"))
+    )
+  }else {
+    output <- tagList(
+      tags$h3("Filtered Table")
+      ,
+      splitLayout(dataTableOutput("environmentfilteredtable"))
+      ,
+      downloadTableUI("environmentfiltertabledownload")
+    )
+  }
+  return(output)
+})
+#Updates radio buttons to display filtered dataset after filters are applied
+observeEvent(input$environmentfilterrender, {
+  updateRadioButtons(session, "environmentdatasource", "Select Dataset to Use:",
+                     choices = c("Original" = "Original",
+                                 "Filtered" = "Filtered"),
+                     selected = "Original", inline = TRUE)
+})
+observe({
+  req(environmentdata$table1)
+  if(is.null(environmentdata$filter)){
+    environmentdata$use <- environmentdata$table1
+  }else{
+    if(input$environmentdatasource == "Original"){
+      environmentdata$use <- environmentdata$table1
+    }else if(input$environmentdatasource == "Filtered"){
+      environmentdata$use <- environmentdata$filter
+    }
+  }
+})
+
+##phenotype plot UI Options-----
+output$environmentplotUI <- renderUI({
+  req(environmentdata$table)
+  output <- tagList(
+    shiny::selectInput("environmentplottype", "Select Plot Type",
+                       choices = c("Histogram" = "histogram",
+                                   "Scatter" = "scatter",
+                                   "Boxplot" = "boxplot",
+                                   "Barplot" = "barplot"),
+                       selected = "histogram")
+    ,
+    conditionalPanel("input.environmentplottype == 'barplot'",
+                     radioButtons("environmentbarplottype", "Select View",
+                                  choices = c("Count of Cases" = "bin",
+                                              "Values of Column" = "identity"),
+                                  selected = "bin",
+                                  inline = TRUE))
+    ,
+    #phenotypedata$table1
+    conditionalPanel("input.environmentplottype == 'barplot'",
+                     selectInput("environmentbarplotxaxis", "Select X Axis Variable",
+                                 choices = c("NULL", colnames(dplyr::select_if(environmentdata$use, is.factor)),
+                                             colnames(dplyr::select_if(environmentdata$use, is.character))
+                                 ),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel("input.environmentplottype == 'barplot' && input.environmentbarplottype == 'identity'",
+                     selectInput("environmentbarplotyaxis", "Select Y Axis Variable",
+                                 choices = c("NULL", colnames(environmentdata$use)),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel("input.environmentplottype == 'barplot'",
+                     selectInput("environmentbarplotfill", "Select Variable to Fill",
+                                 choices = c("NULL", colnames(environmentdata$use)),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel("input.environmentplottype == 'barplot' && input.environmentbarplotfill != 'NULL'",
+                     radioButtons("environmentbarplotpos", "Bar Plot Type",
+                                  choices = c("Stacked" = "stacked",
+                                              "Dodged" = "dodge"),
+                                  selected = "stacked"))
+    ,
+    conditionalPanel("input.environmentplottype == 'barplot' && input.environmentbarplottype == 'identity'",
+                     radioButtons("environmentbarploterror", "Show Error Bars?",
+                                  choices = c("Yes" = "yes",
+                                              "No" = "no"),
+                                  selected = "no",
+                                  inline = TRUE))
+    ,
+    conditionalPanel(condition = "input.environmentplottype == 'histogram'",
+                     radioButtons("environmenthistplottype", "Select View",
+                                  choices = c("Count" = "count",
+                                              "Density" = "density"),
+                                  selected = "count",
+                                  inline = TRUE))
+    ,
+    conditionalPanel(condition = "input.environmentplottype == 'histogram'",
+                     selectInput("environmentx", "Select Variable to Graph Along X-Axis:", 
+                                 choices = c("NULL", colnames(dplyr::select_if(environmentdata$use, is.numeric))),
+                                 selected = "NULL",
+                                 multiple = FALSE))
+    ,
+    conditionalPanel(condition =  "input.environmentplottype == 'scatter'",
+                     selectInput("environmentx1", "Select Variable to Graph Along X-Axis:", 
+                                 choices = c("NULL", colnames(environmentdata$use)),
+                                 selected = "NULL",
+                                 multiple = FALSE))
+    ,
+    conditionalPanel(condition = "input.environmentplottype == 'boxplot'",
+                     selectInput("environmentx2", "Select Variable(s) to Graph Along X-Axis:",
+                                 choices = c("NULL", colnames(dplyr::select_if(environmentdata$use, is.numeric))),
+                                 selected = "NULL",
+                                 multiple = TRUE))
+    ,
+    conditionalPanel(condition = "input.environmentplottype == 'scatter'",
+                     selectInput("environmenty", "Select Variable to Graph Along Y Axis:",
+                                 choices = c("NULL", colnames(dplyr::select_if(environmentdata$use, is.numeric))),
+                                 selected = "NULL",
+                                 multiple = FALSE))
+    ,
+    conditionalPanel(condition = "input.environmentplottype == 'histogram'",
+                     selectInput("environmentfacet", "Select Variable to Facet Around",
+                                 choices = c("NULL", colnames(dplyr::select_if(environmentdata$use, is.character)),
+                                             colnames(dplyr::select_if(environmentdata$use, is.factor))),
+                                 selected = "NULL",
+                                 multiple = FALSE))
+    ,
+    conditionalPanel(condition = "input.environmentplottype == 'histogram'",
+                     numericInput("environmentbinwidth", "Select Bin Width",
+                                  value = 1, min = 0, max = 100))
+    ,
+    textInput("environmenttitle", "Create Title for Plot",
+              placeholder = "Plot Title")
+    ,
+    conditionalPanel(condition= "input.environmentplottype == 'histogram'",
+                     textInput("environmentxaxislabel", "Create X Axis Label",
+                               placeholder = "X Axis Label"))
+    ,
+    conditionalPanel(condition = "input.environmentplottype == 'scatter' || 
+                     input.environmentplottype=='boxplot'",
+                     textInput("environmentxaxislabel1", "Create X Axis Label",
+                               placeholder = "X Axis Label"),
+                     textInput("environmentyaxislabel1", "Create Y Axis Label",
+                               placeholder = "Y Axis Label"))
+    ,
+    conditionalPanel(condition= "input.environmentcoloroption != 'NULL'",
+                     textInput("environmentlegendlabel1", "Create Title For Legend",
+                               placeholder = "Legend Title"))
+    ,
+    conditionalPanel(condition = "input.environmentplottype == 'histogram'",
+                     colourpicker::colourInput("environmentcolor", "Select Bar Color",
+                                               value = "white"))
+    ,
+    conditionalPanel(condition = "input.environmentplottype == 'scatter' ||
+                     input.environmentplottype == 'boxplot'",
+                     selectInput("environmentcoloroption", "Select Factor to Color",
+                                 choices = c("NULL", names(dplyr::select_if(environmentdata$use, is.character)),
+                                             names(dplyr::select_if(environmentdata$use, is.factor))),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel(condition= "input.environmentplottype == 'scatter'",
+                     radioButtons("environmentregressionline", "Add Linear Regression?",
+                                  choices = c("Yes",
+                                              "No"),
+                                  selected = "No"))
+    ,
+    conditionalPanel(condition = "input.environmentplottype == 'boxplot'",
+                     radioButtons("environmentfreeyaxis", "Free Y Axis?",
+                                  choices = c("Yes",
+                                              "No"),
+                                  selected = "Yes"))
+    ,
+    conditionalPanel(condition = "input.environmentplottype == 'scatter' 
+                     && input.environmentcoloroption == 'NULL'",
+                     colourpicker::colourInput("environmentcolor1", "Select Color",
+                                               value = "black"))
+    ,
+    downloadPlotUI("environmentplotdownload")
+  )
+  return(output)
+})
+#download phenotype plot
+downloadPlot("environmentplotdownload", environmentplot())
+#Phenotype plot
+environmentplot <- reactive({
+  req(environmentdata$table)
+  if(input$environmentplottype == "histogram"){
+    if(!is.null(av(input$environmentx))){
+      if(input$environmenthistplottype == "count"){
+        plot <- ggplot(environmentdata$use, aes(x = !!as.symbol(input$environmentx))) +
+          geom_histogram(fill = input$environmentcolor, color = "black",
+                         binwidth = input$environmentbinwidth) +
+          labs(title = input$environmenttitle, y = "Sample Count",
+               x = input$environmentxaxislabel)
+      }else{
+        plot <- ggplot(environmentdata$use, aes(x = !!as.symbol(input$environmentx))) +
+          geom_histogram(stat = "density",fill = input$environmentcolor, color = "black") +
+          labs(title = input$environmenttitle, y = "Sample Count",
+               x = input$environmentxaxislabel)
+      }
+      if(!is.null(av(input$environmentfacet))){
+        environmentdata$use[[input$environmentfacet]] %>% sort()
+        plot <- plot + facet_wrap(paste("~", input$environmentfacet))
+      }else{
+        plot <- plot
+      }
+    }else {
+      plot <- NULL
+    }
+  }else if(input$environmentplottype == "scatter"){
+    if(!is.null(av(input$environmentx1)) && !is.null(av(input$environmenty))){
+      if(!is.null(av(input$environmentcoloroption))){
+        plot <- ggplot(environmentdata$use, aes(x = !!as.symbol(input$environmentx1),
+                                              y = !!as.symbol(input$environmenty),
+                                              color = !!as.symbol(input$environmentcoloroption))) + 
+          geom_point() + 
+          labs(title= input$environmenttitle, x = input$environmentxaxislabel1,
+               y = input$environmentyaxislabel1, color = input$environmentlegendlabel1) #+
+        #abline(!!as.symbol(input$phenotypey) ~ !!as.symbol(input$phenotypex), data = phenotypedata$table, 
+        #      color = input$phenotypecoloroption)
+        if(input$environmentregressionline == "Yes"){
+          plot <- plot + geom_smooth(method = lm, se = FALSE)
+        }else {
+          plot
+        }
+      }else{
+        plot <- ggplot(environmentdata$use, aes(x = !!as.symbol(input$environmentx1),
+                                              y = !!as.symbol(input$environmenty))) +
+          geom_point(color = input$environmentcolor1) + 
+          labs(title= input$environmenttitle, x = input$environmentxaxislabel1,
+               y = input$environmentyaxislabel1)
+        if(input$environmentregressionline == "Yes"){
+          plot <- plot + geom_smooth(method = lm, se = FALSE)
+        }else {
+          plot
+        }
+      }
+    }else{
+      plot <- NULL
+    }
+  }else if(input$environmentplottype == "boxplot"){
+    if(!is.null(av(input$environmentx2))){
+      filtered_data <- environmentdata$melt %>% filter(Measure %in% input$environmentx2)
+      if(!is.null(av(input$environmentcoloroption))){
+        plot <- ggplot(filtered_data, aes(x = Measure, y = Value, fill = !!as.symbol(input$environmentcoloroption))) +
+          geom_boxplot() + 
+          labs(title= input$environmenttitle, x = input$environmentxaxislabel1,
+               y = input$environmentyaxislabel1, fill = input$environmentlegendlabel1) 
+      }else {
+        plot <- ggplot(filtered_data, aes(x = Measure, y = Value)) +
+          geom_boxplot() + 
+          labs(title= input$environmenttitle, x = input$environmentxaxislabel1,
+               y = input$environmentyaxislabel1) 
+      }
+      if(input$environmentfreeyaxis == "Yes"){
+        plot <- plot + facet_wrap(~Measure, scales = "free") +
+          theme(axis.text.x = element_blank())
+      }else{
+        plot <- plot
+      }
+    }else {
+      plot <- NULL
+    }
+  }else if(input$environmentplottype == "barplot"){
+    if(input$environmentbarplottype == "identity"){
+      if(!is.null(av(input$environmentbarplotxaxis)) && !is.null(av(input$environmentbarplotyaxis))){
+        if(!is.null(av(input$environmentbarplotfill))){
+          data1 <- data_summary(data = environmentdata$use, varname = input$environmentbarplotyaxis,
+                                groupnames = c(input$environmentbarplotfill,
+                                               input$environmentbarplotxaxis))
+          # paste0("c(", paste(input$phenotypebarpotfill,
+          #                    input$phenotypebarplotxaxis,
+          #                    sep = " , "), ")")
+          
+          plot <- ggplot(data1, aes(x = !!as.symbol(input$environmentbarplotxaxis), 
+                                    y = !!as.symbol(input$environmentbarplotyaxis),
+                                    fill = !!as.symbol(input$environmentbarplotfill)))
+        }else {
+          data1 <- EcoPLOT::data_summary(data = environmentdata$use, varname = input$environmentbarplotyaxis,
+                                         groupnames = input$environmentbarplotxaxis)
+          
+          plot <- ggplot(data1, aes(x = !!as.symbol(input$environmentbarplotxaxis), 
+                                    y = !!as.symbol(input$environmentbarplotyaxis)))
+        }
+        if(input$environmentbarplotpos == "dodge"){
+          plot <- plot + geom_bar(stat = "identity", position = position_dodge())
+        }else {
+          plot <- plot + geom_bar(stat = "identity")
+        }
+        if(input$environmentbarploterror == "yes"){
+          plot <- plot + geom_errorbar(aes(ymin= !!as.symbol(input$environmentbarplotyaxis) - sd,
+                                           ymax = !!as.symbol(input$environmentbarplotyaxis) + sd),
+                                       position = "dodge")
+        }else{
+          plot <- plot
+        }
+      }else {
+        plot <- NULL
+      }
+    }else if(input$environmentbarplottype == "bin"){
+      if(!is.null(av(input$environmentbarplotxaxis))){
+        if(!is.null(av(input$environmentbarplotfill))){
+          plot <- ggplot(environmentdata$use, aes(x = !!as.symbol(input$environmentbarplotxaxis),
+                                                fill = !!as.symbol(input$environmentbarplotfill)))
+        }else {
+          plot <- ggplot(environmentdata$use, aes(x = !!as.symbol(input$environmentbarplotxaxis)))
+        }
+        if(input$environmentbarplotpos == "dodge"){
+          plot <- plot + geom_bar(position = position_dodge())
+        }else {
+          plot <- plot + geom_bar()
+        }
+      }else {
+        plot <- NULL
+      }
+    }
+  }else {
+    return(NULL)
+  }
+  return(plot)
+})
+output$environmentplot1 <- renderPlot({
+  req(environmentdata$table)
+  environmentplot()
+})
+##ui options for phenotype plot
+output$environmentplotmainUI <- renderUI({
+  req(environmentdata$table)
+  plotOutput("environmentplot1")
+})
+#prints correlation coefficient when viewing a scatter plot
+output$environmentcorrelation <- renderPrint({
+  req(environmentdata$table)
+  if(input$environmentplottype == "scatter"){
+    if(!is.null(av(input$environmentx1)) && !is.null(av(input$environmenty))){
+      paste("Pearson's Correlation Coefficient:", cor(environmentdata$use[[input$environmentx1]], environmentdata$use[[input$environmenty]]))
+    }else{
+      "Pearson's Correlation Coefficient: NA"
+    }
+  }else{
+    "Pearson's Correlation Coefficient: NA"
+  }
+})
+output$environmentcorrelationoutput <- renderUI({
+  req(environmentdata$table)
+  if(input$environmentplottype == "scatter"){
+    verbatimTextOutput("environmentcorrelation")
+  }
+})
+##Add reactivity to dataset choice, if one option changes so will the other 
+observeEvent(input$environmentfilterrender, {
+  updateRadioButtons(session, "environmentdatasource1", "Select Dataset to Use:",
+                     choices = c("Original",
+                                 "Filtered"),
+                     selected = "Original", inline = TRUE)
+})
+observe({
+  req(environmentdata$table)
+  req(input$environmentfilterrender)
+  if(input$environmentdatasource1 == "Original"){
+    updateRadioButtons(session, "environmentdatasource", "Select Dataset to Use:",
+                       choices = c("Original",
+                                   "Filtered"),
+                       selected = "Original", inline = TRUE)
+  }else if(input$environmentdatasource1 == "Filtered"){
+    updateRadioButtons(session, "environmentdatasource", "Select Dataset to Use:",
+                       choices = c("Original",
+                                   "Filtered"),
+                       selected = "Filtered", inline = TRUE)
+  }
+})
+observe({
+  req(environmentdata$table)
+  req(input$environmentfilterrender)
+  if(input$environmentdatasource == "Original"){
+    updateRadioButtons(session, "environmentdatasource1", "Select Dataset to Use:",
+                       choices = c("Original",
+                                   "Filtered"),
+                       selected = "Original", inline = TRUE)
+  }else if(input$phenotypedatasource == "Filtered"){
+    updateRadioButtons(session, "environmentdatasource1", "Select Dataset to Use:",
+                       choices = c("Original",
+                                   "Filtered"),
+                       selected = "Filtered", inline = TRUE)
+  }
+})
+observe({
+  req(environmentdata$table1)
+  if(is.null(environmentdata$filter)){
+    environmentdata$use <- environmentdata$table1
+  }else{
+    if(input$environmentdatasource1 == "Original"){
+      environmentdata$use <- environmentdata$table1
+    }else if(input$environmentdatasource1 == "Filtered"){
+      environmentdata$use <- environmentdata$filter
+    }
+  }
+})
+#parametric test options
+output$environmentparametricUI <- renderUI({
+  req(environmentdata$table)
+  output <- tagList(
+    selectInput("environmentparametrictesttype", "Select Parametric Test",
+                choices = list(
+                  "Tests" = c("NULL",
+                              "One Sample T-Test" = "1ttest",
+                              "Two Sample T-Test" = "2ttest",
+                              "Paired T-Test" = "pttest",
+                              "One-Way ANOVA" = "1anova",
+                              "Two-Way ANOVA" = "2anova"),
+                  "Post-Hoc Tests" = c("Tukey" = "tukeyhsd")),
+                selected = "NULL")
+    ,
+    conditionalPanel(condition = "input.environmentparametrictesttype == '1ttest' ||
+                     input.environmentparametrictesttype == '2ttest' || input.environmentparametrictesttype == 'pttest' ||
+                     input.environmentparametrictesttype == '1anova' || input.environmentparametrictesttype == '2anova' || input.environmentparametrictesttype == 'tukeyhsd'",
+                     selectInput("environmentparametricvar1", "Select Continuous Variable:",
+                                 choices = c("NULL", names(dplyr::select_if(environmentdata$use, is.numeric))),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.environmentparametrictesttype == '2ttest' ||
+                     input.environmentparametrictesttype == '1anova' || input.environmentparametrictesttype == '2anova' || input.environmentparametrictesttype == 'tukeyhsd'",
+                     selectInput("environmentparametricvar2", "Select Categorical Variable:",
+                                 choices = c("NULL", names(dplyr::select_if(environmentdata$table, is.character)),
+                                             names(dplyr::select_if(environmentdata$use, is.factor))),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.environmentparametrictesttype == 'pttest'",
+                     selectInput("environmentparametricvar3", "Select Continuous Variable:",
+                                 choices = c("NULL", names(dplyr::select_if(environmentdata$use, is.numeric))),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.environmentparametrictesttype == '2anova'",
+                     selectInput("environmentparametricvar4", "Select Categorical Variable:",
+                                 choices = c("NULL", names(dplyr::select_if(environmentdata$use, is.character)),
+                                             names(dplyr::select_if(environmentdata$use, is.factor))),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.environmentparametrictesttype == '1ttest' ||
+                     input.environmentparametrictesttype == '2ttest' || input.environmentparametrictesttype == 'pttest'",
+                     numericInput("environmenttestmu", "True Value of the Mean (or Difference in Mean if 2 Sample T-Test)",
+                                  value = 0),
+                     radioButtons("environmentttesthypothesis", "Select Alternative Hypothesis",
+                                  choices = c("Two Sided" = "two.sided",
+                                              "Less" = "less",
+                                              "Greater" = "greater"),
+                                  selected = "two.sided"))
+  )
+  return(output)
+})
+#parametric tests
+environmentparametricwork1 <- reactive({
+  req(environmentdata$table)
+  if(input$environmentparametrictesttype == "1ttest"){
+    if(!is.null(av(input$environmentparametricvar1))){
+      t.test(environmentdata$table[[input$environmentparametricvar1]], alternative = input$environmentttesthypothesis,
+             mu = input$environmenttestmu)
+    }else {
+      NULL
+    }
+  }else if(input$environmentparametrictesttype == "2ttest"){
+    if(!is.null(av(input$environmentparametricvar1)) && !is.null(av(input$environmentparametricvar2))){
+      t.test(environmentdata$table[[input$environmentparametricvar1]] ~ environmentdata$table[[input$environmentparametricvar2]],
+             alternative = input$environmentttesthypothesis, mu = input$environmenttestmu)
+    }else {
+      NULL
+    }
+  }else if(input$environmentparametrictesttype == "pttest"){
+    if(!is.null(av(input$environmentparametricvar1)) && !is.null(av(input$environmentparametricvar3))){
+      t.test(environmentdata$table[[input$environmentparametricvar1]], environmentdata$table[[input$environmentparametricvar3]],
+             alternative = input$environmentttesthypothesis, paired = TRUE, mu = input$environmenttestmu)
+    }else{
+      NULL
+    }
+  }else if(input$environmentparametrictesttype == "1anova"){
+    if(!is.null(av(input$environmentparametricvar1)) && !is.null(av(input$environmentparametricvar2))){
+      summary(aov(environmentdata$use[[input$environmentparametricvar1]] ~ environmentdata$use[[input$environmentparametricvar2]], data = environmentdata$use))
+    }
+  }else if(input$environmentparametrictesttype == "2anova"){
+    if(!is.null(av(input$environmentparametricvar1)) && !is.null(av(input$environmentparametricvar2)) && !is.null(av(input$environmentparametricvar4))){
+      summary(aov(environmentdata$use[[input$environmentparametricvar1]] ~ environmentdata$use[[input$environmentparametricvar2]] + environmentdata$use[[input$environmentparametricvar4]],
+                  data = environmentdata$use))
+    }
+  }else if(input$environmentparametrictesttype == "tukeyhsd"){
+    if(!is.null(av(input$environmentparametricvar1)) && !is.null(av(input$environmentparametricvar2))){
+      TukeyHSD(aov(environmentdata$use[[input$environmentparametricvar1]] ~ environmentdata$use[[input$environmentparametricvar2]], data = environmentdata$use))
+    }
+  }
+})
+output$environmentparametricwork <- renderPrint({
+  req(environmentdata$table)
+  environmentparametricwork1()
+})
+output$environmentparametricMain <- renderUI({
+  output <- tagList(
+    verbatimTextOutput("environmentparametricwork")
+  )
+})
+#non parametric test options
+output$environmentnonparametricUI <- renderUI({
+  req(environmentdata$table)
+  output <- tagList(
+    selectInput("environmentnonparametrictesttype", "Select Non-Parametric Test",
+                choices = c("NULL",
+                            "One Sample Wilcoxon Rank-Sum" = "1WRS",
+                            "Two-Sample Wilcoxon Rank-Sum (Mann-Whitney U Test)" = "2SW",
+                            "Wilcoxon Sign-Rank (Unpaired Samples)" = "UWSR",
+                            "Wilcoxon Sign-Rank (Paired Samples)" = "PWSR",
+                            "Kruskal Wallis" = "kw"),
+                selected = "NULL")
+    ,
+    conditionalPanel(condition = "input.environmentnonparametrictesttype == '1WRS' || 
+                     input.environmentnonparametrictesttype == '2SW' || input.environmentnonparametrictesttype == 'UWSR' ||
+                     input.environmentnonparametrictesttype == 'PWSR' || input.environmentnonparametrictesttype == 'kw'",
+                     selectInput("environmentnonparametricvar1", "Select Continuous Variable:",
+                                 choices = c("NULL", names(dplyr::select_if(environmentdata$use, is.numeric))),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.environmentnonparametrictesttype == '2SW' ||
+                     input.environmentnonparametrictesttype == 'UWSR' || input.environmentnonparametrictesttype == 'kw'",
+                     selectInput("environmentnonparametricvar2", "Select Continuous Variable:",
+                                 choices = c("NULL", names(dplyr::select_if(environmentdata$use, is.numeric))),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.environmentnonparametrictesttype == 'PWSR'",
+                     selectInput("environmentnonparametricvar3", "Select Grouping Variable:",
+                                 choices = c("NULL", names(dplyr::select_if(environmentdata$use, is.character)),
+                                             names(dplyr::select_if(environmentdata$use, is.factor))),
+                                 selected = "NULL"))
+    ,
+    conditionalPanel(condition = "input.environmentnonparametrictesttype == '1WRS' ||
+                     input.environmentnonparametrictesttype == '2SW' || input.environmentnonparametrictesttype == 'UWSR' ||
+                     input.environmentnonparametrictesttype == 'PWSR'",
+                     numericInput("environmentnonparametrictestmu", "True Value of the Mean (or Difference in Mean if 2 Sample T-Test)",
+                                  value = 0),
+                     radioButtons("environmentnonparametrictesthypothesis", "Select Alternative Hypothesis",
+                                  choices = c("Two Sided" = "two.sided",
+                                              "Less" = "less",
+                                              "Greater" = "greater"),
+                                  selected = "two.sided"))
+  )
+  return(output)
+})
+#non parametric tests
+environmentnonparametricwork1 <- reactive({
+  req(environmentdata$table)
+  if(input$environmentnonparametrictesttype == "1WRS"){
+    if(!is.null(av(input$environmentnonparametricvar1))){
+      wilcox.test(environmentdata$use[[input$environmentnonparametricvar1]], alternative = input$environmentnonparametrictesthypothesis,
+                  mu = input$environmentnonparametrictestmu)
+    }else{
+      NULL
+    }
+  }else if(input$environmentnonparametrictesttype == "2SW"){
+    if(!is.null(av(input$environmentnonparametricvar1)) && !is.null(av(input$environmentnonparametricvar2))){
+      wilcox.test(environmentdata$use[[input$environmentnonparametricvar1]], environmentdata$use[[input$environmentnonparametricvar2]], alternative = input$environmentnonparametrictesthypothesis,
+                  mu = input$environmentnonparametrictestmu)
+    }else{
+      NULL
+    }
+  }else if(input$environmentnonparametrictesttype == "UWSR"){
+    if(!is.null(av(input$environmentnonparametricvar1)) && !is.null(av(input$environmentnonparametricvar2))){
+      wilcox.test(environmentdata$use[[input$environmentnonparametricvar1]], environmentdata$use[[input$environmentnonparametricvar2]], alternative = input$environmentnonparametrictesthypothesis,
+                  mu = input$environmentnonparametrictestmu, paired = TRUE)
+    }else{
+      NULL
+    }
+  }else if(input$environmentnonparametrictesttype == "PWSR"){
+    if(!is.null(av(input$environmentnonparametricvar1)) && !is.null(av(input$environmentnonparametricvar3))){
+      wilcox.test(environmentdata$use[[input$environmentnonparametricvar1]] ~ environmentdata$use[[input$environmentnonparametricvar3]], alternative = input$environmentnonparametrictesthypothesis,
+                  mu = input$environmentnonparametrictestmu, paired = TRUE)
+    }else{
+      NULL
+    }
+  }else if(input$environmentnonparametrictesttype == "kw"){
+    if(!is.null(av(input$environmentnonparametricvar1)) && !is.null(av(input$environmentnonparametricvar2))){
+      kruskal.test(environmentdata$use[[input$environmentnonparametricvar1]] ~ environmentdata$use[[input$environmentnonparametricvar2]])
+    }
+  }
+})
+output$environmentnonparametricwork <- renderPrint({
+  req(environmentdata$table)
+  environmentnonparametricwork1()
+})
+output$environmentnonparametricMain <- renderUI({
+  output <- tagList(
+    verbatimTextOutput("environmentnonparametricwork")
+  )
+})
+#hide sidebar panel to read instructions for performing statistics 
+observeEvent(input[["environmentstats"]], {
+  if(input[["environmentstats"]] == 1){
+    hideElement(selector = "#environmentstatssidebar")
+    removeCssClass("environmentstats1", "col-sm-8")
+    addCssClass("environmentstats1", "col-sm-12")
+  }else {
+    showElement(selector = "#environmentstatssidebar")
+    removeCssClass("environmentstats1", "col-sm-12")
+    addCssClass("environmentstats1", "col-sm-8")
+  }
 })
 
 # #MICROBIOME ----------------------------------------------------------
@@ -3319,332 +4528,6 @@ output$scatter1 <- renderPlot({
   if(is.null(volcanoplot()))return(NULL)
   volcanoplot()
 })
-
-###Geochemistry ---------
-output$geochemistryfileupload <- renderUI({
-  output <- tagList(
-    fileInput("geochemistrydata", "Choose CSV File",
-              multiple = FALSE,
-              accept = c("text/csv",
-                         "text/comma-separated-values,text/plain",
-                         ".csv"))
-    ,
-    tags$hr(),
-    checkboxInput("header", "Header", TRUE),
-    radioButtons("sep", "Separator",
-                 choices = c(Comma = ",",
-                             Semicolon = ";",
-                             Tab = "\t"),
-                 selected = ",")
-    ,
-    radioButtons("quote", "Quote",
-                 choices = c(None = "",
-                             "Double Quote" = '"',
-                             "Single Quote" = "'"),
-                 selected = '"')
-    ,
-    tags$hr(),
-    radioButtons("disp", "Display",
-                 choices = c(Head = "head",
-                             All = "all"),
-                 selected = "head"))
-  return(output)
-})
-geochemistrydata <- reactiveValues(path = NULL)
-observeEvent(input$geochemistrydata, {
-  req(input$geochemistrydata)
-  if(tolower(tools::file_ext(input$geochemistrydata$datapath)) == "csv"){
-    if(!is.null(phenotypedata$table)){
-      geochemistrydata$table <- read.csv(input$geochemistrydata$datapath, sep = input$sep, quote = input$quote, 
-                                      header = input$header)
-      if(length(intersect(names(geochemistrydata$table), names(phenotypedata$table))) >= 1){
-        geochemistrydata$table <- read.csv(input$geochemistrydata$datapath, sep = input$sep, quote = input$quote, 
-                                        header = input$header)
-        geochemistrydata$table <- left_join(geochemistrydata$table, phenotypedata$table) %>% na.omit()
-      } else {
-        geochemistrydata$table <- read.csv(input$geochemistrydata$datapath, sep = input$sep, quote = input$quote, 
-                                        header = input$header)
-      }
-    }else if(is.null(phenotypedata$table)){
-      geochemistrydata$table <- read.csv(input$geochemistrydata$datapath, sep = input$sep, quote = input$quote, 
-                                      header = input$header)
-    }
-  }else{
-    showNotification("File Type Not Recognized", duration = 5, type = "error")
-  }
-})
-
-observe({
-  req(geochemistrydata$table)
-  names <- names(dplyr::select_if(geochemistrydata$table, is.numeric))
-  geochemistrydata$melt <- geochemistrydata$table %>% pivot_longer(cols = all_of(names),
-                                                             names_to = "Measure",
-                                                             values_to = "Value")
-})
-output$geochemistryvariableclassUI <- renderUI({
-  req(geochemistrydata$table)
-  output <- tagList(
-    hr()
-    ,
-    tags$h5("If R recognizes a column variable incorrectly, you may 
-            alter it here")
-    ,
-    selectInput("geochemistrycolnames", "Select Variable to Alter",
-                choices = c("NULL", 
-                            as.list(colnames(geochemistrydata$table))),
-                selected = "NULL")
-    ,
-    selectInput("geochemistryclassoptions", "Desired Variable Class",
-                choices = c("NULL" = "NULL",
-                            "Numeric" = "numeric",
-                            "Factor" = "factor",
-                            "Character" = "character",
-                            "Logical" = "logical"),
-                selected = "NULL")
-    ,
-    actionButton("geochemistrychangeclass", "Change Class", width = "100%")
-  )
-  return(output)
-})
-#code to change class
-observeEvent(input$geochemistrychangeclass,{
-  geochemistrydata$table <- eval(parse(text = paste0("geochemistrydata$table %>% mutate(",
-                                                  input$geochemistrycolnames,
-                                                  " = as.",
-                                                  input$geochemistryclassoptions,
-                                                  "(",
-                                                  input$geochemistrycolnames,
-                                                  "))")))
-})
-#View Table of file
-output$geochemistrydatatable <- renderDataTable({
-  req(geochemistrydata$table)
-  geochemistrydata$table
-})
-#print summary of file
-output$geochemistrydatasummary <- renderPrint({
-  req(geochemistrydata$table)
-  summary(geochemistrydata$table)
-})
-output$geochemistryuploadmain <- renderUI({
-  req(geochemistrydata$table)
-  output <- tagList(
-    splitLayout(dataTableOutput("geochemistrydatatable"))
-    ,
-    verbatimTextOutput("geochemistrydatasummary")
-  )
-  return(output)
-})
-#this will filter the dataset in order to calculate the C to N to P ratio
-geochemCNP <- reactive({
-  req(geochemistrydata$table)
-  select(geochemistrydata$table,"sampleID", "Nitrate", "Phosphorus", "Total_Carbon", "Potassium")
-})
-output$geochemtable <- renderTable({
-  req(geochemistrydata$table)
-  head(geochemistrydata$table)
-})
-output$CNP <- renderText({
-  req(geochemistrydata$table)
-  minimum <- min(c(geochemistrydata$table$Nitrate, geochemistrydata$table$Phosphorus, geochemistrydata$table$Total_Carbon))
-  A <- ceiling(mean(geochemistrydata$table$Total_Carbon)/minimum)
-  B <- ceiling(mean(geochemistrydata$table$Nitrate)/minimum)
-  C <- ceiling(mean(geochemistrydata$table$Phosphorus)/minimum)
-  paste(A, B, C, sep = ":")
-})
-output$NPK <- renderText({
-  req(geochemistrydata$table)
-  minimum <- min(c(geochemistrydata$table$Nitrate, geochemistrydata$table$Phosphorus, geochemistrydata$table$Potassium))
-  A1 <- ceiling(mean(geochemistrydata$table$Nitrate)/minimum)
-  B1 <- ceiling(mean(geochemistrydata$table$Phosphorus)/minimum)
-  C2 <- ceiling(mean(geochemistrydata$table$Potassium)/minimum)
-  paste(A1,B1,C2, sep = ":")
-})
-output$ssc <- renderTable({
-  req(geochemistrydata$table)
-  sand <- mean(geochemistrydata$table$Sand)
-  silt <- mean(geochemistrydata$table$Silt)
-  clay <- mean(geochemistrydata$table$Clay)
-  ssc <- data.frame(name = c("Sand", "Silt", "Clay"), 
-                    grain_size = c(sand, silt, clay))
-  ssc
-})
-
-output$texturetriangle <- renderUI({
-  includeHTML("www/sand_silt_clay_index.html")
-})
-output$geochemistryplotUI <- renderUI({
-  req(geochemistrydata$table)
-  output <- tagList(
-    shiny::selectInput("geochemistryplottype", "Select Plot Type",
-                       choices = c("Histogram" = "histogram",
-                                   "Scatter" = "scatter",
-                                   "Boxplot" = "boxplot"),
-                       selected = "histogram")
-    ,
-    conditionalPanel(condition = "input.geochemistryplottype == 'histogram'",
-                     radioButtons("geochemistryhistplottype", "Select View",
-                                  choices = c("Count" = "count",
-                                              "Density" = "density"),
-                                  selected = "count"))
-    ,
-    conditionalPanel(condition = "input.geochemistryplottype == 'histogram' ||
-                     input.geochemistryplottype == 'scatter'",
-                     selectInput("geochemistryx", "Select Variable to Graph Along X-Axis:", 
-                                 choices = c("NULL", colnames(dplyr::select_if(geochemistrydata$table, is.numeric))),
-                                 selected = "NULL",
-                                 multiple = FALSE))
-    ,
-    conditionalPanel(condition = "input.geochemistryplottype == 'boxplot'",
-                     selectInput("geochemistryx1", "Select Variable(s) to Graph Along X-Axis:",
-                                 choices = c("NULL", colnames(dplyr::select_if(geochemistrydata$table, is.numeric))),
-                                 selected = "NULL",
-                                 multiple = TRUE))
-    ,
-    conditionalPanel(condition = "input.geochemistryplottype == 'scatter'",
-                     selectInput("geochemistryy", "Select Variable to Graph Along Y Axis:",
-                                 choices = c("NULL", colnames(dplyr::select_if(geochemistrydata$table, is.numeric))),
-                                 selected = "NULL",
-                                 multiple = FALSE))
-    ,
-    conditionalPanel(condition = "input.geochemistryplottype == 'histogram'",
-                     numericInput("geochemistrybinwidth", "Select Bin Width",
-                                  value = 1, min = 0, max = 100))
-    ,
-    textInput("geochemistrytitle", "Create Title for Plot",
-              placeholder = "Plot Title")
-    ,
-    conditionalPanel(condition= "input.geochemistryplottype == 'histogram'",
-                     textInput("geochemistryxaxislabel", "Create X Axis Label",
-                               placeholder = "X Axis Label"))
-    ,
-    conditionalPanel(condition = "input.geochemistryplottype == 'scatter' || 
-                     input.geochemistryplottype=='boxplot'",
-                     textInput("geochemistryxaxislabel1", "Create X Axis Label",
-                               placeholder = "X Axis Label"),
-                     textInput("geochemistryyaxislabel1", "Create Y Axis Label",
-                               placeholder = "Y Axis Label"))
-    ,
-    conditionalPanel(condition= "input.geochemistrycoloroption != 'NULL'",
-                     textInput("geochemistrylegendlabel1", "Create Title For Legend",
-                               placeholder = "Legend Title"))
-    ,
-    conditionalPanel(condition = "input.geochemistryplottype == 'histogram'",
-                     colourpicker::colourInput("geochemistrycolor", "Select Bar Color",
-                                 value = "white"))
-    ,
-    conditionalPanel(condition = "input.geochemistryplottype == 'scatter' ||
-                     input.geochemistryplottype == 'boxplot'",
-                     selectInput("geochemistrycoloroption", "Select Factor to Color",
-                                 choices = c("NULL", names(dplyr::select_if(geochemistrydata$table, is.character)),
-                                             names(dplyr::select_if(geochemistrydata$table, is.factor))),
-                                 selected = "NULL"))
-    ,
-    conditionalPanel(condition= "input.geochemistryplottype == 'scatter'",
-                     radioButtons("geochemistryregressionline", "Add Linear Regression?",
-                                  choices = c("Yes",
-                                              "No"),
-                                  selected = "No"))
-    ,
-    conditionalPanel(condition = "input.geochemistryplottype == 'boxplot'",
-                     radioButtons("geochemistryfreeyaxis", "Free Y Axis?",
-                                  choices = c("Yes",
-                                              "No"),
-                                  selected = "Yes"))
-    ,
-    conditionalPanel(condition = "input.geochemistryplottype == 'scatter' 
-                     && input.geochemistrycoloroption == 'NULL'",
-                     colourpicker::colourInput("geochemistrycolor1", "Select Color",
-                                 value = "black"))
-    ,
-    downloadPlotUI("geochemistryplotdownload")
-  )
-  return(output)
-})
-downloadPlot("geochemistryplotdownload", geochemistryplot())
-geochemistryplot <- reactive({
-  req(geochemistrydata$table)
-  if(input$geochemistryplottype == "histogram"){
-    if(!is.null(av(input$geochemistryx))){
-      if(input$geochemistryhistplottype == "count"){
-        plot <- ggplot(geochemistrydata$table, aes(x = !!as.symbol(input$geochemistryx))) +
-          geom_histogram(fill = input$geochemistrycolor, color = "black",
-                         binwidth = input$geochemistrybinwidth) +
-          labs(title = input$geochemistrytitle, y = "Sample Count",
-               x = input$geochemistryxaxislabel)
-      }else{
-        plot <- ggplot(geochemistrydata$table, aes(x = !!as.symbol(input$geochemistryx))) +
-          geom_histogram(stat = "density",fill = input$geochemistrycolor, color = "black") +
-          labs(title = input$geochemistrytitle, y = "Sample Count",
-               x = input$geochemistryxaxislabel)
-      }
-    }else {
-      plot <- NULL
-    }
-  }else if(input$geochemistryplottype == "scatter"){
-    if(!is.null(av(input$geochemistryx)) && !is.null(av(input$geochemistryy))){
-      if(!is.null(av(input$geochemistrycoloroption))){
-        plot <- ggplot(geochemistrydata$table, aes(x = !!as.symbol(input$geochemistryx),
-                                                y = !!as.symbol(input$geochemistryy),
-                                                color = !!as.symbol(input$geochemistrycoloroption))) + 
-          geom_point() + 
-          labs(title= input$geochemistrytitle, x = input$geochemistryxaxislabel1,
-               y = input$geochemistryyaxislabel1, color = input$geochemistrylegendlabel1) 
-        if(input$geochemistryregressionline == "Yes"){
-          plot <- plot + geom_smooth(method = lm, se = FALSE)
-        }else {
-          plot
-        }
-      }else{
-        plot <- ggplot(geochemistrydata$table, aes(x = !!as.symbol(input$geochemistryx),
-                                                y = !!as.symbol(input$geochemistryy))) +
-          geom_point(color = input$geochemistrycolor1) + 
-          labs(title= input$geochemistrytitle, x = input$geochemistryxaxislabel1,
-               y = input$geochemistryyaxislabel1)
-        if(input$geochemistryregressionline == "Yes"){
-          plot <- plot + geom_smooth(method = lm, se = FALSE)
-        }else {
-          plot
-        }
-      }
-    }else{
-      plot <- NULL
-    }
-  }else if(input$geochemistryplottype == "boxplot"){
-    if(!is.null(av(input$geochemistryx1))){
-      filtered_data <- geochemistrydata$melt %>% filter(Measure %in% input$geochemistryx1)
-      if(!is.null(av(input$geochemistrycoloroption))){
-        plot <- ggplot(filtered_data, aes(x = Measure, y = Value, fill = !!as.symbol(input$geochemistrycoloroption))) +
-          geom_boxplot() + 
-          labs(title= input$geochemistrytitle, x = input$geochemistryxaxislabel1,
-               y = input$geochemistryyaxislabel1, fill = input$geochemistrylegendlabel1) 
-      }else {
-        plot <- ggplot(filtered_data, aes(x = Measure, y = Value)) +
-          geom_boxplot() + 
-          labs(title= input$geochemistrytitle, x = input$geochemistryxaxislabel1,
-               y = input$geochemistryyaxislabel1) 
-      }
-      if(input$geochemistryfreeyaxis == "Yes"){
-        plot <- plot + facet_wrap(~Measure, scales = "free") +
-          theme(axis.text.x = element_blank())
-      }else{
-        plot <- plot
-      }
-    }else {
-      plot <- NULL
-    }
-  }
-  return(plot)
-})
-output$geochemistryplot1 <- renderPlot({
-  req(geochemistrydata$table)
-  geochemistryplot()
-})
-output$geochemistryplotmainUI <- renderUI({
-  req(geochemistrydata$table)
-  plotOutput("geochemistryplot1")
-})
-
 
 
 ###Statistics----
