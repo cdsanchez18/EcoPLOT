@@ -6,7 +6,7 @@
 
 # Define generic function to access/clean variables
 # This especially converts "NULL" to NULL
-av = function(x){
+av <- function(x){
   if( isTRUE(all.equal(x, "")) | isTRUE(all.equal(x, "NULL")) ){
     return(NULL)
   }
