@@ -6,11 +6,16 @@ output:
 # EcoPLOT
 
 [EcoPLOT](https://github.com/cdsanchez18/EcoPLOT) 
-is an interactive web-application for the analysis of multivariate-biogeochemical datasets.
+is an interactive web-application for the analysis of multivariate-biogeochemical datasets. EcoPLOT provides an interactive user interface to enable the exploration of environmental, plant-phenotypic, and microbiome datasets. 
 
 ## Citation
 
 Citation will go here. 
+
+## The App 
+Journal citation will go here. 
+## The Data
+Example microbiome data is provided by Dr. Esther Singer. Example environmental and plant phenotypic datasets have been simulated for the purpose of demonstration. 
 
 ### Launching EcoPLOT
 
@@ -23,4 +28,5 @@ The following code will launch EcoPLOT automatically on most systems.
 install.packages("shiny") 
 shiny::runGitHub("EcoPLOT","CDSanchez18")
 ```
+
 
