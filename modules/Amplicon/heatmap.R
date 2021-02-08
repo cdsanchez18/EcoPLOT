@@ -43,7 +43,12 @@ output$heatmapoptions3 <- renderUI({
 })
 output$heatmapaction <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
+  output <- tagList(
   actionButton("heatmaprender", "Render Heatmap", width = "100%")
+  ,
+  downloadPlotUI("heatmapplotoutputdownload")
+  )
+  return(output)
 })
 
 heatmapplot <- eventReactive(input$heatmaprender, {

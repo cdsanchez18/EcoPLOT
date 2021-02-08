@@ -5,52 +5,48 @@ output:
     theme: yeti
 ---
 
-# EcoPLOT Operating Instructions
+<div style = "text-align:center"><h1> <b>EcoPLOT Operating Instructions</b><h1></div>
 
-## Overview
-EcoPLOT provides three modules in which users can perform a variety of statistical and graphical analyses unique to each data type. These modules (Environmental, Plant Phenotype, and Amplicon) are capable of crosstalk, meaning each uploaded dataset can be coupled together to function as one, reducing the complexity often encountered when working with multiple data files. Combining all of the information collected over the course of a study will allow users to better understand the ecosystem they are studying. 
-
-## Formatting Your Data For Upload
-It is important that each file uploaded to EcoPLOT have the first column reserved for Sample ID's. These Sample ID's should be shared across all uploaded files if crosstalk is expected to work properly.
-
-| sample_ID | treatment | depth | replicate |
-|--------|--------|--------|--------|
-| RE_100      | control      | B      | 2      |
-| RE_110      | drought      | C      | 1      |
-| RE_227      | drought      | C      | 2      |
-| RE_119      | control      | A      | 4      |
-| RE_147      | drought      | C      | 1      |
-| RE_117      | drought      | A      | 4      |
-
+<H2><b>Overview</H2></b>
+EcoPLOT was developed to faciliate the exploration and study of multivariate, biogeochemical datasets. EcoPLOT is organized into three modules (Environment, Plant Phenotype, and Amplicon), each featuring a variety of statistical and graphical tools unique to each data type. Below we explain how to properly format your data for upload into EcoPLOT and highlight some of the unique features of our tool. For module specific instructions, please consult the guides at the front of each section.  
+  
+<H2><b> Formatting Your Data For Upload  </H2></b>
 EcoPLOT currently accepts **.csv** , **.tsv**, and **.xlsx** file formats.  
-The Amplicon Data module accepts **.biom** and **.qza** file formats in addition to those previously mentioned.
+  
+The Amplicon Data module accepts **.biom** and **.qza** file formats in addition to those previously mentioned.  
 
-## Working Within EcoPLOT
-Certain functions within EcoPLOT utilize action buttons to initiate. When a function is actively running, a notification bar will appear in the bottom right corner.  
-All created tables or plots can be downloaded in a variety of formats.
-
-## Dynamic Selection
-
-EcoPLOT enables the interactive discovery and creation of novel variable groupings. Dynamic selection is compatible with certain plots within the app. EcoPLOT is capable of supporting up to 10 sample groupings with customized selection names. After selection the groupings are added as a new data column that can then be accessed within plots or statistical tests. 
-
-## Logging Information 
-
-EcoPLOT provides a framework to log the steps taken over the course of an analysis. The created log file (**events.log**) tracks applied filters and statistical output for future reference. Logged steps can also be viewed in the console window. Construction of the heatmap may take multiple minutes. It is recommended only to make a heatmap using a filtered dataset. 
-
-## Heatmap 
-
-EcoPLOT allows users to create a heatmap using ordination methods to organize rows and columns. This Heatmap function is derived from the plot_heatmap function in the Phyloseq Package. Their method was first described in 2010 in BMC Genomics by Rajaram and Oono. 
-
-## Iterative Random Forest (IRF)
-
-EcoPLOT utilzes machine learning and the Iterative Random Forest algorithm to discover unkown relationships between sample variables. EcoPLOT will automatically create the training and testing datasets from existing data. Parameters are set to their default, however they can be altered directly by editing the .server code. 
-
-## Citations
-
-Basu, Sumanta, et al. “Iterative Random Forests to Discover Predictive and Stable High-Order Interactions.” PNAS, National Academy of Sciences, 20 Feb. 2018, [www.pnas.org/content/115/8/1943](www.pnas.org/content/115/8/1943). 
-
-## Contact
-EcoPLOT is regularly maintained and updated. The most recent version of EcoPLOT can be accessed via [gitHub](https://github.com/cdsanchez18/EcoPLOT).  
+The first column of each file uploaded to EcoPLOT should have the first column reserved for sample ID's (see below). This requirement does not apply to tables in **.biom** or **.qza** formats. These file formats should not be altered.  
+  
+Example datasets are included in each module.  
+  
+  <b>Example table format:</b>    
+  
+|sampleID  |      |treatment    |depth    |replicate    |
+|--------  |---   |---------    |-----    |---------    |
+| RE_100   |      | control     | B       | 2           |
+| RE_110   |      | drought     | C       | 1           | 
+| RE_227   |      | drought     | C       | 2           |
+| RE_119   |      | control     | A       | 4           |
+| RE_147   |      | drought     | C       | 1           |
+| RE_117   |      | drought     | A       | 4           |
+  
+  
+  
+<H2><b>Interactive Exploration of your Data</H2></b>
+  
+EcoPLOT enables the discovery and creation of novel variable groupings. This feature, titled dynamic selection, allows for the creation of up to 10 unique variable groupings. This tool can be used to distinguish outliers or to create groupings for samples that exhibit clustering not explained by existing variables within your experimental design. All variables created this way can be accessed within plots or statistical tests.  
+  
+This feature is available in **scatter** and **Principle Coordinate Analysis (PCO)** plots found across the three modules. 
+  
+  
+<H2><b> Logging Information </H2></b>
+  
+  Each time EcoPLOT is launched, a log file is created that captures the filters applied and the results of statistical tests across the course of your session. The title of the file consists of a timestamp from the time at the begining of your session followed by the word EcoPLOT, **timestamp_EcoPLOT.log**.  
+  
+Logged steps can also be viewed in the R console.  
+  
+<H2><b> Contact</H2></b>
+The most recent version of EcoPLOT can be accessed via [gitHub](https://github.com/cdsanchez18/EcoPLOT).   
 
 For Questions Please Contact:  
     **Christopher Sanchez**  

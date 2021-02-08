@@ -319,7 +319,11 @@ output$phenotypecorrelation <- renderPrint({
 })
 output$correlationoutput <- renderUI({
   req(phenotypedata$table)
+  if(input$phenotypeplottype == "scatter"){
   verbatimTextOutput("phenotypecorrelation")
+  } else if(input$phenotypeplottype != "scatter"){
+    NULL
+  }
 })
 
 

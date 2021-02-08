@@ -81,7 +81,11 @@ output$phyloseqalphatableui <- renderUI({
     need(input$makefile, message =  "Please Upload Files"),
     need(input$renderalphastattable, message =  "Table Will Appear Here")
   )
-  splitLayout(dataTableOutput("phyloseqalphatable"))
+  output <- tagList(
+    splitLayout(dataTableOutput("phyloseqalphatable"))
+    ,
+    downloadTableUI("alphadiversitystattable"))
+  return(output)
 })
 downloadTable(id = "alphadiversitystattable",tableid = phyloseqalpharichness())
 
@@ -93,6 +97,9 @@ output$alphadivstatoptions <- renderUI({
     tags$div(tags$h5(tags$b("Note:"), "This will produce a table of standard alpha diversity 
             estimates."), align = "center")
     ,
+    #conditionalPanel("input.renderalphastattable",
+    
+    #,
     hr()
     ,
     conditionalPanel(condition = "input.renderalphastattable",

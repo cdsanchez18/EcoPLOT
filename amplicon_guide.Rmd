@@ -1,0 +1,72 @@
+---
+title: "Amplicon Guide"
+output: 
+  html_document: 
+    theme: yeti
+---
+<div style="text-align:center;"><h1><b> Amplicon Data</b></h1>  
+The following guide explains how to operate within the Amplicon Data module of EcoPLOT. Here we explain the capabilities unique to this module.</div>  
+
+<h2><b>What is Amplicon Data?</b></h2>  
+  
+  In biology, an Amplicon refers to a piece of DNA that results from an amplification event like polymerase chain reaction (PCR). 16S Amplicons are generated from all or some of the 16S rRNA gene. As an essential gene, this region is slow to undergo mutations, but exhibits enough variability between microbial species that it is often used as a unique identifier of species identity. 
+  
+  The Amplicon Data module of EcoPLOT is well equipped to assist in your analysis of microbial communities from any ecosystem. 
+
+<h2><b>Amplicon Data Format Guide</b></h2>  
+
+EcoPLOT accepts **.biom**, **.qza**, or non-formatted text files (**.csv**, **.tsv**) for upload. We require that you upload a corresponding mapping file with any upload.  
+  
+Additionally, you can upload a phylogenetic tree in **.newick** or **.nexus** file formats. Uploading a tree is optional.  
+  
+If the uploaded mapping file contains the same sample ID's to those contained in files previously uploaded to the Environment or Phenotype modules, they will be merged, allowing you to access all experimental design variables when constructing graphs or performing analyses.  
+  
+  
+<h2><b>Filtering of Data</b></h2>  
+  
+  EcoPLOT provides users with a variety of options to filter their data. Users can filter by individual ASV or taxonomic rank, by sample ID, or by experimental design. Multiple experimental design filters can be applied by clicking "Add Mapping Filter." Additionally, we allow for ASV's to be filtered by their presence in a minimum number of samples or by their individual counts.  
+  
+  Two separate histograms are shown displaying the number of reads per sample and per ASV for both the filtered and original datasets.  
+  
+  Users can select which dataset they wish to use at the top of each section. 
+  
+<h2><b>Community Composition</b></h2>  
+  
+  The community composition tab provides an overview of the microbes present in your ecosystem. Filtering by minimum sample presence will group low abundance taxa together in the barplot, denoted as "low abundance."  
+  
+  **Note:** Lower taxonomic ranks may cause the plot legend to obstruct the plot itself. You may alter the position of the legend using the legend position option.  
+  
+  If a phylogenetic tree was uploaded, you may plot in the "Phylogenetic Tree" tab. Plotting options are taken directly from the uploaded file and may take a bit to load. You may select which node and how many ancestral levels to show. 
+  
+<h2><b>Alpha Diversity</b></h2>  
+  
+  Alpha diversity is a measurement of species evenness within a sample, that is, are the microbes within a single sample evenly distributed or do some dominate others. In EcoPLOT, we provide users with a table of many standard alpha diversity methods (Observed ASV's, Chao1, ACE, Shannon, Simpson, Inverse Simpson, and Fisher). These methods can then be viewed graphically in the following tab, titled "Plot." Below we explain the differences between each method so that you may determine which best suits your data:  
+  <ul>
+<li><b>Observed ASV's:</b> Is a richness measurement that counts the amount of unique ASV's per sample.  </li>
+<li><b>Chao-1 Index:</b>  Is a richness measurement that assumes each taxa follows a Poisson distribution. It well suited for data containing low abundance counts.</li>
+<li><b>ACE:</b> Is a richness measurement that introduces a correction factor when caluclating . </li>
+<li><b>Shannon:</b> This measurement combines the richness of a species within a sample with its abundance relative to the other species. This measurement places more emphasis on species **richness**. </li>
+<li><b>Simpson:</b>  This method is similar to Shannon, however it places more emphasis on species **evenness**. </li>
+<li><b>Inverse Simpson:</b> This is the inverse of the Simpson method desribed above. It essentially normalizes the value  </li>
+<li><b>Fisher:</b> </li>
+</ul> 
+  
+  
+  Using the statistics tool provided in the sidebar of this tab will inform users of statistically significant differences between experimental design variables as given by a Tukey Pairwise Comparison. 
+  
+<h2><b>Beta Diversity</b></h2>   
+  
+<h2><b>Heatmap</b></h2>  
+
+The heatmap function in EcoPLOT taken from the Phyloseq package and utilizes ordination methods to organize columns and rows. Because it utilizes a distance matrix, rendering times may vary depending on the size of your dataset.  
+
+This visualization is an effective tool to visual ecological data and was first described in a 2010 article in BMC Genomics.  
+  
+<h2><b>Differential Abundance</b></h2>  
+  
+<h2><b>Citations</b></h2>
+  
+Rajaram, S., & Oono, Y. (2010). NeatMap–non-clustering heat map alternatives in R. BMC Bioinformatics, 11, 45. 
+
+
+

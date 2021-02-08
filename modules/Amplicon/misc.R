@@ -23,7 +23,6 @@ observeEvent(input[["filtertabset"]], {
     addCssClass("filtermain", "col-sm-8")
   }
 })
-
 ###section to change selected dataset(original or filtered) based on radio buttons-----
 ##after filters are applied, this will update the dataset options (original to original and filtered)
 observeEvent(input$phyloseqfilter, {

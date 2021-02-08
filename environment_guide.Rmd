@@ -1,0 +1,44 @@
+---
+title: "Geochemistry Guide"
+output: 
+  html_document: 
+    theme: yeti
+---
+
+<div style="text-align:center;"><h1><b> Environmental Data</b></h1>  
+The following guide explains how to operate within the Environmental Data module of EcoPLOT. Here we explain the capabilities unique to this module.</div>  
+  
+  <h2><b>What is Environmental Data?</b></h2>  
+  
+  Environmental data includes everything collected over the course of an experiment that measures the physical or chemical properties of an ecosystem. This includes, but is not limited to, <i>in situ</i> measurements capturing atmsopheric conditions (climate), chemical composition, or physical environmental changes over a defined period.  
+    
+  EcoPLOT is equipped to handle quantitative or qualitative data containing continuous or categorical variables.  
+    
+  <h2><b>CNP Ratios </b></h2>  
+    
+  Stoichiometric ratios, like the **CNP** (carbon, nitrogen, phosphorus) and **NPK** (nitrogen, phosphorus, potassium), are commonly used as indicators of soil health and microbial activity. The availability or absence of these nutrients directly influences plant growth and influences microbial community composition and activity. Understanding what these ratios are in your soil can provide insight into the ecosystem dynamics of your community of study.  
+  
+  <h2><b>Interactive Soil Texture Triangle</b></h2>  
+  
+  A soil's texture is determined by the relative amount of sand, silt, and clay it is composed of. Soil texture can influence fluid dynamics (water storage/drainage) and nutrient retention. Using EcoPLOT's interactive soil texture triangle, users will be able to better understand their soil of study.  
+  
+  To use the tool, simply enter your soils percentages of sand, silt, and clay and click "submit." A dot will appear at the corresponding location to inform you of your soil's classification. 
+  
+  <h2><b> Formatting Requirements</b></h2>
+    
+  In order to utilize EcoPLOT's soil stoichiometry and texture tools, it is important that your uploaded data contain the following column headers. Case does not matter.  
+   
+|sampleID    |nitrate    |phosphorus    |total_carbon    |potassium    |sand         |silt         |clay       |
+|--------    |-------    |----------    |------------    |---------    |---------    |---------    |---------  |
+| RE_100     |   19      | 33           | 40             | 266         | 55          | 25          | 20        |
+| RE_110     |   16      | 35           | 43             | 275         | 55          | 25          | 20        |
+| RE_227     |   17      | 34           | 49             | 271         | 55          | 25          | 20        |
+| RE_119     |   18      | 35           | 48             | 269         | 55          | 25          | 20        |
+| RE_147     |   16      | 33           | 43             | 277         | 55          | 25          | 20        |
+| RE_117     |   16      | 35           | 49             | 247         | 55          | 25          | 20        |
+  
+  
+  
+  <h2><b>Citations</b></h2> 
+  
+  CNP_stoichiometry paper in the papers folder 

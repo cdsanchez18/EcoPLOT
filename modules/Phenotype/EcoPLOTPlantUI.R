@@ -6,6 +6,8 @@
 
 EcoPLOTPlantUI <- tabPanel("Phenotype Data",
                            tabsetPanel(
+                             tabPanel("Guide",
+                                      includeMarkdown("plant_guide.rmd")),
                              tabPanel("Upload File",
                                       titlePanel(""),
                                       fluidPage(

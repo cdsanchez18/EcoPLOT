@@ -59,6 +59,7 @@ EcoPLOTServer <- shinyServer(function(input,output,session){
   
   ###IRF 
   source("modules/IRF/dataformatting.R", local = TRUE)
+  source("modules/IRF/misc.R", local = TRUE)
   
 })
 

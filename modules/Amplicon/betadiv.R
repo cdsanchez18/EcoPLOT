@@ -134,6 +134,7 @@ output$adonisUI <- renderUI({
 # })
 output$adonissamplevars1 <- renderPrint({
   if(is.null(ampliconuse()))return(NULL)
+  
   sample_variables(ampliconuse())
 })
 output$adonissamplevars <- renderUI({
@@ -143,7 +144,8 @@ output$adonissamplevars <- renderUI({
       tags$h3("Select Which Sample Variables to Include in Formula"), align = "center"
     )
     ,
-    verbatimTextOutput("adonissamplevars1")
+    conditionalPanel("input.adonisrender1",
+    verbatimTextOutput("adonissamplevars1"))
   )
   return(output)
 })

@@ -27,11 +27,13 @@ observe({
 output$irfUIoptions <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
   output <- tagList(
+    conditionalPanel(condition = "input.IRF == 2",
     actionButton("makeIRFdataset", "Prepare Data for IRF", width = "100%")
+    )
     ,
-    hr()
-    ,
-    conditionalPanel(condition = "input.makeIRFdataset",
+    #hr()
+    #,
+    conditionalPanel(condition = "input.IRF == 3",
                      numericInput("IRFsetseed", "Set Seed (For Repeatability)",
                                   value = 100, min = 1)
                      ,
@@ -46,18 +48,16 @@ output$irfUIoptions <- renderUI({
                      selectInput("IRFexclude", "Select Variables to Exclude From Analysis",
                                  choices = c(sample_variables(phyloseqobj())),
                                  multiple = TRUE)
-    )
-    ,
-    conditionalPanel(condition = "input.makeIRFdataset",
+                     ,
                      actionButton("parseIRF", "Parse Datasets for IRF", width = "100%"))
     ,
-    conditionalPanel(condition = "input.parseIRF", 
-                     hr(),
+    conditionalPanel(condition = "input.IRF == 4", 
+                     #hr(),
                      actionButton("encodeIRF", "Encode Column Variables for IRF", width = "100%"))
     ,
-    conditionalPanel(condition = "input.encodeIRF",
-                     hr()
-                     ,
+    conditionalPanel(condition = "input.IRF == 5",
+                     #hr()
+                     #,
                      tags$h5("IRF Parameters")
                      ,
                      radioButtons("IRFdefault", "Use Default Parameters", 
@@ -87,28 +87,38 @@ output$irfUIoptions <- renderUI({
 IRFdataset <- eventReactive(input$makeIRFdataset, {
   if(is.null(phyloseqobj()))return(NULL)
   withProgress(message = "Preparing Dataset", {
-  phylomelt <- psmelt(ampliconuse()) %>% tidyr::fill(c(Kingdom, Phylum, Class, Order, Family, Genus)) %>% na.omit()
+  phylomelt <- psmelt(ampliconuse()) %>% tidyr::fill(c(Kingdom, Phylum, Class, Order, Family, Genus))#%>% na.omit()
   
-  phylomelt <- phylomelt %>% mutate(taxonomy = paste(phylomelt$Kingdom, phylomelt$Phylum, phylomelt$Class, phylomelt$Order, phylomelt$Family, 
-                              phylomelt$Genus, phylomelt$Species, sep = ";__")) %>% 
-    select(-c(Kingdom, Phylum, Class, Order, Family, Genus)) %>%  
-    pivot_wider(id_cols = Sample,
-                names_from = c(taxonomy, OTU),
-                values_from = Abundance, 
-                values_fill = 0) 
+  phylomelt <- phylomelt %>% 
+    mutate(taxonomy = paste(phylomelt$Kingdom, phylomelt$Phylum, phylomelt$Class, phylomelt$Order, phylomelt$Family,
+                             phylomelt$Genus, #phylomelt$Species, 
+                            phylomelt$OTU, sep = ";__")) %>%
+    select(-c(Kingdom, Phylum, Class, Order, Family, Genus)) #%>%
+  
+  phylomelt <- phylomelt %>% tidyr::pivot_wider(id_cols = Sample,
+                                                names_from = c(taxonomy),
+                                                values_from = Abundance,
+                                                values_fill = 0)
   mapping <- data.frame(sample_data(ampliconuse()))
-  mapping$Sample <- row.names(mapping)
+  #mapping$Sample <- row.names(mapping)
   
-   phylomelt <- left_join(mapping, phylomelt)
+  phylomelt <- left_join(data.frame(sample_data(ampliconuse())), phylomelt)
+   #return(phylomelt)
+  })
+  return(phylomelt)
+})
+
+output$IRFdatasetoutput <- DT::renderDT({
+  if(is.null(IRFdataset()))return(NULL)
+  IRFdataset() %>% select(1:50)
+}, server = TRUE, options = list(searching = FALSE, pageLength = 50))
+output$IRFdatasetoutputUI <- renderUI({
+  withProgress(message = "Preparing dataset", {
+    splitLayout(
+      DT::DTOutput("IRFdatasetoutput"))
   })
 })
 
-output$IRFdatasetoutput <- renderDataTable({
-  if(is.null(IRFdataset()))return(NULL)
-  IRFdataset()
-})
-
-##action button is performIRF 
 
 ###INDEX WITH SPECIFIED PERCENTAGES AND PARSE TESTING AND TRAINING DATASETS
 train_index1 <- eventReactive(input$parseIRF, {
@@ -151,33 +161,42 @@ observeEvent(input$parseIRF, {
 })
 
 ######ENCODING, TURNS FACTOR VARIABLES INTO NUMERIC COLUMNS (REQUIREMENT)
-IRFencoding <- eventReactive(input$encodeIRF, {
-  if(is.null(test_index1()))return(NULL)
-  if(!is.null(av(input$IRFyvar))){
-    req(Xtrain())
-    build_encoding(data_set = Xtrain(), cols = "auto", verbose = TRUE)
-  }
-})
+# IRFencoding <- eventReactive(input$encodeIRF, {
+#   if(is.null(test_index1()))return(NULL)
+#   if(!is.null(av(input$IRFyvar))){
+#     req(Xtrain())
+#     withProgress(message = "Encoding Variables", {
+#     dataPreparation::build_encoding(data_set = Xtrain(), cols = "auto", verbose = TRUE)
+#     })
+#   }else {
+#     NULL
+#   }
+# })
 output$testoutput4 <- renderPrint({
   if(is.null(IRFencoding()))return(NULL)
-  IRFencoding()
+  Xtrain() 
 })
 Xtrainencoded <- eventReactive(input$encodeIRF,{
   if(is.null(phyloseqobj()))return(NULL)
-  if(!is.null(IRFencoding())){
+  #if(!is.null(IRFencoding())){
     req(Xtrain())
-    #withProgress("Encoding Training Data", {
-    one_hot_encoder(data_set = Xtrain(), encoding = IRFencoding(), drop = TRUE, verbose = TRUE)
-    #})
-  }
+    withProgress("Encoding Training Data", {
+      # dataPreparation::one_hot_encoder(data_set = Xtrain(), 
+      #                          encoding = IRFencoding(), 
+      #                          drop = TRUE, verbose = TRUE)
+      mltools::one_hot(as.numeric(Xtrain()))
+    })
+  #}
 })
 Xtestencoded <- eventReactive(input$encodeIRF,{
   if(is.null(phyloseqobj()))return(NULL)
   if(!is.null(IRFencoding())){
     req(Xtrain())
-    #withProgress("Encoding Test Data", {
-    one_hot_encoder(data_set = Xtest(), encoding = IRFencoding(), drop = TRUE, verbose = TRUE)
-    #})
+    withProgress("Encoding Test Data", {
+      dataPreparation::one_hot_encoder(data_set = as.data.frame(Xtest()), 
+                               encoding = as.list(IRFencoding()), 
+                               drop = TRUE, verbose = TRUE)
+    })
   }
 })
 
@@ -234,7 +253,9 @@ output$IRFoutput <- renderPrint({
 ###Datatable outputs
 output$testoutput <- renderDataTable({
   if(is.null(train_index1()))return(NULL)
-  Xtrain()
+  withProgress(message = "Making Test and Training Datasets", {
+  Xtrain()%>% select(1:50)
+  })
 })
 output$testoutput1 <- renderDataTable({
   if(is.null(train_index1()))return(NULL)
@@ -242,7 +263,7 @@ output$testoutput1 <- renderDataTable({
 })
 output$testoutput2 <- renderDataTable({
   if(is.null(test_index1()))return(NULL)
-  Xtest()
+  Xtest() %>% select(1:50)
 })
 output$testoutput3 <- renderDataTable({
   if(is.null(test_index1()))return(NULL)
@@ -250,9 +271,11 @@ output$testoutput3 <- renderDataTable({
 })
 output$Xtrainencodedoutput <- renderDataTable({
   if(is.null(Xtrainencoded()))return(NULL)
-  Xtrainencoded()
+  withProgress(message = "Encoding Data", {
+  Xtrainencoded() #%>% select(1:50)
+  })
 })
 output$Xtestencodedoutput <- renderDataTable({
   if(is.null(Xtrainencoded()))return(NULL)
-  Xtestencoded()
+  Xtestencoded() #%>% select(1:50)
 })

@@ -4,6 +4,8 @@
 
 EcoPLOTGeochemUI <- tabPanel("Environmental Data",
                                  tabsetPanel(
+                                   tabPanel("Guide",
+                                            includeMarkdown("environment_guide.rmd")),
                                    tabPanel("Upload File",
                                             titlePanel(""),
                                             fluidPage(
