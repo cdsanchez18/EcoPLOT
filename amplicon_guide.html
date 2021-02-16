@@ -445,35 +445,85 @@ The following guide explains how to operate within the Amplicon Data module of E
 <h2>
 <b>Alpha Diversity</b>
 </h2>
-Alpha diversity is a measurement of species evenness within a sample, that is, are the microbes within a single sample evenly distributed or do some dominate others? In EcoPLOT, we provide users with a table of many standard alpha diversity methods (Observed ASV’s, Chao1, ACE, Shannon, Simpson, Inverse Simpson, and Fisher). These methods can then be viewed graphically in the following tab, titled “Plot.” Below we explain the differences between each method so that you may determine which best suits your data:<br />
+Alpha diversity measurements are used to estimate the diversity within a single sample. Alpha diversity focuses on observing species envenness, how similar each microbe is distributed within a sample, and richness, the number of different species present. In EcoPLOT, we provide users with a table of standard alpha diversity estimators (Observed ASV’s, Chao1, ACE, Shannon, Simpson, Inverse Simpson, and Fisher). These methods can then be viewed graphically in the following tab, titled “Plot.” Below we explain the differences between each method so that you may determine which best suits your data:<br />
 
 <ul>
 <li>
-<b>Observed ASV’s:</b>
+<b>Observed ASV’s:</b> Is a richness measurement that counts the amount of unique ASV’s per sample.
 </li>
 <li>
-<b>Chao1:</b>
+<b>Chao-1 Index:</b> Is a richness measurement that assumes each taxa follows a Poisson distribution. It well suited for data containing low abundance counts because it places more weight on low abundance taxa.
 </li>
 <li>
-<b>ACE:</b>
+<b>ACE:</b> Is a richness measurement that introduces a correction factor when estimating diversity.
 </li>
 <li>
-<b>Shannon:</b>
+<b>Shannon:</b> This measurement combines the richness of a species within a sample with its abundance relative to other species. This measurement estimates species richness and evenness, but places more emphasis on species <strong>richness</strong>.
 </li>
 <li>
-<b>Simpson:</b>
+<b>Simpson:</b> This method is similar to Shannon, however it places more emphasis on species <strong>evenness</strong>.
 </li>
 <li>
-<b>Inverse Simpson:</b>
+<b>Inverse Simpson:</b> This is the inverse of the Simpson method described above. It standardizes the regular Simpson measurement by giving species uniform evenness.
 </li>
 <li>
-<b>Fisher:</b>
+<b>Fisher:</b>This method assumes that the species abundance and total number of species follow a log scale. This method places a large importance on rare species.
 </li>
 </ul>
 <p>Using the statistics tool provided in the sidebar of this tab will inform users of statistically significant differences between experimental design variables as given by a Tukey Pairwise Comparison.</p>
 <h2>
 <b>Beta Diversity</b>
 </h2>
+<p>Beta diversity measurements estimate the diversity between samples or environments. To compare the taxonomic abundance profiles of between samples, you first create a dissimilarity matrix (distance matrix). Typically, distance methods perform pairwise comparisons between samples, however some, Weighted/Unweighted UniFrac, DPCoA, utilize a phylogenetic tree to incorporate evolutionary relationships in their distances.</p>
+<b>Standard Distance Methods:</b>
+<ul>
+<li>
+<b>Bray-Curtis:</b> This method assigns values between 0 and 1 to each sample pair, representing the fraction of overabundant counts. The closer the value is to 1, the more similar the microbiomes of the two samples are.
+</li>
+<li>
+<b>Jaccard:</b>This method represents the fraction of unique features between two samples. It does not take into account abundance data, instead it focuses on those species shared out of the total number present.
+</li>
+<li>
+<b>Euclidean:</b>This is a species by species distance method that is calculated by taking the square root of the sum of the diffrences between ASV’s between two samples.
+</li>
+<li>
+<b>JSD:</b>
+</li>
+</ul>
+<b>Require Phylogenetic Tree:</b>
+<ul>
+<li>
+<b>DPCoA:</b> This function performs a double principle coordinate analysis. The distance based method is similar to euclidean distance, but it integrates information stored in phylogenetic tree.
+</li>
+<li>
+<b>Weighted UniFrac:</b>This distance measurement utilizes abundance data and a phylogenetic tree to calculate pairwise distances between samples. This method can take longer to perform than its unweighted counterpart.
+</li>
+<li>
+<b>Unweighted UniFrac:</b>While similar to the method above, Unweighted Unifrac distance is calculated using only presence/absence of species, not their abundances. For this reason, this method is considered to be quicker than the weighted UniFrac.
+</li>
+</ul>
+<p>Following the creation of a distance matrix, the information stored within is best visualized using an ordination plot. These plots can be either constrained or unconstrained, depending on the assumptions they make about the underlying structure of the data. The following ordination methods are available within EcoPLOT.</p>
+<b>Unconstrained:</b>
+<ul>
+<li>
+<b>PCoA:</b>
+</li>
+<li>
+<b>NMDS:</b>
+</li>
+</ul>
+<b>Constrained:</b>
+<ul>
+<li>
+<b>CCA:</b>
+</li>
+<li>
+<b>RDA:</b>
+</li>
+<li>
+<b>CAP:</b>
+</li>
+</ul>
 <h2>
 <b>Heatmap</b>
 </h2>
@@ -486,6 +536,7 @@ Alpha diversity is a measurement of species evenness within a sample, that is, a
 <b>Citations</b>
 </h2>
 <p>Rajaram, S., &amp; Oono, Y. (2010). NeatMap–non-clustering heat map alternatives in R. BMC Bioinformatics, 11, 45.</p>
+<p>phyloseq package documentation vegan package documentation</p>
 
 
 

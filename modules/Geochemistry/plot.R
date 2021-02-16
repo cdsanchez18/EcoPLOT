@@ -17,7 +17,20 @@ output$environmentplotUI <- renderUI({
                                     selected = "bin",
                                     inline = TRUE))
       ,
-      #phenotypedata$table1
+      conditionalPanel("input.environmentplottype == 'scatter'",
+                       radioButtons("environmentscatterplottype", "Select Scatter Type",
+                                    choices = c("Default (exact values will stack)" = "default",
+                                                "Jitter (exact value will be offset)" = "jitter"),
+                                    selected = "default",
+                                    inline = TRUE))
+      ,
+      conditionalPanel("input.environmentplottype == 'scatter' && input.environmentscatterplottype == 'jitter'",
+                       fluidRow(
+                         column(6,
+                       numericInput("environmentscatterplotheight", "Select Vertical Jitter", value = 0.1, min = 0,max = 10,step = 0.1)),
+                       column(6,
+                       numericInput("environmentscatterplotwidth", "Select Hortizontal Jitter", value = 0.1, min = 0,max = 10,step = 0.1))))
+      ,
       conditionalPanel("input.environmentplottype == 'barplot'",
                        selectInput("environmentbarplotxaxis", "Select X Axis Variable",
                                    choices = c("NULL", colnames(dplyr::select_if(environmentdata$use, is.factor)),
@@ -79,7 +92,7 @@ output$environmentplotUI <- renderUI({
                                    selected = "NULL",
                                    multiple = FALSE))
       ,
-      conditionalPanel(condition = "input.environmentplottype == 'histogram'",
+      conditionalPanel(condition = "input.environmentplottype == 'histogram' || input.environmentplottype == 'scatter'",
                        selectInput("environmentfacet", "Select Variable to Facet Around",
                                    choices = c("NULL", colnames(dplyr::select_if(environmentdata$use, is.character)),
                                                colnames(dplyr::select_if(environmentdata$use, is.factor))),
@@ -137,7 +150,7 @@ output$environmentplotUI <- renderUI({
                                                  value = "black"))
       ,
       numericInput("environmentplotheight", "Select Plot Height",
-                   value = 1250)
+                   value = 800)
       ,
       downloadPlotUI("environmentplotdownload")
     )
@@ -178,22 +191,35 @@ environmentplot <- reactive({
         plot <- ggplot(environmentdata$use, aes(x = !!as.symbol(input$environmentx1),
                                                 y = !!as.symbol(input$environmenty),
                                                 color = !!as.symbol(input$environmentcoloroption))) + 
-          geom_point() + 
+          #geom_point() + 
           labs(title= input$environmenttitle, x = input$environmentxaxislabel1,
-               y = input$environmentyaxislabel1, color = input$environmentlegendlabel1) #+
-        #abline(!!as.symbol(input$phenotypey) ~ !!as.symbol(input$phenotypex), data = phenotypedata$table, 
-        #      color = input$phenotypecoloroption)
+               y = input$environmentyaxislabel1, color = input$environmentlegendlabel1)
+        if(input$environmentscatterplottype == "jitter"){
+          plot <- plot + geom_jitter(width = input$environmentscatterplotwidth, height = input$environmentscatterplotheight)
+        }else{
+          plot <- plot + geom_point()
+        }
         if(input$environmentregressionline == "Yes"){
           plot <- plot + geom_smooth(method = lm, se = FALSE)
         }else {
           plot
         }
+        if(!is.null(av(input$environmentfacet))){
+          plot <- plot + facet_wrap(paste("~", input$environmentfacet))
+        }else{
+          plot
+        }
       }else{
         plot <- ggplot(environmentdata$use, aes(x = !!as.symbol(input$environmentx1),
                                                 y = !!as.symbol(input$environmenty))) +
-          geom_point(color = input$environmentcolor1) + 
+          #geom_point(color = input$environmentcolor1) + 
           labs(title= input$environmenttitle, x = input$environmentxaxislabel1,
                y = input$environmentyaxislabel1)
+        if(input$environmentscatterplottype == "jitter"){
+          plot <- plot + geom_jitter(width = input$environmentscatterplotwidth, height = input$environmentscatterplotheight)
+        }else{
+          plot <- plot + geom_point(color = input$environmentcolor1)
+        }
         if(input$environmentregressionline == "Yes"){
           plot <- plot + geom_smooth(method = lm, se = FALSE)
         }else {
@@ -285,7 +311,11 @@ output$environmentcorrelation <- renderPrint({
   req(environmentdata$table)
   if(input$environmentplottype == "scatter"){
     if(!is.null(av(input$environmentx1)) && !is.null(av(input$environmenty))){
+      if(is.numeric(input$environmentx1) && is.numeric(input$environmenty)){
       paste("Pearson's Correlation Coefficient:", cor(environmentdata$use[[input$environmentx1]], environmentdata$use[[input$environmenty]]))
+      }else{
+        "Pearson's Correlation Coefficient: NA"
+      }
     }else{
       "Pearson's Correlation Coefficient: NA"
     }
@@ -527,22 +557,25 @@ observe({
 })
 observeEvent(input$environmentactionbutton, {
   req(environmentdata$table)
+  #adds column to original table
   IDpos <- which(grepl("ID", colnames(environmentdata$table1)))[1]
   IDposname <- names(environmentdata$table1[which(grepl("ID", colnames(environmentdata$table1)))[1]])
-  columnadd <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = IDposname)
+  columnadd <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = IDposname) %>% unique()
   variables <- data.frame(environmentdata$table1[[IDpos]])
   names(variables)[1] <- IDposname
   columnadd <- right_join(x = columnadd, y = variables, by = IDposname)
-  environmentdata$table1 <- left_join(x = environmentdata$table1, y = columnadd, by = IDposname)
+  columnadd[is.na(columnadd)] <- input$environmentcolumnName
+  environmentdata$table1 <- left_join(x = environmentdata$table1, y = columnadd, by = IDposname) %>% unique()
+  #adds column to filtered table 
   environmentdata$table1[is.na(environmentdata$table1)] <- input$environmentnotext
   IDpos2 <- which(grepl("ID", colnames(environmentdata$filter)))[1]
   IDposname2 <- names(environmentdata$filter[which(grepl("ID", colnames(environmentdata$filter)))[1]])
-  columnadd2 <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = IDposname)
+  columnadd2 <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = IDposname) %>% unique()
   variables2 <- data.frame(environmentdata$filter[[IDpos]])
   names(variables2)[1] <- IDposname2
-  columnadd2 <- right_join(x = columnadd2, y = variables2, by = IDposname2)
+  columnadd2 <- right_join(x = columnadd2, y = variables2, by = IDposname2) %>% unique()
+  columnadd2[is.na(columnadd2)] <- input$environmentcolumnName
   environmentdata$filter <- left_join(x = environmentdata$filter, y = columnadd2, by = IDposname2)
-  environmentdata$filter[is.na(environmentdata$filter)] <- input$environmentnotext
 })
 
 #Make Updated table

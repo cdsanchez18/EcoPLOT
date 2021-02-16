@@ -37,7 +37,20 @@ output$phenotypeplotUI <- renderUI({
                                     selected = "bin",
                                     inline = TRUE))
       ,
-      #phenotypedata$table1
+      conditionalPanel("input.phenotypeplottype == 'scatter'",
+                       radioButtons("phenotypescatterplottype", "Select Scatter Type",
+                                    choices = c("Default (exact values will stack)" = "default",
+                                                "Jitter (exact value will be offset)" = "jitter"),
+                                    selected = "default",
+                                    inline = TRUE))
+      ,
+      conditionalPanel("input.phenotypeplottype == 'scatter' && input.phenotypescatterplottype == 'jitter'",
+                       fluidRow(
+                         column(6,
+                                numericInput("phenotypescatterplotheight", "Select Vertical Jitter", value = 0.1, min = 0,max = 10,step = 0.1)),
+                         column(6,
+                                numericInput("phenotypescatterplotwidth", "Select Hortizontal Jitter", value = 0.1, min = 0,max = 10,step = 0.1))))
+      ,
       conditionalPanel("input.phenotypeplottype == 'barplot'",
                        selectInput("phenotypebarplotxaxis", "Select X Axis Variable",
                                    choices = c("NULL", colnames(dplyr::select_if(phenotypedata$use, is.factor)),
@@ -198,11 +211,14 @@ phenotypeplot <- reactive({
         plot <- ggplot(phenotypedata$use, aes(x = !!as.symbol(input$phenotypex1),
                                               y = !!as.symbol(input$phenotypey),
                                               color = !!as.symbol(input$phenotypecoloroption))) + 
-          geom_point() + 
+          #geom_point() + 
           labs(title= input$phenotypetitle, x = input$phenotypexaxislabel1,
                y = input$phenotypeyaxislabel1, color = input$phenotypelegendlabel1) #+
-        #abline(!!as.symbol(input$phenotypey) ~ !!as.symbol(input$phenotypex), data = phenotypedata$table, 
-        #      color = input$phenotypecoloroption)
+        if(input$phenotypescatterplottype == "jitter"){
+          plot <- plot + geom_jitter(width = input$phenotypescatterplotwidth, height = input$phenotypescatterplotheight)
+        }else{
+          plot <- plot + geom_point()
+        }
         if(input$phenotyperegressionline == "Yes"){
           plot <- plot + geom_smooth(method = lm, se = FALSE)
         }else {
@@ -211,9 +227,14 @@ phenotypeplot <- reactive({
       }else{
         plot <- ggplot(phenotypedata$use, aes(x = !!as.symbol(input$phenotypex1),
                                               y = !!as.symbol(input$phenotypey))) +
-          geom_point(color = input$phenotypecolor1) + 
+          #geom_point(color = input$phenotypecolor1) + 
           labs(title= input$phenotypetitle, x = input$phenotypexaxislabel1,
                y = input$phenotypeyaxislabel1)
+        if(input$phenotypescatterplottype == "jitter"){
+          plot <- plot + geom_jitter(width = input$phenotypescatterplotwidth, height = input$phenotypescatterplotheight)
+        }else{
+          plot <- plot + geom_point(color = input$phenotypecolor1)
+        }
         if(input$phenotyperegressionline == "Yes"){
           plot <- plot + geom_smooth(method = lm, se = FALSE)
         }else {
@@ -309,7 +330,11 @@ output$phenotypecorrelation <- renderPrint({
   req(phenotypedata$table)
   if(input$phenotypeplottype == "scatter"){
     if(!is.null(av(input$phenotypex1)) && !is.null(av(input$phenotypey))){
+      if(is.numeric(input$phenotypex1) && is.numeric(input$phenotypey)){
       paste("Pearson's Correlation Coefficient:", cor(phenotypedata$use[[input$phenotypex1]], phenotypedata$use[[input$phenotypey]]))
+      }else{
+        "Pearson's Correlation Coefficient: NA"
+      }
     }else{
       "Pearson's Correlation Coefficient: NA"
     }
@@ -555,22 +580,26 @@ observe({
 })
 observeEvent(input$phenotypeactionbutton, {
   req(phenotypedata$table)
+  #adds column to original dataset
   IDpos <- which(grepl("ID", colnames(phenotypedata$table1)))[1]
   IDposname <- names(phenotypedata$table1[which(grepl("ID", colnames(phenotypedata$table1)))[1]])
-  columnadd <- pivot_longer(phenotypeselections$samples, everything(), names_to = input$phenotypecolumnName, values_to = IDposname)
+  columnadd <- pivot_longer(phenotypeselections$samples, everything(), names_to = input$phenotypecolumnName, values_to = IDposname) %>% unique()
   variables <- data.frame(phenotypedata$table1[[IDpos]])
   names(variables)[1] <- IDposname
-  columnadd <- right_join(x = columnadd, y = variables, by = IDposname)
+  columnadd <- right_join(x = columnadd, y = variables, by = IDposname) %>% unique()
+  columnadd[is.na(columnadd)] <- input$phenotypecolumnName
   phenotypedata$table1 <- left_join(x = phenotypedata$table1, y = columnadd, by = IDposname)
-  phenotypedata$table1[is.na(phenotypedata$table1)] <- input$phenotypenotext
+  #phenotypedata$table1[is.na(phenotypedata$table1)] <- input$phenotypenotext
+  #adds column to filtered dataset
   IDpos2 <- which(grepl("ID", colnames(phenotypedata$filter)))[1]
   IDposname2 <- names(phenotypedata$filter[which(grepl("ID", colnames(phenotypedata$filter)))[1]])
-  columnadd2 <- pivot_longer(phenotypeselections$samples, everything(), names_to = input$phenotypecolumnName, values_to = IDposname)
+  columnadd2 <- pivot_longer(phenotypeselections$samples, everything(), names_to = input$phenotypecolumnName, values_to = IDposname) %>% unique()
   variables2 <- data.frame(phenotypedata$filter[[IDpos]])
   names(variables2)[1] <- IDposname2
-  columnadd2 <- right_join(x = columnadd2, y = variables2, by = IDposname2)
+  columnadd2 <- right_join(x = columnadd2, y = variables2, by = IDposname2) %>% unique()
+  columnadd2[is.na(columnadd2)] <- input$phenotypecolumnName
   phenotypedata$filter <- left_join(x = phenotypedata$filter, y = columnadd2, by = IDposname2)
-  phenotypedata$filter[is.na(phenotypedata$filter)] <- input$phenotypenotext
+  #phenotypedata$filter[is.na(phenotypedata$filter)] <- input$phenotypenotext
 })
 #Make Updated table
 output$phenotypetesttable <- renderDataTable({

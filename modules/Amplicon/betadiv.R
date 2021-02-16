@@ -7,9 +7,9 @@ output$phyloseqdistanceoptions <- renderUI({
                   Standard = c("Bray" = "bray",
                                "Jaccard" = "jaccard",
                                "Euclidean" = "euclidean",
-                               "DPCoA" = "dpcoa",
                                "JSD" = "jsd"),
                   Require_Phylogenetic_Tree = c(
+                    "DPCoA" = "dpcoa",
                     "Unweighted Unifrac" = "uunifrac",
                     "Weighted Unifrac" = "wunifrac"
                   )),
@@ -103,7 +103,7 @@ output$betadisptable <- renderPrint({
 output$adonisUI <- renderUI({
   if(is.null(ampliconuse()))return(NULL)
   output <- tagList(
-    tags$div(tags$h4("You are Viewing the", paste(input$ordinationdataset), "Dataset"),
+    tags$div(tags$h4("You are Viewing the", paste(input$amplicondatasource), "Dataset"),
              align = "center")
     ,
     textInput("adonisoptions1", "Write Formula",
@@ -190,7 +190,7 @@ pcoaobj <- eventReactive(input$makeordinationplot1, {
 output$ordinationplotoptions <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
   output <- tagList(
-    tags$div(tags$h4("You are Viewing the", paste(input$ordinationdataset), "Dataset"),
+    tags$div(tags$h4("You are Viewing the", paste(input$amplicondatasource), "Dataset"),
              align = "center")
     ,
     selectInput("phyloseqordinateoptions1", "Select Ordination Method:",

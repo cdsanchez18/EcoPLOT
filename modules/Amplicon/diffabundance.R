@@ -413,6 +413,8 @@ downloadTable(id = "volcanodesequpdated", volcanotest$table)
 output$log2foldchangeui <- renderUI({
   if(is.null(deseqresults()))return(NULL)
   output<- tagList(
+    numericInput("log2foldchangethreshold", "Select Log 2 Fold Change Threshold: (As Absolute Value)", value = 0, min = 0, max = 10, step = 0.25)
+    ,
     selectInput("log2foldchangexaxis", "Select Tax Rank for X Axis:",
                 choices = rank_names(phyloseqobj()))
     ,
@@ -441,14 +443,17 @@ log2foldchangeplot <- eventReactive(input$log2foldchangeplotrender, {
     if(!is.null(deseqresults())){
       if(input$log2foldchangecolor == "none"){
         obj <- deseqresults()
-        plot <- ggplot(obj, aes(x = reorder(!!as.symbol(input$log2foldchangexaxis), log2FoldChange), y = log2FoldChange)) + 
+        plot <- ggplot(obj %>% filter(!between(log2FoldChange, -input$log2foldchangethreshold, input$log2foldchangethreshold)), 
+          aes(x = reorder(!!as.symbol(input$log2foldchangexaxis), log2FoldChange), y = log2FoldChange)) + 
           geom_point() + labs(x = input$log2foldchangexaxis) + 
           theme(axis.text.x = element_text(angle = -90, hjust = 0, vjust=0.5),
                 legend.position = input$log2foldplotlegendpos) + 
           xlab("log2 fold change") 
       }else{
         data <- deseqresults()
-        plot <- ggplot(data, aes(x = reorder(!!(as.symbol(input$log2foldchangexaxis)), -log2FoldChange), y = log2FoldChange, color = !!as.symbol(input$log2foldchangecolor))) + 
+        plot <- ggplot(data %>% filter(!between(log2FoldChange, -input$log2foldchangethreshold, input$log2foldchangethreshold)),
+                       aes(x = reorder(!!(as.symbol(input$log2foldchangexaxis)), -log2FoldChange), 
+                           y = log2FoldChange, color = !!as.symbol(input$log2foldchangecolor))) + 
           geom_point() +labs(x = input$log2foldchangexaxis) + 
           theme(axis.text.x = element_text(size = 8,angle = -90, hjust = 0, vjust=0.5),
                 legend.position = input$log2foldplotlegendpos)

@@ -36,7 +36,9 @@ Example datasets are included in each module.
   
 EcoPLOT enables the discovery and creation of novel variable groupings. This feature, titled dynamic selection, allows for the creation of up to 10 unique variable groupings. This tool can be used to distinguish outliers or to create groupings for samples that exhibit clustering not explained by existing variables within your experimental design. All variables created this way can be accessed within plots or statistical tests.  
   
-This feature is available in **scatter** and **Principle Coordinate Analysis (PCO)** plots found across the three modules. 
+This feature is available in **scatter** and **Ordination** plots found across the three modules. 
+
+
   
   
 <H2><b> Logging Information </H2></b>
