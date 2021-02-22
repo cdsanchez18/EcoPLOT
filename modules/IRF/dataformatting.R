@@ -51,11 +51,11 @@ output$irfUIoptions <- renderUI({
                      ,
                      actionButton("parseIRF", "Parse Datasets for IRF", width = "100%"))
     ,
-    conditionalPanel(condition = "input.IRF == 4", 
+    #conditionalPanel(condition = "input.IRF == 4", 
                      #hr(),
-                     actionButton("encodeIRF", "Encode Column Variables for IRF", width = "100%"))
-    ,
-    conditionalPanel(condition = "input.IRF == 5",
+     #                actionButton("encodeIRF", "Encode Column Variables for IRF", width = "100%"))
+    #,
+    conditionalPanel(condition = "input.IRF == 4",
                      #hr()
                      #,
                      tags$h5("IRF Parameters")
@@ -70,10 +70,16 @@ output$irfUIoptions <- renderUI({
                                         column(6, numericInput("IRFnchild", "Select nchild", value = 2, min = 1, max = 10, step = 1))),
                                       fluidRow(
                                         column(6, numericInput("IRFntree", "Select ntree", value = 100, min = 10, max = 300, step = 1)),
-                                        column(6, numericInput("IRFniter", "Select n.iter", value = 5, min = 1, max = 10, step = 1))),
-                                      fluidRow(
+                                        #column(6, numericInput("IRFniter", "Select n.iter", value = 5, min = 1, max = 10, step = 1))),
                                         column(12, numericInput("IRFnbootstrap", "Select nbootstrap", value = 30, min = 1, max = 50, step = 1)))
+                                      #fluidRow(
+                                      #  column(12, numericInput("IRFnbootstrap", "Select nbootstrap", value = 30, min = 1, max = 50, step = 1)))
                      )
+                     ,
+                     checkboxInput("IRFinteractions", "Should iRF look for interactions?", value = FALSE, width = "100%")
+                     ,
+                     tags$h6(tags$b("NOTE:"), "Finding interactions is computationally intensive. 
+                             Run times may vary based on the size of your data. For more information and system requirements, please see the guide at the beginning of the module.")
                      ,
                      actionButton("performIRF", "Run IRF", width = "100%")
                      )
@@ -131,33 +137,68 @@ test_index1 <- eventReactive(input$parseIRF, {
   BiocGenerics::setdiff(1:nrow(IRFdataset()), train_index1())
 })
 Xtrain <- eventReactive(input$parseIRF, {
-  if(is.null(train_index1))return(NULL)
+  if(is.null(train_index1()))return(NULL)
   if(!is.null(av(input$IRFyvar))){
-    IRFdataset()[train_index1(), ] %>% select(-c(input$IRFyvar, input$IRFexclude, "Sample"))
+    data <- IRFdataset()[train_index1(), ] %>% select(-c(input$IRFyvar, input$IRFexclude, "Sample"))
+    data[sapply(data, is.character)] <- lapply(data[sapply(data, is.character)], 
+                                                     as.factor)
+    data
   }
 })
 Ytrain <- eventReactive(input$parseIRF, {
   if(is.null(train_index1()))return(NULL)
   if(!is.null(av(input$IRFyvar))){
   IRFdataset()[train_index1(), ] %>% select(input$IRFyvar)
+  #data[sapply(data, is.character)] <- lapply(data[sapply(data, is.character)], 
+  #                                           as.factor)
+  
   }
 })
 Xtest <- eventReactive(input$parseIRF, {
   if(is.null(test_index1()))return(NULL)
   if(!is.null(av(input$IRFyvar))){
-    IRFdataset()[test_index1(),] %>% select(-c(input$IRFyvar, input$IRFexclude, "Sample"))
+    data <- IRFdataset()[test_index1(),] %>% select(-c(input$IRFyvar, input$IRFexclude, "Sample"))
+    data[sapply(data, is.character)] <- lapply(data[sapply(data, is.character)], 
+                                               as.factor)
+    data
   }
 })
 Ytest <- eventReactive(input$parseIRF, {
   if(is.null(test_index1()))return(NULL)
   if(!is.null(av(input$IRFyvar))){
   IRFdataset()[test_index1(), ] %>% select(input$IRFyvar)
+  #data[sapply(data, is.character)] <- lapply(data[sapply(data, is.character)], 
+  #                                           as.factor)
+  #data
   }
 })
 observeEvent(input$parseIRF, {
   if(is.null(av(input$IRFyvar))){
     showNotification("Please Select A Y Variable", type = "warning")
   }
+})
+output$iRFdatasets <- renderUI({
+  if(is.null(test_index1()))return(NULL)
+  output <- tagList(
+    fluidRow(
+      splitLayout(
+      column(6,
+             tags$u(tags$h5("X Train Dataset")),
+             dataTableOutput("testoutput")),
+      column(6, 
+             tags$u(tags$h5("Y Train Dataset")),
+             dataTableOutput("testoutput1")))),
+    hr(),
+    fluidRow(
+      splitLayout(
+      column(6,
+             tags$u(tags$h5("X Test Dataset")),
+             dataTableOutput("testoutput2")),
+      column(6,
+             tags$u(tags$h5("Y Test Dataset")),
+             dataTableOutput("testoutput3"))))
+  )
+  return(output)
 })
 
 ######ENCODING, TURNS FACTOR VARIABLES INTO NUMERIC COLUMNS (REQUIREMENT)
@@ -172,65 +213,75 @@ observeEvent(input$parseIRF, {
 #     NULL
 #   }
 # })
-output$testoutput4 <- renderPrint({
-  if(is.null(IRFencoding()))return(NULL)
-  Xtrain() 
+output$testtest <- renderPrint({
+  str(Xtrain()[, sapply(Xtrain(), is.factor)])
 })
-Xtrainencoded <- eventReactive(input$encodeIRF,{
-  if(is.null(phyloseqobj()))return(NULL)
-  #if(!is.null(IRFencoding())){
-    req(Xtrain())
-    withProgress("Encoding Training Data", {
-      # dataPreparation::one_hot_encoder(data_set = Xtrain(), 
-      #                          encoding = IRFencoding(), 
-      #                          drop = TRUE, verbose = TRUE)
-      mltools::one_hot(as.numeric(Xtrain()))
-    })
-  #}
+output$testtest1 <- renderPrint({
+  str(Ytrain()[, sapply(Ytrain(), is.factor)])
 })
-Xtestencoded <- eventReactive(input$encodeIRF,{
-  if(is.null(phyloseqobj()))return(NULL)
-  if(!is.null(IRFencoding())){
-    req(Xtrain())
-    withProgress("Encoding Test Data", {
-      dataPreparation::one_hot_encoder(data_set = as.data.frame(Xtest()), 
-                               encoding = as.list(IRFencoding()), 
-                               drop = TRUE, verbose = TRUE)
-    })
-  }
+output$testtest2 <- renderPrint({
+  if(is.null(av(input$IRFyvar)))return(NULL)
+  class(IRFdataset()[train_index1(), input$IRFyvar])
+  #ncol(Xtrain())
 })
+# Xtrainencoded <- eventReactive(input$encodeIRF,{
+#   if(is.null(phyloseqobj()))return(NULL)
+#   #if(!is.null(IRFencoding())){
+#     req(Xtrain())
+#     withProgress("Encoding Training Data", {
+#       # dataPreparation::one_hot_encoder(data_set = Xtrain(), 
+#       #                          encoding = IRFencoding(), 
+#       #                          drop = TRUE, verbose = TRUE)
+#       mltools::one_hot(as.numeric(Xtrain()))
+#     })
+#   #}
+# })
+# Xtestencoded <- eventReactive(input$encodeIRF,{
+#   if(is.null(phyloseqobj()))return(NULL)
+#   if(!is.null(IRFencoding())){
+#     req(Xtrain())
+#     withProgress("Encoding Test Data", {
+#       dataPreparation::one_hot_encoder(data_set = as.data.frame(Xtest()), 
+#                                encoding = as.list(IRFencoding()), 
+#                                drop = TRUE, verbose = TRUE)
+#     })
+#   }
+# })
 
 ###RUN IRF ANALYSIS
 IRFmodel <- eventReactive(input$performIRF, {
-  if(is.null(IRFencoding()))return(NULL)
-  withProgress("Performing IRF", {
-  if(input$IRFdefault == "Yes"){
+  if(is.null(Xtrain()))return(NULL)
+  #withProgress("Performing IRF", {
+   
+  # if(input$IRFdefault == "Yes"){
+  #   rit.param <- list(depth=5, nchild=2, ntree=100, class.id=1, class.cut=NULL)
+  #   model <- iRF(x = data.matrix(Xtrain()),
+  #                y = data.matrix(Ytrain()),
+  #                xtest = data.matrix(Xtest()),
+  #                ytest = data.matrix(Ytest()),
+  #                n.iter = 1,   # Number of iterations
+  #                n.core = 1,    # Use 2 cores for parallel traininge
+  #                interactions.return = c(1),
+  #                # Return the iteration with highest OOB accuracy
+  #                select.iter = TRUE,
+  #                # Number of bootstrap samples to calculate stability scores
+  #                n.bootstrap = 30,
+  #                # Use ranger as the underlying random forest package
+  #                type = 'ranger',
+  #                # Parameters for RIT
+  #                rit.param= rit.param
+  #   )
+  # }else {
+    #rit.param <- list(depth= input$IRFdepth, nchild= input$IRFnchild, ntree= input$IRFntree, class.id=1, class.cut=NULL)
     rit.param <- list(depth=5, nchild=2, ntree=100, class.id=1, class.cut=NULL)
-    model <- iRF(x = as.matrix(Xtrain()),
-                 y = Ytrain(),
-                 xtest = as.matrix(Xtest()),
-                 ytest = Ytest(),
+    registerDoParallel(cores = 2)
+    model <- iRF(x = data.matrix(Xtrain()),
+                 y = as.factor(IRFdataset()[train_index1(), input$IRFyvar]),#%>% select(input$IRFyvar),
+                 xtest = data.matrix(Xtest()),
+                 ytest = as.factor(IRFdataset()[test_index1(), input$IRFyvar]),
                  n.iter = 1,   # Number of iterations
                  n.core = 1,    # Use 2 cores for parallel traininge
-                 interactions.return = c(1),
-                 # Return the iteration with highest OOB accuracy
-                 select.iter = TRUE,
-                 # Number of bootstrap samples to calculate stability scores
-                 n.bootstrap = 30,
-                 # Use ranger as the underlying random forest package
-                 type = 'ranger',
-                 # Parameters for RIT
-                 rit.param= rit.param
-    )
-  }else {
-    rit.param <- list(depth= input$IRFdepth, nchild= input$IRFnchild, ntree= input$IRFntree, class.id=1, class.cut=NULL)
-    model <- iRF(x = as.matrix(Xtrainencoded()),
-                 y = Ytrain(),
-                 xtest = as.matrix(Xtestencoded()),
-                 ytest = Ytest(),
-                 n.iter = input$IRFniter,   # Number of iterations
-                 n.core = 1,    # Use 2 cores for parallel traininge
-                 interactions.return = c(input$IRFniter),
+                 #interactions.return = c(input$IRFniter),
                  # Return the iteration with highest OOB accuracy
                  select.iter = TRUE,
                  # Number of bootstrap samples to calculate stability scores
@@ -238,11 +289,13 @@ IRFmodel <- eventReactive(input$performIRF, {
                  # Use ranger as the underlying random forest package
                  type = 'ranger',
                  # Parameters for RIT
-                 rit.param= rit.param
+                 rit.param= rit.param,
+                 bootstrap.forest = FALSE
     )
-  }
-  })
-  return(model)
+ # }
+  #})
+  #return(model)
+  model
 })
 output$IRFoutput <- renderPrint({
   if(is.null(IRFmodel()))return(NULL)

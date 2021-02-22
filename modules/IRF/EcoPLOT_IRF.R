@@ -28,28 +28,21 @@ EcoPLOT_IRF <- tabPanel("IRF",
                               #verbatimTextOutput("testoutput4")
                               ),
                               tabPanel(value = 3, "Step 2: Create Test/Train Datasets",
-                              splitLayout(
-                              dataTableOutput("testoutput"),
-                              dataTableOutput("testoutput1")),
-                              splitLayout(
-                                dataTableOutput("testoutput2"),
-                                dataTableOutput("testoutput3"))
+                                       uiOutput("iRFdatasets")
                               ),
-                              tabPanel(value = 4, "Step 3: Encode for ML",
-                                       #verbatimTextOutput("testoutput4"),
-                                       splitLayout(
-                                         dataTableOutput("Xtrainencodedoutput")#,
-                                         #dataTableOutput("Xtestencodedoutput")
-                                       )
-                                       ),
-                              tabPanel(value = 5, "Step 4: Run IRF",
+                              tabPanel(value = 4, "Step 3: Run IRF",
+                                       verbatimTextOutput("testtest"),
+                                       verbatimTextOutput("testtest1"),
+                                       verbatimTextOutput("testtest2"),
                                        verbatimTextOutput("IRFoutput")
                                        )
+                              ,
+                              tabPanel(value = 5, "Step 4: View Results"
                             )
                             )
                           )
                         )
-)
+))
 
 
 
