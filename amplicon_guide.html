@@ -502,40 +502,48 @@ Alpha diversity measurements are used to estimate the diversity within a single 
 <b>Unweighted UniFrac:</b>While similar to the method above, Unweighted Unifrac distance is calculated using only presence/absence of species, not their abundances. For this reason, this method is considered to be quicker than the weighted UniFrac.
 </li>
 </ul>
-<p>Following the creation of a distance matrix, the information stored within is best visualized using an ordination plot. These plots can be either constrained or unconstrained, depending on the assumptions they make about the underlying structure of the data. The following ordination methods are available within EcoPLOT.</p>
+<p>Following the creation of a distance matrix, the information stored within is best visualized using an ordination plot. These plots can be either constrained or unconstrained, depending on the assumptions they make about the underlying structure of the data. Constrained analyses attempt to explain variation directly using explanatory variables, such as environmental factors, that were established in a hypothesis. The following ordination methods are available within EcoPLOT.</p>
 <b>Unconstrained:</b>
 <ul>
 <li>
-<b>PCoA:</b>
+<b>PCoA:</b>Principle coordinate analysis can be used on any distance based method mentioned above. This is the most commonly used unconstrained ordination method.
 </li>
 <li>
-<b>NMDS:</b>
+<b>NMDS:</b>Non-metric MultiDimensional scaling can also be used on any distance based method mentioned previously. This is considered to be the non-metric equivalent of PCoA because it converts raw numerical values into ranks, which are then used in its calculation.
 </li>
 </ul>
 <b>Constrained:</b>
 <ul>
 <li>
-<b>CCA:</b>
+<b>CCA:</b>This stands for constrained correspondance analysis. The previously produced distance matrix undergoes a weighted linear regression on the identified constrained variables.
 </li>
 <li>
-<b>RDA:</b>
+<b>RDA:</b>This stands for redundancy analysis. This method utilizes an unweighted linear regression on the identified constrained variables.
 </li>
 <li>
-<b>CAP:</b>
+<b>CAP:</b>This stands for Constrained Analysis of Principle Coordinates and is commonly referred to as a distance-based RDA. This method allows for the use of non-Euclidean distance indexes, like Bray, to be used. If Euclidean derived distance matrixes are used, the results will appear very similar to the results of RDA.
 </li>
 </ul>
 <h2>
 <b>Heatmap</b>
 </h2>
-<p>The heatmap function in EcoPLOT taken from the Phyloseq package and utilizes ordination methods to organize columns and rows. Because it utilizes a distance matrix, rendering times may vary depending on the size of your dataset.</p>
-<p>This visualization is an effective tool to visual ecological data and was first described in a 2010 article in BMC Genomics.</p>
+<p>The heatmap function in EcoPLOT taken from the Phyloseq package and utilizes ordination methods to organize columns and rows. Because it utilizes a distance matrix, rendering times may vary depending on the size of your dataset. The default axis labels, “NULL”, show sample ID and OTU, however can be overwritten by specifying a variable to show.</p>
 <h2>
 <b>Differential Abundance</b>
 </h2>
+<p>In microbial studies, differential abundance analysis attempts to detect differences in taxonomic composition between samples or experimental design. EcoPLOT utilizes the DESeq package to perform differential abundance. This method performs a number of steps to normalize sample counts, estimate their dispersion, and finally fit them to the negative binomial model. The results include a table that includes the base means across samples, log2 fold changes, standard errors, test-statistics, p-values, and adjusted p-values.</p>
+<p>The only requirement to peform DESeq in EcoPLOT is to specify your experimental design formula. Your chosen experimental design variable should have two factor levels. The factor levels being compared are displayed at the top of the module.</p>
+<p>Additionally, after the results are given, EcoPLOT allows for the distribution of individual ASV’s to be viewed graphically. Using the results table provided, the distribution of individual ASV’s with significant p-values can be viewed graphically. To do so, simply enter the ASV ID you wish to see and click “Render ASV Count Plot.”</p>
+<p><b> Volcano Plot </b></p>
+<p>Volcano plots are scatter plots showing significance versus fold-change on the axes to represent changes in large datasets, making them an effective way to view the results of differential expression analysis. In EcoPLOT, users can group significantly different ASV’s with customized labels using the interative analysis tool.</p>
+<p><b> Log2FoldChange Plot </b></p>
+<p>The log2foldchange plot displays the increased or decreased presence of taxonomic ranks by experimental design. For example, given two conditions, A and B, with values of 10 and 100 respectively, the fold change is 10 because B is 10 times greater than A. When B is greater than A, the value will be positive, whereas when A is greater it will be negative. When thinking of a log 2 fold change, it is helpful to know that a value of 1 means that B is twice as large as A, while a value of -2 would mean A is four times as large as B. By default, EcoPLOT will show all values on the plot, however these values can be filtered by specifying a log2foldchange threshold.</p>
 <h2>
 <b>Citations</b>
 </h2>
 <p>Rajaram, S., &amp; Oono, Y. (2010). NeatMap–non-clustering heat map alternatives in R. BMC Bioinformatics, 11, 45.</p>
+<p>McMurdie and Holmes (2013) phyloseq: An R Package for Reproducible Interactive Analysis and Graphics of Microbiome Census Data. PLoS ONE. 8(4):e61217</p>
+<p>Love MI, Huber W, Anders S (2014) Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology 15(12): 550</p>
 <p>phyloseq package documentation vegan package documentation</p>
 
 

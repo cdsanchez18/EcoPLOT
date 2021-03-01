@@ -71,7 +71,7 @@ output$irfUIoptions <- renderUI({
                                       fluidRow(
                                         column(6, numericInput("IRFntree", "Select ntree", value = 100, min = 10, max = 300, step = 1)),
                                         #column(6, numericInput("IRFniter", "Select n.iter", value = 5, min = 1, max = 10, step = 1))),
-                                        column(12, numericInput("IRFnbootstrap", "Select nbootstrap", value = 30, min = 1, max = 50, step = 1)))
+                                        column(6, numericInput("IRFnbootstrap", "Select nbootstrap", value = 30, min = 1, max = 50, step = 1)))
                                       #fluidRow(
                                       #  column(12, numericInput("IRFnbootstrap", "Select nbootstrap", value = 30, min = 1, max = 50, step = 1)))
                      )
@@ -221,37 +221,95 @@ output$testtest1 <- renderPrint({
 })
 output$testtest2 <- renderPrint({
   if(is.null(av(input$IRFyvar)))return(NULL)
-  class(IRFdataset()[train_index1(), input$IRFyvar])
+  is.numeric(IRFdataset()[train_index1(), input$IRFyvar]) || is.integer(IRFdataset()[train_index1(), input$IRFyvar])
+  #is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])
   #ncol(Xtrain())
 })
-# Xtrainencoded <- eventReactive(input$encodeIRF,{
-#   if(is.null(phyloseqobj()))return(NULL)
-#   #if(!is.null(IRFencoding())){
-#     req(Xtrain())
-#     withProgress("Encoding Training Data", {
-#       # dataPreparation::one_hot_encoder(data_set = Xtrain(), 
-#       #                          encoding = IRFencoding(), 
-#       #                          drop = TRUE, verbose = TRUE)
-#       mltools::one_hot(as.numeric(Xtrain()))
-#     })
-#   #}
-# })
-# Xtestencoded <- eventReactive(input$encodeIRF,{
-#   if(is.null(phyloseqobj()))return(NULL)
-#   if(!is.null(IRFencoding())){
-#     req(Xtrain())
-#     withProgress("Encoding Test Data", {
-#       dataPreparation::one_hot_encoder(data_set = as.data.frame(Xtest()), 
-#                                encoding = as.list(IRFencoding()), 
-#                                drop = TRUE, verbose = TRUE)
-#     })
-#   }
-# })
 
 ###RUN IRF ANALYSIS
 IRFmodel <- eventReactive(input$performIRF, {
   if(is.null(Xtrain()))return(NULL)
-  #withProgress("Performing IRF", {
+  set.seed(input$IRFsetseed)
+  rit.param <- list(depth= input$IRFdepth, nchild= input$IRFnchild, ntree= input$IRFntree, class.id=1, class.cut=NULL)
+  if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
+    if(input$IRFinteractions == TRUE){
+      doParallel::registerDoParallel(cores = 2)
+      model <- iRF(x = data.matrix(Xtrain()),
+                   y = as.factor(IRFdataset()[train_index1(), input$IRFyvar]),#%>% select(input$IRFyvar),
+                   xtest = data.matrix(Xtest()),
+                   ytest = as.factor(IRFdataset()[test_index1(), input$IRFyvar]),
+                   n.iter = 1,   # Number of iterations
+                   n.core = 1,    # Use 2 cores for parallel traininge
+                   interactions.return = c(1),
+                   # Return the iteration with highest OOB accuracy
+                   select.iter = TRUE,
+                   # Number of bootstrap samples to calculate stability scores
+                   n.bootstrap = input$IRFnbootstrap,
+                   # Use ranger as the underlying random forest package
+                   type = 'ranger',
+                   # Parameters for RIT
+                   rit.param= rit.param,
+                   bootstrap.forest = FALSE
+      )
+    }else{
+      doParallel::registerDoParallel(cores = 2)
+      model <- iRF(x = data.matrix(Xtrain()),
+                   y = as.factor(IRFdataset()[train_index1(), input$IRFyvar]),#%>% select(input$IRFyvar),
+                   xtest = data.matrix(Xtest()),
+                   ytest = as.factor(IRFdataset()[test_index1(), input$IRFyvar]),
+                   n.iter = 1,   # Number of iterations
+                   n.core = 1,    # Use 2 cores for parallel traininge
+                   # Return the iteration with highest OOB accuracy
+                   select.iter = TRUE,
+                   # Number of bootstrap samples to calculate stability scores
+                   n.bootstrap = input$IRFnbootstrap,
+                   # Use ranger as the underlying random forest package
+                   type = 'ranger',
+                   # Parameters for RIT
+                   rit.param= rit.param,
+                   bootstrap.forest = FALSE
+      )
+    }
+  }else if(is.numeric(IRFdataset()[train_index1(), input$IRFyvar]) || is.integer(IRFdataset()[train_index1(), input$IRFyvar])){
+    if(input$IRFinteractions == TRUE){
+      doParallel::registerDoParallel(cores = 2)
+      model <- iRF(x = data.matrix(Xtrain()),
+                   y = IRFdataset()[train_index1(), input$IRFyvar],#Ytrain(),#%>% select(input$IRFyvar),
+                   xtest = data.matrix(Xtest()),
+                   ytest = IRFdataset()[test_index1(), input$IRFyvar],
+                   n.iter = 1,   # Number of iterations
+                   n.core = 1,    # Use 2 cores for parallel traininge
+                   interactions.return = c(1),
+                   # Return the iteration with highest OOB accuracy
+                   select.iter = TRUE,
+                   # Number of bootstrap samples to calculate stability scores
+                   n.bootstrap = input$IRFnbootstrap,
+                   # Use ranger as the underlying random forest package
+                   type = 'ranger',
+                   # Parameters for RIT
+                   rit.param= rit.param,
+                   bootstrap.forest = FALSE
+      )
+    }else{
+      doParallel::registerDoParallel(cores = 2)
+      model <- iRF(x = data.matrix(Xtrain()),
+                   y = IRFdataset()[train_index1(), input$IRFyvar],#%>% select(input$IRFyvar),
+                   xtest = data.matrix(Xtest()),
+                   ytest = IRFdataset()[test_index1(), input$IRFyvar],
+                   n.iter = 1,   # Number of iterations
+                   n.core = 1,    # Use 2 cores for parallel traininge
+                   # Return the iteration with highest OOB accuracy
+                   select.iter = TRUE,
+                   # Number of bootstrap samples to calculate stability scores
+                   n.bootstrap = input$IRFnbootstrap,
+                   # Use ranger as the underlying random forest package
+                   type = 'ranger',
+                   # Parameters for RIT
+                   rit.param= rit.param,
+                   bootstrap.forest = FALSE
+      )
+    }
+  }
    
   # if(input$IRFdefault == "Yes"){
   #   rit.param <- list(depth=5, nchild=2, ntree=100, class.id=1, class.cut=NULL)
@@ -272,30 +330,35 @@ IRFmodel <- eventReactive(input$performIRF, {
   #                rit.param= rit.param
   #   )
   # }else {
-    #rit.param <- list(depth= input$IRFdepth, nchild= input$IRFnchild, ntree= input$IRFntree, class.id=1, class.cut=NULL)
-    rit.param <- list(depth=5, nchild=2, ntree=100, class.id=1, class.cut=NULL)
-    registerDoParallel(cores = 2)
-    model <- iRF(x = data.matrix(Xtrain()),
-                 y = as.factor(IRFdataset()[train_index1(), input$IRFyvar]),#%>% select(input$IRFyvar),
-                 xtest = data.matrix(Xtest()),
-                 ytest = as.factor(IRFdataset()[test_index1(), input$IRFyvar]),
-                 n.iter = 1,   # Number of iterations
-                 n.core = 1,    # Use 2 cores for parallel traininge
-                 #interactions.return = c(input$IRFniter),
-                 # Return the iteration with highest OOB accuracy
-                 select.iter = TRUE,
-                 # Number of bootstrap samples to calculate stability scores
-                 n.bootstrap = input$IRFnbootstrap,
-                 # Use ranger as the underlying random forest package
-                 type = 'ranger',
-                 # Parameters for RIT
-                 rit.param= rit.param,
-                 bootstrap.forest = FALSE
-    )
+  
+    # rit.param <- list(depth= input$IRFdepth, nchild= input$IRFnchild, ntree= input$IRFntree, class.id=1, class.cut=NULL)
+    # #rit.param <- list(depth=5, nchild=2, ntree=100, class.id=1, class.cut=NULL)
+    # doParallel::registerDoParallel(cores = 2)
+    # model <- iRF(x = data.matrix(Xtrain()),
+    #              y = data.matrix(Ytrain()),
+    #              #y = as.factor(IRFdataset()[train_index1(), input$IRFyvar]),#%>% select(input$IRFyvar),
+    #              xtest = data.matrix(Xtest()),
+    #              ytest = data.matrix(Ytest()),
+    #              #ytest = as.factor(IRFdataset()[test_index1(), input$IRFyvar]),
+    #              n.iter = 1,   # Number of iterations
+    #              n.core = 1,    # Use 2 cores for parallel traininge
+    #              #interactions.return = c(input$IRFniter),
+    #              # Return the iteration with highest OOB accuracy
+    #              select.iter = TRUE,
+    #              # Number of bootstrap samples to calculate stability scores
+    #              n.bootstrap = input$IRFnbootstrap,
+    #              # Use ranger as the underlying random forest package
+    #              type = 'ranger',
+    #              # Parameters for RIT
+    #              rit.param= rit.param,
+    #              bootstrap.forest = FALSE
+    # )
  # }
-  #})
+  
+#withProgress("Performing IRF", {
   #return(model)
   model
+#})
 })
 output$IRFoutput <- renderPrint({
   if(is.null(IRFmodel()))return(NULL)

@@ -413,42 +413,41 @@ summary {
 </div>
 
 
-<div id="ecoplot-irf-guide" class="section level1">
-<h1>EcoPLOT iRF Guide</h1>
-<H3>
-<center>
+<div style="text-align:center">
+<h1>
+<b> iRF Guide</b>
+</h1>
 This guide provides a step-by-step explanation of the steps required to successfully perform the <b> iterative Random Forest (iRF) </b> algorithm within EcoPLOT.
-</center>
-</H3>
-<div id="note-irf-is-best-utilized-when-environmental-phenotypic-and-amplicon-datasets-are-present.-it-is-meant-to-be-used-in-combination-with-the-other-visual-and-statistical-tools-found-within-ecoplot.-we-recommend-users-get-to-know-their-dataset-before-using-irf-so-as-not-to-draw-conclusions-that-are-not-biologically-relevant." class="section level4">
-<h4><strong>Note:</strong> iRF is best utilized when Environmental, Phenotypic, and Amplicon datasets are present. It is meant to be used in combination with the other visual and statistical tools found within EcoPLOT. We recommend users get to know their dataset before using iRF so as not to draw conclusions that are not biologically relevant.</h4>
 </div>
-<div id="introduction-to-machine-learning" class="section level2">
-<h2>Introduction to Machine Learning</h2>
+<p><strong>Note:</strong> iRF is best utilized when Environmental, Phenotypic, and Amplicon datasets are present. It is meant to be used in combination with the other visual and statistical tools found within EcoPLOT. We recommend users get to know their dataset before using iRF so as not to draw conclusions that are not biologically relevant.</p>
+<h2>
+<b> Introduction to Machine Learning
+</h2>
+<p></b></p>
 <p>Machine learning (ML) is a branch of computing sciences in which algorithms are built with the intent to learn and adapt. These algorithms leverage various statistical models to uncover hidden patterns present in a dataset, often attempting to predict a target/response variable given its associated features.</p>
 <p>While there are multiple variations of machine learning, our focus in EcoPLOT is on <strong>Supervised</strong> learning, where a model is used to predict the value or class of a response variable. For example, this form of ML can be used to predict plant height given bacterial soil community composition, providing an estimate on a continuous (in units ft, cm, etc…) or a binary scale (tall vs. short).</p>
-</div>
-<div id="introduction-to-irf" class="section level2">
-<h2>Introduction to iRF</h2>
+<h2>
+<b> Introduction to iRF
+</h2>
+<p></b></p>
 <p>The iterative random forest algorithm is a tool developed to discover high order interactions between abiotic and biotic factors. It builds off of two existing algorithms in machine learning, the random forest (RF) and random intersection trees (RIT). Its application in biological systems has been demsontrated previously in the <i> Drosophila </i> embryo, where iRF discovered known and unknown interactions between transcription factors. The use of the iterative random forest algorithm has the potential to uncover novel relationships between environmental factors present in one’s data, leading to the generation of new hypotheses.</p>
 <H2>
-<b>Step 1:</b> Formatting your data for iRF
+<b>Step 1: Formatting your data for iRF
 </H2>
+<p></b></p>
 <p>In order to perform iRF it is required that you have uploaded a 16s dataset to the <i> microbiome </i> tab that includes a mapping file. If you have previously uploaded files to the <i> Environmental </i> or <i> Phenotype </i> tabs with matching sample ID’s to your microbial data, they too will be included in this dataset.</p>
 <p>Clicking the action button, “Prepare Data for iRF,” will initiate the creation of this dataset. ML requires that each individual ASV be given its own column with their respective sample abundances in each row. Depending on the size of your dataset this can be a time intensive process. Due to rendering limitations within Shiny, only columns 1-50 are shown in the table. The entire dataset is, however, available for download.</p>
-</div>
-<div id="step-2-creation-of-test-and-train-datasets" class="section level2">
-<h2>Step 2: Creation of Test and Train Datasets</h2>
+<h2>
+<b> Step 2: Creation of Test and Train Datasets
+</h2>
+<p></b></p>
 <p>Following formatting, the next step is to create the training and testing datasets. The training data is used to create the model, which is then evaulated against the testing data. Common practice is to place 80% of one’s data in the training set, however EcoPLOT allows users the ability to specify. EcoPLOT only visualizes columns 1:50 for each dataset, due to rendering limitations within Shiny.</p>
 <p>Included in this step is the selection of your output variable and the removal of unnecessary ones. Your output variable is your variable of interest, aka that feature which you eventually want to make a prediction on. This variable can be continuous or a factor variable, iRF recognizes both. It is also important to remove undesired variables from being included in the analysis. These variables are often unique to each individual sample and do not contain any importance in experimental design.</p>
 <p><b>Note:</b> The set seed feature is included for repeatability. This will ensure that you get the same result if you were to perform iRF at a later date with the same input variables and parameter settings.</p>
-</div>
-<div id="step-3-encode-variables-for-machine-learning" class="section level2">
-<h2>Step 3: Encode Variables for Machine Learning</h2>
-<p>Machine learning requires that all input and output variables be numeric. Encoding refers to the process that converts non-numeric variables into numeric ones. EcoPLOT utilizes one-hot encoding to encode factor variable for ML. Encoding character variables is the final step required to perform iRF.</p>
-</div>
-<div id="step-4-run-irf" class="section level2">
-<h2>Step 4: Run IRF</h2>
+<h2>
+<b> Step 3: Run IRF
+</h2>
+<p></b></p>
 We recommend that iRF first be performed using the default parameters. Following a preliminary run, the parameters can be adjusted to better fit the model, although prediction accuracy and interaction discovery are robust to parameters. The following parameters can be altered in EcoPLOT:
 <ul>
 <li>
@@ -468,9 +467,10 @@ We recommend that iRF first be performed using the default parameters. Following
 </li>
 </ul>
 <p><b> Note: </b>Depending on the size of your dataset, iRF can take multiple minutes to run. This is to be expected. Do not repeatedly click the ‘Perform iRF’ button, this will cause the function to run again immediately after it finishes.</p>
-</div>
-<div id="interpretation-of-results-and-prediction-on-test-dataset" class="section level2">
-<h2>Interpretation of Results and Prediction on Test Dataset</h2>
+<h2>
+<b> Interpretation of Results and Prediction on Test Dataset
+</h2>
+<p></b></p>
 iRF returns its results in two forms, the variable importance plot and interaction list. Additionally, the accuracy of the model can be observed by testing its performance on the test dataset. Model accuracy is determined as a percent if the target variable is a factor, or as the <b>mean absolute error (MAE)</b> if it is continuous.
 <ul>
 <li>
@@ -480,12 +480,11 @@ iRF returns its results in two forms, the variable importance plot and interacti
 <b>Interaction List:</b> Returns plot of variable interactions and their corresponding stability scores. Variables that exhibit an interaction are listed together, separated by an underscore (_). While statistically interesting, the returned interactions do not necessarily imply biological significance. We encourage users to generate novel hypotheses with their iRF results.
 </li>
 </ul>
-</div>
-<div id="citations" class="section level2">
-<h2>Citations</h2>
+<h2>
+<b> Citations
+</h2>
+<p></b></p>
 <p>Special thanks to Ben Brown for his support in implementing the iterative random forest algorithm.</p>
-</div>
-</div>
 
 
 
