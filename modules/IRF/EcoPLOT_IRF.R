@@ -28,21 +28,31 @@ EcoPLOT_IRF <- tabPanel("IRF",
                               #verbatimTextOutput("testoutput4")
                               ),
                               tabPanel(value = 3, "Step 2: Create Test/Train Datasets",
-                                       uiOutput("iRFdatasets")
+                                       uiOutput("testtest1")
                               ),
                               tabPanel(value = 4, "Step 3: Run IRF",
-                                       verbatimTextOutput("testtest"),
-                                       verbatimTextOutput("testtest1"),
+                                       #verbatimTextOutput("testtest"),
                                        verbatimTextOutput("testtest2"),
-                                       verbatimTextOutput("IRFoutput")
+                                       uiOutput("IRFoutputui")
                                        )
                               ,
-                              tabPanel(value = 5, "Step 4: View Results"
-                            )
+                              tabPanel(value = 5, "View Plots",
+                                       uiOutput("IRFplotui")
+                            ),
+                            tabPanel(value = 6, "View Tables")
                             )
                           )
                         )
-))
+),
+conditionalPanel("input.IRF == 3",
+                 uiOutput("iRFdatasets")),
+conditionalPanel("input.IRF == 5",
+                 hr(),
+                 uiOutput("irfinteractionoutput2"),
+                 uiOutput("partdepplot1")),
+conditionalPanel("input.IRF == 6",
+                 uiOutput("irftableui"))
+)
 
 
 

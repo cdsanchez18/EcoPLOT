@@ -4,15 +4,15 @@ output:
   html_document: 
     theme: yeti
 ---
-# EcoPLOT Statistics Guide  
-#### This guide is meant to assist users in determining which statistical methods they should apply to their dataset.  
+<div style="text-align:center"><h1><b> EcoPLOT Statistics Guide  </b></h1>
+This guide is meant to assist users in determining which statistical methods they should apply to their dataset.  </div>
 
-## Parametric vs. Non-Parametric Tests
+<h2><b> Parametric vs. Non-Parametric Tests</h2></b>
 Parametric and Non-Parametric tests are statistical methods used to observe significance within a dataset containing a continuous outcome. They differ in the assumptions they make about the underlying statistical distributions present in the data; Parametric tests assume a normal distribution, while Non-Parametric tests do not rely on any.  
   
 Descriptions of each are provided below. 
 
-## Parametric Tests   
+<h2><b> Parametric Tests   </h2></b>
   
 Parametric tests include t-tests and ANOVA. These tests use the mean to determine significance.  
   
@@ -22,28 +22,28 @@ To perform a Parametric test, your data must meet the following requirements:
   
 **NOTE:** The assumptions of normality can be ignored if the sample size being tested is large enough  
   
-### T-Test 
+<h3><b> T-Test </h3></b>
 **One Sample T-Test:** Used to compare a continuous sample variable mean to a hypothesized mean.  
   
 **Two Sample T-Test:** Used to compare sample means from **two** groups to test if they are equal or not. The two sample groups must be **independent**  
   
 **Paired T-Test:** Similar to the two sample t-test but for non-independent sample groups. To perform a Paired T-Test you must ensure that both groups have the same number of samples.  
   
-### ANOVA 
+<h3><b> ANOVA </h3></b>
 An ANOVA test expands on the t-test and can be used on samples with 3 or more groupings. ANOVA tests to see if there is an association between the grouping variable and the response variable.  
 **One Way ANOVA:** Considers one independent variable/factor.  
   
 **Two Way ANOVA:** Considers two categorical groups.  
   
-### Tukey Honestly Significant Differences (Tukey HSD)  
+<h3><b> Tukey Honestly Significant Differences (Tukey HSD)  </h3></b>
 Following a significant ANOVA result, the Tukey HSD test can be used to observe pairwise comparisons between sample groups. This is an effective way of observing which group means within your data are significantly different.  
   
   
-## Non-Parametric Tests
+<h2><b> Non-Parametric Tests</h2></b>
   
 As mentioned before, Non-Parametric tests do not rely on an underlying distribution in your data, meaning your data does not have to exhibit a normal distribution. Non-Parametric tests utilize the median rather than the mean and therefore can be used when the assumptions of parametric tests are not met. Non-Parametric tests are considered to have less power than Parametric tests and should not be used if the requirements for Parametric testing are met.  
   
-### Wilcoxon Rank-Sum (Mann-Whitney U) Test  
+<h3><b> Wilcoxon Rank-Sum (Mann-Whitney U) Test  </h3></b>
   
 **One-Sample Wilcoxon:** This test is used to observe whether or not the sample median is equal to a known/hypothesized median. It is the Non-Parametric equivalent to the One Sample t-test.  
   
@@ -51,11 +51,13 @@ As mentioned before, Non-Parametric tests do not rely on an underlying distribut
   
 **Wilcoxon Sign Rank:** Used to compare the medians of two paired sample groups. It is the Non-Parametric equivalent to the Paired t-test.  
   
-### Kruskal Wallis  
+<h3><b> Kruskal Wallis  </h3></b>
   
 This is the Non-Parametric equivalent to ANOVA. It is used to test if the medians of three of more sample groups are the same. 
   
-
-
+  
+<h3><b> Citations  </h3></b>
+  
+Baldi, B., and Moore, D.S. (2014). The practice of statistics in the life sciences (W.H Freeman and Company).
 
 

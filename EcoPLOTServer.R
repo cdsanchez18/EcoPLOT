@@ -24,6 +24,8 @@ EcoPLOTServer <- shinyServer(function(input,output,session){
       #Amplicon
         source("modules/Amplicon/datasetLOG.R", local = TRUE)
         source("modules/Amplicon/filterLOG.R", local = TRUE)
+      #iRF
+        source("modules/iRF/iRFLOG.R", local = TRUE)
   
   ##Beginning of app section
   

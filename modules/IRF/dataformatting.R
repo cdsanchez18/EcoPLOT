@@ -58,7 +58,7 @@ output$irfUIoptions <- renderUI({
     conditionalPanel(condition = "input.IRF == 4",
                      #hr()
                      #,
-                     tags$h5("IRF Parameters")
+                     tags$h4("Set iRF Parameters")
                      ,
                      radioButtons("IRFdefault", "Use Default Parameters", 
                                   choices = c("Yes", "No"),
@@ -82,6 +82,13 @@ output$irfUIoptions <- renderUI({
                              Run times may vary based on the size of your data. For more information and system requirements, please see the guide at the beginning of the module.")
                      ,
                      actionButton("performIRF", "Run IRF", width = "100%")
+                     )
+    ,
+    conditionalPanel(condition = "input.IRF == 5",
+                     tags$h3("Variable Importance Plot"),
+                     numericInput("IRFvarimpplotsize", "Select Size of Plot:", value = 800, min = 100,width = "100%"),
+                     numericInput("IRFvarimpninteractions", "How Many Variables Should be Shown?", value = 30, min = 1, max = 50, step = 1),
+                     downloadPlotUI("IRFvarimpdownload")
                      )
   )
     
@@ -109,6 +116,8 @@ IRFdataset <- eventReactive(input$makeIRFdataset, {
   #mapping$Sample <- row.names(mapping)
   
   phylomelt <- left_join(data.frame(sample_data(ampliconuse())), phylomelt)
+  phylomelt[sapply(phylomelt, is.character)] <- lapply(phylomelt[sapply(phylomelt, is.character)], 
+                                             as.factor)
    #return(phylomelt)
   })
   return(phylomelt)
@@ -181,21 +190,30 @@ output$iRFdatasets <- renderUI({
   if(is.null(test_index1()))return(NULL)
   output <- tagList(
     fluidRow(
+      column(3,
+             hr()),
+      column(6,
+             wellPanel(tags$div(
+               tags$h3("View Tables")), align = "center")),
+      column(3,
+             hr())
+    ),
+    fluidRow(
       splitLayout(
       column(6,
-             tags$u(tags$h5("X Train Dataset")),
+             tags$u(tags$h4("X Train Dataset")),
              dataTableOutput("testoutput")),
       column(6, 
-             tags$u(tags$h5("Y Train Dataset")),
+             tags$u(tags$h4("Y Train Dataset")),
              dataTableOutput("testoutput1")))),
     hr(),
     fluidRow(
       splitLayout(
       column(6,
-             tags$u(tags$h5("X Test Dataset")),
+             tags$u(tags$h4("X Test Dataset")),
              dataTableOutput("testoutput2")),
       column(6,
-             tags$u(tags$h5("Y Test Dataset")),
+             tags$u(tags$h4("Y Test Dataset")),
              dataTableOutput("testoutput3"))))
   )
   return(output)
@@ -214,16 +232,28 @@ output$iRFdatasets <- renderUI({
 #   }
 # })
 output$testtest <- renderPrint({
-  str(Xtrain()[, sapply(Xtrain(), is.factor)])
+  str(IRFdataset() %>% select(colnames(data.frame(sample_data(ampliconuse())) %>% select(-c(input$IRFexclude)))))
+      #[, sapply(Xtrain(), is.factor)])
+  #X_train %>% select(colnames(sample_data %>% select( -"Sample_ID", -"File_name", -"Sample", -"PlantID", -"Date.Collected"))))
 })
-output$testtest1 <- renderPrint({
-  str(Ytrain()[, sapply(Ytrain(), is.factor)])
+output$testtest1 <- renderUI({
+  output <- tagList(
+    wellPanel(tags$div(tags$h4("The following lists your sample variables and their associated classes in R. iRF treats factor variables
+                     differently than it does numeric or integer variables. A", tags$b("classification model"), "will be used for categorical variables
+                               and a", tags$b("regression model"), "will be used for continuous variables.", tags$br(), "Run times may vary based on the selected variable's class."),
+             align = "center")),
+    verbatimTextOutput("testtest")
+  )
+  return(output)
 })
 output$testtest2 <- renderPrint({
-  if(is.null(av(input$IRFyvar)))return(NULL)
-  is.numeric(IRFdataset()[train_index1(), input$IRFyvar]) || is.integer(IRFdataset()[train_index1(), input$IRFyvar])
-  #is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])
-  #ncol(Xtrain())
+  if(is.null(Xtrain()))return(NULL)
+  !!as.symbol(input$partdepx)
+})
+
+observeEvent(input$performIRF, {
+  if(is.null(Xtrain()))return(NULL)
+  showNotification("Running iRF, do not click 'Run iRF' again.", type = "warning", duration = NULL)
 })
 
 ###RUN IRF ANALYSIS
@@ -310,59 +340,190 @@ IRFmodel <- eventReactive(input$performIRF, {
       )
     }
   }
-   
-  # if(input$IRFdefault == "Yes"){
-  #   rit.param <- list(depth=5, nchild=2, ntree=100, class.id=1, class.cut=NULL)
-  #   model <- iRF(x = data.matrix(Xtrain()),
-  #                y = data.matrix(Ytrain()),
-  #                xtest = data.matrix(Xtest()),
-  #                ytest = data.matrix(Ytest()),
-  #                n.iter = 1,   # Number of iterations
-  #                n.core = 1,    # Use 2 cores for parallel traininge
-  #                interactions.return = c(1),
-  #                # Return the iteration with highest OOB accuracy
-  #                select.iter = TRUE,
-  #                # Number of bootstrap samples to calculate stability scores
-  #                n.bootstrap = 30,
-  #                # Use ranger as the underlying random forest package
-  #                type = 'ranger',
-  #                # Parameters for RIT
-  #                rit.param= rit.param
-  #   )
-  # }else {
-  
-    # rit.param <- list(depth= input$IRFdepth, nchild= input$IRFnchild, ntree= input$IRFntree, class.id=1, class.cut=NULL)
-    # #rit.param <- list(depth=5, nchild=2, ntree=100, class.id=1, class.cut=NULL)
-    # doParallel::registerDoParallel(cores = 2)
-    # model <- iRF(x = data.matrix(Xtrain()),
-    #              y = data.matrix(Ytrain()),
-    #              #y = as.factor(IRFdataset()[train_index1(), input$IRFyvar]),#%>% select(input$IRFyvar),
-    #              xtest = data.matrix(Xtest()),
-    #              ytest = data.matrix(Ytest()),
-    #              #ytest = as.factor(IRFdataset()[test_index1(), input$IRFyvar]),
-    #              n.iter = 1,   # Number of iterations
-    #              n.core = 1,    # Use 2 cores for parallel traininge
-    #              #interactions.return = c(input$IRFniter),
-    #              # Return the iteration with highest OOB accuracy
-    #              select.iter = TRUE,
-    #              # Number of bootstrap samples to calculate stability scores
-    #              n.bootstrap = input$IRFnbootstrap,
-    #              # Use ranger as the underlying random forest package
-    #              type = 'ranger',
-    #              # Parameters for RIT
-    #              rit.param= rit.param,
-    #              bootstrap.forest = FALSE
-    # )
- # }
-  
-#withProgress("Performing IRF", {
-  #return(model)
   model
-#})
 })
 output$IRFoutput <- renderPrint({
   if(is.null(IRFmodel()))return(NULL)
   IRFmodel()
+})
+output$IRFoutputui<- renderUI({
+  if(is.null(IRFmodel()))return(NULL)
+  output <- tagList(
+    hr(),
+    tags$h3("View iRF Results"),
+    verbatimTextOutput("IRFoutput")
+  )
+  return(output)
+})
+importanceplot <- reactive({
+  if(is.null(IRFmodel()))return(NULL)
+  iRF::varImpPlot(IRFmodel()$rf.list[[1]], main = "Variable Importance Plot", n.var = input$IRFvarimpninteractions)
+})
+output$IRFvarimp <- renderPlot({
+  if(is.null(IRFmodel()))return(NULL)
+  importanceplot()
+})
+output$IRFplotui <- renderUI({
+  if(is.null(IRFmodel()))return(NULL)
+    plotOutput("IRFvarimp", height = input$IRFvarimpplotsize)
+})
+downloadPlot("IRFvarimpdownload", importanceplot())
+
+interactionplot <- reactive({
+  if(is.null(IRFmodel()))return(NULL)
+  if(input$IRFinteractions == TRUE){
+    ggplot(data.frame(IRFmodel()$interaction[[1]])[1:input$IRFinteractionnuminteractions,], aes(x = Freq, y = Var1)) + geom_point(shape = 1) + theme_bw() + 
+      labs(title = "Variable Interaction Plot") + theme(axis.text.y = element_text(size = input$IRFinteractionplotyaxissize),
+                                                        axis.title.y = element_blank(),
+                                                        plot.title = element_text(face = "bold", size = rel(1), hjust = 0.5))
+  }else{
+    NULL
+  }
+})
+output$interactionplotrender <- renderPlot({
+  if(is.null(IRFmodel()))return(NULL)
+  interactionplot()
+})
+downloadPlot("IRFinteractionplotdownload", interactionplot())
+output$irfinteractionoutput <- renderUI({
+  if(input$IRFinteractions == TRUE){
+    output <- tagList(
+      wellPanel(
+      tags$h3("Variable Interaction Plot"),
+      numericInput("IRFinteractionplotheight", "Select Plot Height:", value = 800, min = 100),
+      numericInput("IRFinteractionnuminteractions", "Select Number of Interactions to Show:", value = 10, min = 1, max = 20, step = 1),
+      numericInput("IRFinteractionplotyaxissize", "Select Size of Y Axis Text:", value = 8, min = 1, max = 20, step = 1),
+      downloadPlotUI("IRFinteractionplotdownload"))
+    )
+  }else{
+    output <- NULL
+  }
+  return(output)
+})
+output$irfinteractionoutput2 <- renderUI({
+  if(is.null(IRFmodel()))return(NULL)
+  if(input$IRFinteractions == TRUE){
+    output <- tagList(
+      fluidRow(
+        column(4, 
+               uiOutput("irfinteractionoutput")),
+        column(8,
+               plotOutput("interactionplotrender", height = input$IRFinteractionplotheight))
+      )
+    )
+    return(output)
+  }
+})
+output$partdepplot1 <- renderUI({
+  if(is.null(IRFmodel()))return(NULL)
+  output <- tagList(
+    hr(),
+    fluidRow(
+    column(4,
+    wellPanel(tags$h3("Partial Dependence Plot"),
+    selectInput("partdepx", "Select Variable to Observe Partial Dependence",
+                choices = c("NULL", sample_variables(phyloseqobj())),
+                selected = "NULL"),
+    if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
+    selectInput("partdepclass", "Select Class of Output to Focus on:",
+                choices = c("NULL", as.list(levels(as.factor(sample_data[[input$IRFyvar]])))),
+                selected = "NULL")
+  }else{
+    NULL
+  }
+  ,
+  downloadPlotUI("partialdepplot"))),
+  column(8,
+         uiOutput("partialdependenceplotoutput"))
+    )
+  )
+  return(output)
+})
+partialdependenceplot <- reactive({
+  if(is.null(IRFmodel()))return(NULL)
+  if(!is.null(av(input$partdepx))){
+    if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
+      if(!is.null(av(input$partdepclass))){
+       plot <- iRF::partialPlot(IRFmodel()$rf.list[[1]], pred.data = data.matrix(Xtrain()), x.var = !!as.symbol(input$partdepx), which.class = input$partdepclass) 
+      }else{
+        NULL
+      }
+    }else if(is.integer(IRFdataset()[train_index1(), input$IRFyvar]) || is.numeric(IRFdataset()[train_index1(), input$IRFyvar])){
+      plot <- iRF::partialPlot(IRFmodel()$rf.list[[1]], pred.data = data.matrix(Xtrain()), x.var = !!as.symbol(input$partdepx)) 
+    }
+  }else {
+    plot <- NULL
+  }
+  plot
+})
+output$partialdependenceplot1 <- renderPlot({
+  if(is.null(IRFmodel()))return(NULL)
+  partialdependenceplot()
+})
+output$partialdependenceplotoutput <- renderUI({
+  if(is.null(IRFmodel()))return(NULL)
+  plotOutput("partialdependenceplot1")
+})
+downloadPlot("partialdepplot", partialdependenceplot())
+varimportancetable <- reactive({
+  if(is.null(IRFmodel()))return(NULL)
+  data.frame(IRFmodel()$rf.list[[1]]$importance)
+})
+output$varimportancetable1 <- renderDataTable({
+  if(is.null(IRFmodel()))return(NULL)
+  varimportancetable()
+})
+downloadTable("downloadvarimptable", varimportancetable())
+varinteractiontable <- reactive({
+  if(is.null(IRFmodel()$interaction))return(NULL)
+  data.frame(model$interaction)
+})
+output$varinteractiontable1 <- renderDataTable({
+  if(is.null(IRFmodel()$interaction))return(NULL)
+  varinteractiontable()
+})
+output$varinteractiontable2 <- renderUI({
+  if(is.null(IRFmodel()$interaction))return(NULL)
+  output <- tagList(
+    fluidRow(
+      column(3,
+             hr()),
+      column(6,
+             wellPanel(tags$div(tags$b(tags$h4("View Discovered Variable Interactions")), align = "center"))),
+      column(3,
+             hr())
+    ),
+    fluidRow(
+      column(3,
+             wellPanel(downloadTableUI("downloadinteractiontable"))),
+      column(9,
+             splitLayout(
+             dataTableOutput("varinteractiontable1")))
+    )
+  )
+  return(output)
+})
+output$irftableui <- renderUI({
+  if(is.null(IRFmodel()))return(NULL)
+  output <- tagList(
+    fluidRow(
+      fluidRow(
+        column(3,
+               hr()),
+        column(6,
+               wellPanel(tags$div(tags$b(tags$h4("View Variable Importances")), align = "center"))),
+        column(3,
+               hr())
+      ),
+      column(3,
+      wellPanel(downloadTableUI("downloadvarimptable"))),
+      column(9,
+             dataTableOutput("varimportancetable1"))
+    )
+    ,
+    uiOutput("varinteractiontable2")
+  )
+  return(output)
 })
 
 
