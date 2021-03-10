@@ -56,7 +56,7 @@ If the uploaded mapping file contains the same sample ID's to those contained in
   
 <h2><b>Beta Diversity</b></h2>   
   
-  Beta diversity measurements estimate the diversity between samples or environments. To compare the taxonomic abundance profiles of between samples, you first create a dissimilarity matrix (distance matrix). Typically, distance methods perform pairwise comparisons between samples, however some, Weighted/Unweighted UniFrac, DPCoA, utilize a phylogenetic tree to incorporate evolutionary relationships in their distances.  
+  Beta diversity measurements estimate the diversity between samples or environments. To compare the taxonomic abundance profiles of between samples, you first create a dissimilarity matrix (distance matrix). Typically, distance methods perform pairwise comparisons between samples, however some, Weighted/Unweighted UniFrac, DPCoA, utilize a phylogenetic tree to incorporate evolutionary relationships in their distances. We list the distance methods avaiable in EcoPLOT below.
   
   <b>Standard Distance Methods:</b>
   <ul>
@@ -88,6 +88,15 @@ If the uploaded mapping file contains the same sample ID's to those contained in
   <li><b>CAP:</b>This stands for Constrained Analysis of Principle Coordinates and is commonly referred to as a distance-based RDA. This method allows for the use of non-Euclidean distance indexes, like Bray, to be used. If Euclidean derived distance matrixes are used, the results will appear very similar to the results of RDA.</li>
   </ul>
   
+  Following a visual analysis of your data, the final step is to perform statistics. In EcoPLOT we utilize <b>ADONIS</b> to analyze variance using distance matrices. Following an ADONIS< you are provided with a p-value with which will inform you of any statistically significant differences between experimental conditions. To perform an ADONIS within EcoPLOT, you are required to provide the right hand side (RHS) of a model formula. The RHS defines the independent variables you wish to test differences in. These variables can be continouous or quantitative (factors). As in other formulas, these independent variables can have interactions with other variables. We explain how to properly write a formula below. 
+  
+  <b> Formula Operators and Their Functions </b>
+  <ul>
+  <li><b>+</b> The plus sign (+) is used to add another independent variable to the formula. </li>
+  <li><b>-</b> The minus sign (-) indicates the removal of a term from an analysis. </li>
+  <li><b>:</b> The colon (:) indicates that you want the interaction between two variables and not the variables themselves.</li>
+  <li><b> \* </b> The asterisk (\*) indicates a crossing event and is used when you want to include two variables AND their interaction.</li>
+  </ul>
   
   
 <h2><b>Heatmap</b></h2>  
@@ -112,15 +121,17 @@ The heatmap function in EcoPLOT taken from the Phyloseq package and utilizes ord
   
 <h2><b>Citations</b></h2>
   
-Rajaram, S., & Oono, Y. (2010). NeatMap–non-clustering heat map alternatives in R. BMC Bioinformatics, 11, 45. 
+Love MI, Huber W, Anders S (2014) Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology 15(12): 550
+
+McDonald D, et al. The Biological Observation Matrix (BIOM) format or: how I learned to stop worrying and love the ome-ome, Gigascience, 2012, vol. 1 pg. 7
 
 McMurdie and Holmes (2013) phyloseq: An R Package for Reproducible Interactive Analysis and Graphics of Microbiome Census Data. PLoS ONE. 8(4):e61217
 
-Love MI, Huber W, Anders S (2014) Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology 15(12): 550
+Rajaram, S., & Oono, Y. (2010). NeatMap–non-clustering heat map alternatives in R. BMC Bioinformatics, 11, 45. 
 
 
-phyloseq package documentation
-vegan package documentation
+
+
 
 
 

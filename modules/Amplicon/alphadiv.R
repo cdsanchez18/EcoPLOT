@@ -146,7 +146,7 @@ phyloseqplot <- eventReactive(input$phyloseqplotrender1, {
                    #plot$layers <- plot$layers[-1]
                  }
                  #if(input$phyloseqplottype1 == "box"){
-                 plot <- plot + geom_boxplot() +
+                 plot <- plot + geom_boxplot(aes(group = !!as.symbol(input$phyloxaxis))) +
                    labs(x = paste(input$alphaphyloseqxaxis1), y = paste(input$alphaphyloseqyaxis1),
                         title = "Alpha Diversity") +
                    theme(legend.position= "right", axis.text.x = element_text(color = "black", size = isolate(input$alphaphyloseqxaxistextsize), 

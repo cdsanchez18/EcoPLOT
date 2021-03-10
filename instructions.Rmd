@@ -5,12 +5,12 @@ output:
     theme: yeti
 ---
 
-<div style = "text-align:center"><h1> <b>EcoPLOT Operating Instructions</b><h1></div>
+<div style = "text-align:center"><h1> <b>EcoPLOT Operating Instructions</b></h1></div>
 
-<H2><b>Overview</H2></b>
+<H2><b>Overview</b></H2>
 EcoPLOT was developed to faciliate the exploration and study of multivariate, biogeochemical datasets. EcoPLOT is organized into three modules (Environment, Plant Phenotype, and Amplicon), each featuring a variety of statistical and graphical tools unique to each data type. Below we explain how to properly format your data for upload into EcoPLOT and highlight some of the unique features of our tool. For module specific instructions, please consult the guides at the front of each section.  
   
-<H2><b> Formatting Your Data For Upload  </H2></b>
+<H2><b> Formatting Your Data For Upload  </b></H2>
 EcoPLOT currently accepts **.csv** , **.tsv**, and **.xlsx** file formats.  
   
 The Amplicon Data module accepts **.biom** and **.qza** file formats in addition to those previously mentioned.  
@@ -34,18 +34,28 @@ Example datasets are included in each module.
   
 <H2><b>Interactive Exploration of your Data</H2></b>
   
-EcoPLOT enables the discovery and creation of novel variable groupings. This feature, titled dynamic selection, allows for the creation of up to 10 unique variable groupings. This tool can be used to distinguish outliers or to create groupings for samples that exhibit clustering not explained by existing variables within your experimental design. All variables created this way can be accessed within plots or statistical tests.  
+EcoPLOT allows for the interactive creation of new variables to capture patterns or trends not explained by exisiting variables in your experimental design. This feature, referred to as dynamic selection, is available in <b>scatter</b> and <b>ordination</b> plots found across the three modules. We explain the steps required to use dynamic selection below.  
   
-This feature is available in **scatter** and **Ordination** plots found across the three modules. 
+<center><img src = "www/dynamic_selection.png"></center>
+  
+  <h5> <b>Steps: </b></h5>  
+ <ul>
+  <li> <b> Step 1: Name your new variable</b> When visualizing your data graphically, it is common to encounter interesting trends or patterns in your data. When one such trend is encountered, enter a name for this new variable and make your first selection. </li> 
+  <li> <b> Step 2: Make your first grouping</b> Simply click and drag your mouse over the points you wish to include in your first grouping. You may make additional selections under the same grouping by clicking "Save Selected to Current Grouping." This will append your new selection to the first under the same group name.</li>
+  <li> <b> Step 3: Create new groupings</b> Using the same click and drag method, you may create a new grouping of points and assign a unique name to them. EcoPLOT allows for up to 10 unique groupings per created variable. </li>
+  <li> <b> Step 4: Name points not grouped</b> The final step in creating your variable is to assign a name for those points not included in any group selection. </li>
+  <li> <b> Step 5: Click "Save Variable"</b> Clicking Save Variable will append your newly created variable as a column in your existing dataframe, where it can be accessed in statistical and graphical analyses across each module of EcoPLOT.</li>
+  </ul
 
-
+<b>NOTE:</b> There is no limit to the number of variables you can create within EcoPLOT. If the sample point is selected in two or more groupings, it will be given the name of the group in which it first appears.  
   
   
-<H2><b> Logging Information </H2></b>
+<H2><b> Logging Information </b></H2>
   
-  Each time EcoPLOT is launched, a log file is created that captures the filters applied and the results of statistical tests across the course of your session. The title of the file consists of a timestamp from the time at the begining of your session followed by the word EcoPLOT, **timestamp_EcoPLOT.log**.  
+  Each time EcoPLOT is launched, a log file is created that captures important input parameters and results that are encountered over the course of your session. The title of the file consists of a timestamp taken at the begining of your session followed by the word EcoPLOT, i.e.  **timestamp_EcoPLOT.log**.  
   
-Logged steps can also be viewed in the R console.  
+Logged steps can also be viewed in the R studio console window.  
+  
   
 <H2><b> Contact</H2></b>
 The most recent version of EcoPLOT can be accessed via [gitHub](https://github.com/cdsanchez18/EcoPLOT).   

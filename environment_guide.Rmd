@@ -41,4 +41,7 @@ The following guide explains how to operate within the Environmental Data module
   
   <h2><b>Citations</b></h2> 
   
-  CNP_stoichiometry paper in the papers folder 
+Griffiths, B.S., Spilles, A., and Bonkowski, M. (2012). C:N:P stoichiometry and nutrient limitation of the soil microbial biomass in a grazed grassland site under experimental P limitation or excess. Ecological Processes 1, 1–11.
+  
+  
+  

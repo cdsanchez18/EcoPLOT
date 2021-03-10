@@ -109,6 +109,8 @@ output$adonisUI <- renderUI({
     textInput("adonisoptions1", "Write Formula",
               placeholder = "A + B*C", width = "100%")
     ,
+    tags$h4(tags$b("NOTE:"), "For assistance in writing a model formula, consult the Amplicon guide at the beginning of the module.")
+    ,
     selectInput("adonisstrata", "Groups Within Which to Constrain Permutations",
                 choices = c("NULL", sample_variables(ampliconuse())),
                 selected = "NULL")
@@ -138,27 +140,27 @@ output$adonissamplevars1 <- renderPrint({
   sample_variables(ampliconuse())
 })
 output$adonissamplevars <- renderUI({
-  if(is.null(ampliconuse()))return(NULL)
+  #if(is.null(ampliconuse()))return(NULL)
   output <- tagList(
     tags$div(
-      tags$h3("Select Which Sample Variables to Include in Formula"), align = "center"
+      tags$h3("Select Which Sample Variables to Include in Adonis"), align = "center"
     )
     ,
-    conditionalPanel("input.adonisrender1",
-    verbatimTextOutput("adonissamplevars1"))
+    verbatimTextOutput("adonissamplevars1")
   )
   return(output)
 })
 ordinationadonis <- eventReactive(input$adonisrender1, {
+  req(distancematrix())
   if(!is.null(av(input$adonisstrata))){
     withProgress(message = "Performing Adonis", {
-      adonis(as.formula(paste("distancematrix() ~", paste(input$adonisoptions1))), 
+      adonis(as.formula(paste("distancematrix() ~", paste(input$adonisoptions1))), method = input$phyloseqdistanceoptions1,
              strata = sample_data(ampliconuse())[[input$adonisstrata]], permutations = input$adonispermutations,
              data = as(sample_data(ampliconuse()), "data.frame"))
     })
   }else{
     withProgress(message = "Performing Adonis", {
-      adonis(as.formula(paste("distancematrix() ~", paste(input$adonisoptions1))), 
+      adonis(as.formula(paste("distancematrix() ~", paste(input$adonisoptions1))), method = input$phyloseqdistanceoptions1,
              permutations = input$adonispermutations,
              data = as(sample_data(ampliconuse()), "data.frame"))
     })

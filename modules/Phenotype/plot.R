@@ -170,7 +170,7 @@ output$phenotypeplotUI <- renderUI({
                                                  value = "black"))
       ,
       numericInput("phenotypeplotheight", "Select Plot Height",
-                   value = 1250)
+                   value = 800)
       ,
       downloadPlotUI("phenotypeplotdownload")
     )
@@ -372,45 +372,97 @@ output$phenotypedynamicselectbuttons <- renderUI({
   req(phenotypedata$table)
   req(input$phenotypeplottype == "scatter")
   output <- tagList(
+    checkboxInput("phenotypesidebarhide", label = "Hide Sidebar Panel?", value = FALSE)
+    ,
     fluidRow(
-      column(6,
-             actionButton("phenotypesaveselection", "Save Current Selection:", width = "100%")
+      column(4,
+             hr()),
+      column(4,
+             tags$div(tags$h4(tags$b("Dynamic Selection")), align = "center")),
+      column(4,
+             hr())
+    ),
+    tags$div(tags$h4("Dynamic Selection allows users to create new variables within their dataset that capture unique patterns or trends 
+    not explained within their experimental design. EcoPLOT allows for the creation of up to 10 unique groupings within a created variable.
+                     To get started, create a name for you new variable and drag your mouse to select points of interest. 
+                     Clicking 'Save Selection' will group those points together under a name of your choosing. This process can be repeated
+                     to distinguish different groupings under the same variable heading. All created variables can be used in all graphical and 
+                     statistical analyses within EcoPLOT."), align = "center")
+    ,
+    tags$div(style = "padding:10px")
+    ,
+    fluidRow(
+      column(8,
+             column(4,
+                    textInput("phenotypecolumnName", "Create Name for Variable",
+                              value = "New Variable"))
              ,
-             conditionalPanel(condition = "input.phenotypesaveselection",
-                              hr()
-                              ,
-                              actionButton("phenotypeseparateselection", "Save With Different Grouping", width = "100%")
-             )
-             ,
-             hr()
-             ,
-             actionButton("phenotyperesetselection", "Reset Current Selection:", width = "100%")
-             ,
-             hr()
-             ,
-             actionButton("phenotypeactionbutton", "Add Column:", width = "100%")
-      )
-      ,
-      column(6,
-             column(6,
-                    textInput("phenotypeselectionName1", "Create Label for Selection 1:",
-                              value = "Selection 1")
+             conditionalPanel("input.phenotypesaveselection",
+             column(4,
+                    textInput("phenotypeselectionName1", "Name for Group 1",
+                              value = "Group 1")
              )
              ,
              uiOutput("phenotypecontainer")
              ,
-             fluidRow(
-               column(6,
-                      textInput("phenotypenotext", "Name Rows Not in Selections",
+             #fluidRow(
+               column(4,
+                      textInput("phenotypenotext", "Name for Points Not Grouped",
                                 value = "Not Grouped"))
-               ,
-               column(6,
-                      textInput("phenotypecolumnName", "Create Name for Column",
-                                value = "New Column"))
+             #)
+      )
+      ),
+      column(4,
+             actionButton("phenotypesaveselection", "Save Selection", width = "100%")
+             ,
+             conditionalPanel(condition = "input.phenotypesaveselection",
+                              hr()
+                              ,
+                              actionButton("phenotypeseparateselection", "Save Selection with New Grouping", width = "100%")
+             
+             ,
+             hr()
+             ,
+             actionButton("phenotypeactionbutton", "Save Variable", width = "100%")
+             ,
+             hr()
+             ,
+             actionButton("phenotyperesetselection", "Reset Groupings", width = "100%")
              )
       )
     )
+    ,
+    hr()
+    ,
+    fluidRow(
+      column(6,
+             tags$h4("Points Currently Selected"),
+             verbatimTextOutput("phenotypebrushtest")
+      ),
+      column(6,
+             tags$h4("Group Summary"),
+             splitLayout(verbatimTextOutput("phenoypetable1")))
+    ),
+    hr(),
+    tags$h4("View Newly Created Variable in Your Data"),
+    splitLayout(dataTableOutput("phenotypetesttable"))
   )
+})
+
+observeEvent(input$phenotypesaveselection, {
+  updateActionButton(
+  inputId = "phenotypesaveselection",
+  label = "Save Selected to Current Grouping")
+})
+observeEvent(input$phenotyperesetselection, {
+  updateActionButton(
+    inputId = "phenotypesaveselection",
+    label = "Save Selected")
+})
+observeEvent(input$phenotypeseparateselection, {
+  updateActionButton(
+    inputId = "phenotypesaveselection",
+    label = "Save Selected to Current Grouping")
 })
 observeEvent(input$phenotyperesetselection, {
   shinyjs::hide("phenotypeseparateselection")
@@ -434,6 +486,7 @@ observeEvent(input$phenotypeseparateselection, {
     IDpos <- which(grepl("ID", colnames(phenotypedata$use)))[1]
     newGrouping <- brushedPoints(phenotypedata$use, input$phenotypebrush)[IDpos]
     phenotypeselections$samples <- cbindPad(phenotypeselections$samples, newGrouping)
+    phenotypeselections$samples[do.call(order, phenotypeselections$samples),]
   }else{
     NULL
   }
@@ -461,9 +514,9 @@ observeEvent(input$phenotypeseparateselection, {
       insertUI(
         selector = '#phenotypecontainer',
         where = "beforeEnd",
-        ui = column(6,
-                    tags$div(textInput(paste("phenotypeselectionName", paste(phenotypecounter()), sep = ""), paste("Create Label for Selection", paste(phenotypecounter())),
-                                       value = paste("Selection", paste(phenotypecounter()))),
+        ui = column(4,
+                    tags$div(textInput(paste("phenotypeselectionName", paste(phenotypecounter()), sep = ""), paste("Name for Group", paste(phenotypecounter())),
+                                       value = paste("Group", paste(phenotypecounter()))),
                              id = paste0("phenotypeselection", paste(phenotypecounter())))
         )
       )
@@ -486,11 +539,12 @@ observeEvent(input$phenotypeseparateselection, {
   }
 })
 #this produces the table to view selected points
-output$phenoypetable1 <- renderDataTable({
+output$phenoypetable1 <- renderPrint({
   req(phenotypedata$table)
   req(input$phenotypeplottype == "scatter")
-  phenotypeselections$samples
+  print(as.list(phenotypeselections$samples), na.print = "")
 })
+
 #dynamically name selections and update the table with the new names
 phenotypetest <- reactiveValues()
 phenotypetest$list <- c()
@@ -584,20 +638,24 @@ observeEvent(input$phenotypeactionbutton, {
   IDpos <- which(grepl("ID", colnames(phenotypedata$table1)))[1]
   IDposname <- names(phenotypedata$table1[which(grepl("ID", colnames(phenotypedata$table1)))[1]])
   columnadd <- pivot_longer(phenotypeselections$samples, everything(), names_to = input$phenotypecolumnName, values_to = IDposname) %>% unique()
+  columnadd[[2]][duplicated(columnadd[[2]])] <- NA
+  columnadd <- na.omit(columnadd)
   variables <- data.frame(phenotypedata$table1[[IDpos]])
   names(variables)[1] <- IDposname
   columnadd <- right_join(x = columnadd, y = variables, by = IDposname) %>% unique()
-  columnadd[is.na(columnadd)] <- input$phenotypecolumnName
+  columnadd[is.na(columnadd)] <- input$phenotypenotext
   phenotypedata$table1 <- left_join(x = phenotypedata$table1, y = columnadd, by = IDposname)
-  #phenotypedata$table1[is.na(phenotypedata$table1)] <- input$phenotypenotext
+  
   #adds column to filtered dataset
   IDpos2 <- which(grepl("ID", colnames(phenotypedata$filter)))[1]
   IDposname2 <- names(phenotypedata$filter[which(grepl("ID", colnames(phenotypedata$filter)))[1]])
   columnadd2 <- pivot_longer(phenotypeselections$samples, everything(), names_to = input$phenotypecolumnName, values_to = IDposname) %>% unique()
+  columnadd2[[2]][duplicated(columnadd2[[2]])] <- NA
+  columnadd2 <- na.omit(columnadd2)
   variables2 <- data.frame(phenotypedata$filter[[IDpos]])
   names(variables2)[1] <- IDposname2
   columnadd2 <- right_join(x = columnadd2, y = variables2, by = IDposname2) %>% unique()
-  columnadd2[is.na(columnadd2)] <- input$phenotypecolumnName
+  columnadd2[is.na(columnadd2)] <- input$phenotypenotext
   phenotypedata$filter <- left_join(x = phenotypedata$filter, y = columnadd2, by = IDposname2)
   #phenotypedata$filter[is.na(phenotypedata$filter)] <- input$phenotypenotext
 })

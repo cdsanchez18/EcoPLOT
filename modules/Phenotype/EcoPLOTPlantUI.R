@@ -5,7 +5,7 @@
 
 
 EcoPLOTPlantUI <- tabPanel("Phenotype Data",
-                           tabsetPanel(
+                           tabsetPanel(id = "phenotypeui",
                              tabPanel("Guide",
                                       includeMarkdown("plant_guide.rmd")),
                              tabPanel("Upload File",
@@ -76,18 +76,15 @@ EcoPLOTPlantUI <- tabPanel("Phenotype Data",
                                       fluidPage(
                                         titlePanel("Menu"),
                                         sidebarLayout(
-                                          sidebarPanel("",
+                                          sidebarPanel(id = "plantplotsidebar",
                                                        shiny::radioButtons("phenotypedatasource", "Select Dataset to Use:",
                                                                            choices = c("Original"),
                                                                            selected = "Original", inline = TRUE),
                                                        uiOutput("phenotypeplotUI")),
-                                          mainPanel("",
+                                          mainPanel(id = "plantplotmainpanel",
                                                     uiOutput("correlationoutput"),
                                                     uiOutput("phenotypeplotmainUI"),
-                                                    verbatimTextOutput("phenotypebrushtest"),
-                                                    splitLayout(dataTableOutput("phenoypetable1")),
-                                                    uiOutput("phenotypedynamicselectbuttons"),
-                                                    splitLayout(dataTableOutput("phenotypetesttable"))
+                                                    uiOutput("phenotypedynamicselectbuttons")
                                           )))),
                              tabPanel("Statistics",
                                       fluidPage(

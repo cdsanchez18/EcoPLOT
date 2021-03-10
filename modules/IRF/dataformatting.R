@@ -34,9 +34,9 @@ output$irfUIoptions <- renderUI({
     #hr()
     #,
     conditionalPanel(condition = "input.IRF == 3",
-                     numericInput("IRFsetseed", "Set Seed (For Repeatability)",
-                                  value = 100, min = 1)
-                     ,
+                     #numericInput("IRFsetseed", "Set Seed (For Repeatability)",
+                     #             value = 100, min = 1)
+                     #,
                      sliderInput("IRFpercentage", "Select Percentage of Data to Include in Training Dataset
                                  (Remaining will go to Test Dataset)", min = 60, max = 99, step = 1, post = "%",
                                  value = 80)
@@ -259,7 +259,7 @@ observeEvent(input$performIRF, {
 ###RUN IRF ANALYSIS
 IRFmodel <- eventReactive(input$performIRF, {
   if(is.null(Xtrain()))return(NULL)
-  set.seed(input$IRFsetseed)
+  #set.seed(input$IRFsetseed)
   rit.param <- list(depth= input$IRFdepth, nchild= input$IRFnchild, ntree= input$IRFntree, class.id=1, class.cut=NULL)
   if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
     if(input$IRFinteractions == TRUE){
@@ -420,10 +420,12 @@ output$partdepplot1 <- renderUI({
     hr(),
     fluidRow(
     column(4,
-    wellPanel(tags$h3("Partial Dependence Plot"),
+    wellPanel(tags$h3("Partial Dependence Plot")
+              ,
     selectInput("partdepx", "Select Variable to Observe Partial Dependence",
                 choices = c("NULL", sample_variables(phyloseqobj())),
-                selected = "NULL"),
+                selected = "NULL")
+    ,
     if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
     selectInput("partdepclass", "Select Class of Output to Focus on:",
                 choices = c("NULL", as.list(levels(as.factor(sample_data[[input$IRFyvar]])))),
@@ -444,15 +446,20 @@ partialdependenceplot <- reactive({
   if(!is.null(av(input$partdepx))){
     if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
       if(!is.null(av(input$partdepclass))){
-       plot <- iRF::partialPlot(IRFmodel()$rf.list[[1]], pred.data = data.matrix(Xtrain()), x.var = !!as.symbol(input$partdepx), which.class = input$partdepclass) 
-      }else{
+        xvar <- input$partdepx
+        class <- input$partdepclass
+       plot <- iRF::partialPlot(x = IRFmodel()$rf.list[[1]], pred.data = data.matrix(Xtrain()), x.var = xvar, class) 
+       plot
+       }else{
         NULL
       }
     }else if(is.integer(IRFdataset()[train_index1(), input$IRFyvar]) || is.numeric(IRFdataset()[train_index1(), input$IRFyvar])){
-      plot <- iRF::partialPlot(IRFmodel()$rf.list[[1]], pred.data = data.matrix(Xtrain()), x.var = !!as.symbol(input$partdepx)) 
+      plot <- iRF::partialPlot(x = IRFmodel()$rf.list[[1]], pred.data = data.matrix(Xtrain()), x.var = input$partdepx) 
+      plot
     }
   }else {
     plot <- NULL
+    plot
   }
   plot
 })

@@ -32,7 +32,7 @@ EcoPLOT_IRF <- tabPanel("IRF",
                               ),
                               tabPanel(value = 4, "Step 3: Run IRF",
                                        #verbatimTextOutput("testtest"),
-                                       verbatimTextOutput("testtest2"),
+                                       #verbatimTextOutput("testtest2"),
                                        uiOutput("IRFoutputui")
                                        )
                               ,

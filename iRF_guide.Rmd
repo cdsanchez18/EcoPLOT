@@ -34,7 +34,6 @@ Following formatting, the next step is to create the training and testing datase
   
 Included in this step is the selection of your output variable and the removal of unnecessary ones. Your output variable is your variable of interest, aka that feature which you eventually want to make a prediction on. This variable can be continuous or a factor variable, iRF recognizes both and will use a classification model for categorical variables and a regression model for continouous ones. It is also important to remove undesired variables from being included in the analysis. These variables are often unique to each individual sample and do not contain any importance in experimental design. Failure to remove these extraneous variables may cause issues in the algorithm's performance.  
     
-<b>Note:</b> The set seed feature is included for repeatability. This will ensure that you get the same result if you were to perform iRF at a later date with the same input variables and parameter settings. 
   
 <h2><b> Step 3: Run IRF</h2></b>  
   
