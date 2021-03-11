@@ -20,13 +20,19 @@ output$phyloseqdistanceoptions <- renderUI({
                      tags$div(tags$h5(tags$b("NOTE:"),"For this distance option, we recommend a filtered
                             dataset to avoid lengthy running times."),
                               align = "left"))
+    ,
+    actionButton("renderdistancematrix", "Create Distance Matrix", width = "100%")
+    ,
+    conditionalPanel("input.renderdistancematrix",
+                     hr(),
+                     downloadTableUI(id = "distancematrixtabledownload"))
   )
   return(output)
 })
-output$makedistancematrixtable <- renderUI({
-  if(is.null(phyloseqobj()))return(NULL)
-  actionButton("renderdistancematrix", "Create Distance Matrix")
-})
+# output$makedistancematrixtable <- renderUI({
+#   if(is.null(phyloseqobj()))return(NULL)
+#   actionButton("renderdistancematrix", "Create Distance Matrix", width = "100%")
+# })
 distancematrix <- eventReactive(input$renderdistancematrix, {
   withProgress(message = "Creating Distance Matrix", 
                detail= "This may take a while", {
@@ -39,55 +45,48 @@ output$distancematrixtable <- renderDataTable({
 })
 downloadTable(id = "distancematrixtabledownload", tableid = as.matrix(distancematrix()))
 
-output$dispersionUI <- renderUI({
-  if(is.null(distancematrix()))return(NULL)
-  output<- tagList(
-    tags$div(tags$h4("You are Viewing the", paste(input$ordinationdataset), "Dataset"),
-             align = "center")
-    ,
-    selectInput("betadispersionoptions1", "Select Factors to View Dispersion:",
-                choices = sample_variables(ampliconuse()),
-                multiple = FALSE)
-    ,
-    actionButton("renderbetadispersion", "Visualize Dispersion:")
-    ,
-    hr()
-    ,
-    downloadPlotUI(id = "betadispersionplot2download")
-  )
-  return(output)
-})
-# output$betadispersionoptions <- renderUI({
+# output$dispersionUI <- renderUI({
 #   if(is.null(distancematrix()))return(NULL)
-#   selectInput("betadispersionoptions1", "Select Factors to View Dispersion:",
-#               choices = sample_variables(ordinationdatasetuse()),
-#               multiple = FALSE)
+#   output<- tagList(
+#     tags$div(tags$h4("You are Viewing the", paste(input$ordinationdataset), "Dataset"),
+#              align = "center")
+#     ,
+#     selectInput("betadispersionoptions1", "Select Factors to View Dispersion:",
+#                 choices = sample_variables(ampliconuse()),
+#                 multiple = FALSE)
+#     ,
+#     actionButton("renderbetadispersion", "Visualize Dispersion:")
+#     ,
+#     hr()
+#     ,
+#     downloadPlotUI(id = "betadispersionplot2download")
+#   )
+#   return(output)
 # })
-# output$betadispersionplotrender <- renderUI({
+
+# betadispersionplot <- reactive({
 #   if(is.null(distancematrix()))return(NULL)
-#   actionButton("renderbetadispersion", "Visualize Dispersion:")
+#   #eventReactive(input$renderbetadispersion,{
+#   #withProgress(message = "Constructing Beta Dispersion Plot", {
+#     mod <- betadisper(distancematrix(), sample_data(ampliconuse())[[input$betadispersionoptions1]])
+#     centroids<- data.frame(grps=rownames(mod$centroids),data.frame(mod$centroids))
+#     vectors<- data.frame(group=mod$group,data.frame(mod$vectors))
+#     seg.data<- cbind(vectors[,1:3],centroids[rep(1:nrow(centroids),as.data.frame(table(vectors$group))$Freq),2:3])
+#     names(seg.data)<-c("grps","v.PCoA1","v.PCoA2","PCoA1","PCoA2")
+#     ggplot() + 
+#       geom_point(data=centroids, aes(x=PCoA1,y=PCoA2),size=4,colour="red",shape=16) + 
+#       geom_point(data=seg.data, aes(x=v.PCoA1,y=v.PCoA2),size=2,shape=16) +
+#       labs(title="Dispersion Plot",x="",y="") + facet_grid(~grps) + stat_ellipse(type = "t")
+#   #})
 # })
-betadispersionplot <- eventReactive(input$renderbetadispersion,{
-  withProgress(message = "Constructing Beta Dispersion Plot", {
-    mod <- betadisper(distancematrix(), sample_data(ampliconuse())[[input$betadispersionoptions1]])
-    centroids<- data.frame(grps=rownames(mod$centroids),data.frame(mod$centroids))
-    vectors<- data.frame(group=mod$group,data.frame(mod$vectors))
-    seg.data<- cbind(vectors[,1:3],centroids[rep(1:nrow(centroids),as.data.frame(table(vectors$group))$Freq),2:3])
-    names(seg.data)<-c("grps","v.PCoA1","v.PCoA2","PCoA1","PCoA2")
-    ggplot() + 
-      geom_point(data=centroids, aes(x=PCoA1,y=PCoA2),size=4,colour="red",shape=16) + 
-      geom_point(data=seg.data, aes(x=v.PCoA1,y=v.PCoA2),size=2,shape=16) +
-      labs(title="Dispersion Plot",x="",y="") + facet_grid(~grps) + stat_ellipse(type = "t")
-  })
-})
-output$betadispersionplot1 <- renderPlot({
-  if(is.null(betadispersionplot()))return(NULL)
-  betadispersionplot()
-})
-output$betadispersionplot2 <- renderUI({
-  plotOutput("betadispersionplot1")
-})
-downloadPlot(id = "betadispersionplot2download", plotid = betadispersionplot())
+# output$betadispersionplot1 <- renderPlot({
+#   if(is.null(betadispersionplot()))return(NULL)
+#   betadispersionplot()
+# })
+# output$betadispersionplot2 <- renderUI({
+#   plotOutput("betadispersionplot1")
+# })
+#downloadPlot(id = "betadispersionplot2download", plotid = betadispersionplot())
 betadispstat <- eventReactive(input$renderbetadispersion, {
   if(is.null(distancematrix()))return(NULL)
   withProgress(message = "Performing Beta Dispersion", {
@@ -136,7 +135,6 @@ output$adonisUI <- renderUI({
 # })
 output$adonissamplevars1 <- renderPrint({
   if(is.null(ampliconuse()))return(NULL)
-  
   sample_variables(ampliconuse())
 })
 output$adonissamplevars <- renderUI({
@@ -239,7 +237,9 @@ output$ordinationplotoptions <- renderUI({
   return(output)
 })
 
-ordinationplot <- eventReactive(input$makeordinationplot1, {
+ordinationplot <- reactive({
+  if(is.null(pcoaobj()))return(NULL)
+  #eventReactive(input$makeordinationplot1, {
   req(phyloseqobj())
   if(input$ordinationellipse1 == "yes"){
     plot_ordination(
@@ -370,7 +370,7 @@ output$ordinationplotoutputUI <- renderUI({
   if(input$renderdistancematrix == 0){
     output <- tags$h3("Please Create a Distance Matrix First")
   }else {
-    req(distancematrix())
+    #req(distancematrix())
     output <- plotOutput("ordinationplotoutput")
   }
   return(output)

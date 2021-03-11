@@ -422,7 +422,7 @@ output$partdepplot1 <- renderUI({
     column(4,
     wellPanel(tags$h3("Partial Dependence Plot")
               ,
-    selectInput("partdepx", "Select Variable to Observe Partial Dependence",
+    selectInput("partdepxvar", "Select Variable to Observe Partial Dependence",
                 choices = c("NULL", sample_variables(phyloseqobj())),
                 selected = "NULL")
     ,
@@ -441,20 +441,30 @@ output$partdepplot1 <- renderUI({
   )
   return(output)
 })
+output$testprintpartial <- renderPrint({
+  if(is.null(IRFmodel()))return(NULL)
+  names(Xtrain()[input$partdepxvar])
+})
 partialdependenceplot <- reactive({
   if(is.null(IRFmodel()))return(NULL)
-  if(!is.null(av(input$partdepx))){
+  if(!is.null(av(input$partdepxvar))){
     if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
       if(!is.null(av(input$partdepclass))){
-        xvar <- input$partdepx
-        class <- input$partdepclass
-       plot <- iRF::partialPlot(x = IRFmodel()$rf.list[[1]], pred.data = data.matrix(Xtrain()), x.var = xvar, class) 
+        plot <- do.call("partialPlot", 
+                list(x=IRFmodel()$rf.list[[1]], pred.data=data.matrix(Xtrain()), 
+                     x.var = input$partdepxvar, which.class = input$partdepclass,
+                     ylab = paste("Marginal Effect of", input$partdepxvar),
+                     main = paste("Partial Dependence on", input$partdepxvar, "on", input$IRFyvar)))
        plot
        }else{
         NULL
       }
     }else if(is.integer(IRFdataset()[train_index1(), input$IRFyvar]) || is.numeric(IRFdataset()[train_index1(), input$IRFyvar])){
-      plot <- iRF::partialPlot(x = IRFmodel()$rf.list[[1]], pred.data = data.matrix(Xtrain()), x.var = input$partdepx) 
+      plot <- do.call("partialPlot", 
+                      list(x=IRFmodel()$rf.list[[1]], pred.data=data.matrix(Xtrain()), 
+                           x.var = input$partdepxvar,
+                           ylab = paste("Marginal Effect of", input$partdepxvar),
+                           main = paste("Partial Dependence on", input$partdepxvar, "on", input$IRFyvar)))
       plot
     }
   }else {
@@ -467,9 +477,32 @@ output$partialdependenceplot1 <- renderPlot({
   if(is.null(IRFmodel()))return(NULL)
   partialdependenceplot()
 })
+output$partialdependenceplot2 <- renderPrint({
+  if(is.null(IRFmodel()))return(NULL)
+  if(!is.null(av(input$partdepxvar))){
+    #if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
+      str(IRFdataset() %>% select(colnames(data.frame(sample_data(ampliconuse())) %>% select(c(input$partdepxvar)))))
+    #}else if(is.integer(IRFdataset()[train_index1(), input$IRFyvar]) || is.numeric(IRFdataset()[train_index1(), input$IRFyvar])){
+   #   NULL
+   # }
+  }else {
+    NULL
+  }
+})
+
 output$partialdependenceplotoutput <- renderUI({
   if(is.null(IRFmodel()))return(NULL)
-  plotOutput("partialdependenceplot1")
+  output <- tagList(
+    plotOutput("partialdependenceplot1")
+    ,
+    verbatimTextOutput("partialdependenceplot2")
+    ,
+    wellPanel(tags$div(tags$h4("If you have selected a categorical variable to view on the x axis, you will notice 
+                      that the variable names have been converted to their numeric identifiers. Using the
+                      output above, you may observe the number assigned to each variable level to assist in 
+                      your interpretation of the results above..")), align = "center")
+    )
+  return(output)
 })
 downloadPlot("partialdepplot", partialdependenceplot())
 varimportancetable <- reactive({

@@ -9,7 +9,7 @@ The following guide explains how to operate within the Amplicon Data module of E
 
 <h2><b>What is Amplicon Data?</b></h2>  
   
-  In biology, an Amplicon refers to a piece of DNA that results from an amplification event like polymerase chain reaction (PCR). 16S Amplicons are generated from all or some of the 16S rRNA gene. As an essential gene, this region is slow to undergo mutations, but exhibits enough variability between microbial species that it is often used as a unique identifier of species identity. 
+  In biology, an Amplicon refers to a piece of DNA that results from an amplification event, such as polymerase chain reaction (PCR). 16S Amplicons are generated from all or some of the 16S rRNA gene. As an essential gene, this region is slow to undergo mutations, but exhibits enough variability between microbial species that it is often used as a unique identifier of species identity. 
   
   The Amplicon Data module of EcoPLOT is well equipped to assist in your analysis of microbial communities from any ecosystem. 
 
@@ -28,7 +28,7 @@ If the uploaded mapping file contains the same sample ID's to those contained in
   
   Two separate histograms are shown displaying the number of reads per sample and per ASV for both the filtered and original datasets.  
   
-  Users can select which dataset they wish to use at the top of each section. 
+  Users can access both the original and filtered datasets across module sections. 
   
 <h2><b>Community Composition</b></h2>  
   
@@ -36,11 +36,11 @@ If the uploaded mapping file contains the same sample ID's to those contained in
   
   **Note:** Lower taxonomic ranks may cause the plot legend to obstruct the plot itself. You may alter the position of the legend using the legend position option.  
   
-  If a phylogenetic tree was uploaded, you may plot in the "Phylogenetic Tree" tab. Plotting options are taken directly from the uploaded file and may take a bit to load. You may select which node and how many ancestral levels to show. 
+  If a phylogenetic tree was uploaded, you may plot it in the "Phylogenetic Tree" tab. Plotting options are taken directly from the uploaded file and may take a bit to load. You may select which node and how many ancestral levels to show. 
   
 <h2><b>Alpha Diversity</b></h2>  
   
-  Alpha diversity measurements are used to estimate the diversity within a single sample. Alpha diversity focuses on observing species envenness, how similar each microbe is distributed within a sample, and richness, the number of different species present. In EcoPLOT, we provide users with a table of standard alpha diversity estimators (Observed ASV's, Chao1, ACE, Shannon, Simpson, Inverse Simpson, and Fisher). These methods can then be viewed graphically in the following tab, titled "Plot." Below we explain the differences between each method so that you may determine which best suits your data:  
+  Alpha diversity measurements are used to estimate the diversity within a single sample. Alpha diversity focuses on observing species <b>evenness</b>, how similar each microbe is distributed within a sample, and <b>richness</b>, the number of different species present. In EcoPLOT, we provide users with a table of standard alpha diversity estimators (Observed ASV's, Chao1, ACE, Shannon, Simpson, Inverse Simpson, and Fisher). These methods can then be viewed graphically in the following tab, titled "Plot." <br> Below we explain the differences between each method so that you may determine which best suits your data:  
   <ul>
 <li><b>Observed ASV's:</b> Is a richness measurement that counts the amount of unique ASV's per sample.  </li>
 <li><b>Chao-1 Index:</b>  Is a richness measurement that assumes each taxa follows a Poisson distribution. It well suited for data containing low abundance counts because it places more weight on low abundance taxa.</li>
@@ -52,7 +52,7 @@ If the uploaded mapping file contains the same sample ID's to those contained in
 </ul> 
   
   
-  Using the statistics tool provided in the sidebar of this tab will inform users of statistically significant differences between experimental design variables as given by a Tukey Pairwise Comparison. 
+  The statistics tool provided in the sidebar of this tab will inform users of statistically significant differences between experimental design variables as given by a Tukey Pairwise Comparison. Users are asked to select which variables they would like to compare. Once selected, a print-out will show the pairwise comparisons and their corresponding significance. 
   
 <h2><b>Beta Diversity</b></h2>   
   

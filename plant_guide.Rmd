@@ -9,7 +9,7 @@ The following guide explains how to operate within the Phenotype Data module of 
   
   <h2><b>What is Phenotype Data?</b></h2>  
   
-  Phenotypic data are qualitative measurements associated with a plant's physical appearance taken across its lifecycle. Some examples are for plant data are height, count of leaves, color, and number of roots. 
+  Phenotypic data consists of the qualitative measurements associated with a plant's physical appearance taken across its lifecycle. Some examples of phenotypic data are plant height, count of leaves, color or pigmentation, and number of roots. 
 
 <h2><b>Phenotypic Data in EcoPLOT</b></h2>  
   

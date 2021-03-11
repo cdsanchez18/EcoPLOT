@@ -8,35 +8,28 @@ output:
 <div style = "text-align:center"><h1> <b>EcoPLOT Operating Instructions</b></h1></div>
 
 <H2><b>Overview</b></H2>
-EcoPLOT was developed to faciliate the exploration and study of multivariate, biogeochemical datasets. EcoPLOT is organized into three modules (Environment, Plant Phenotype, and Amplicon), each featuring a variety of statistical and graphical tools unique to each data type. Below we explain how to properly format your data for upload into EcoPLOT and highlight some of the unique features of our tool. For module specific instructions, please consult the guides at the front of each section.  
+EcoPLOT was developed to faciliate the exploration and study of multivariate, biogeochemical datasets. EcoPLOT is organized into three modules (Environmental Data, Phenotype Data, and Amplicon Data), each featuring a variety of statistical and graphical tools unique to each data type. Below we explain how to properly format your data for upload into EcoPLOT and highlight some of the unique features of our tool. For module specific instructions, please consult the guides at the beginning of each section.  
   
 <H2><b> Formatting Your Data For Upload  </b></H2>
 EcoPLOT currently accepts **.csv** , **.tsv**, and **.xlsx** file formats.  
   
 The Amplicon Data module accepts **.biom** and **.qza** file formats in addition to those previously mentioned.  
 
-The first column of each file uploaded to EcoPLOT should have the first column reserved for sample ID's (see below). This requirement does not apply to tables in **.biom** or **.qza** formats. These file formats should not be altered.  
+The first column of each file uploaded to EcoPLOT should have the first column reserved for unique sample ID's (see below). This requirement does not apply to tables in **.biom** or **.qza** formats. These file formats should not be altered from their original formats.  
   
 Example datasets are included in each module.  
   
-  <b>Example table format:</b>    
-  
-|sampleID  |      |treatment    |depth    |replicate    |
-|--------  |---   |---------    |-----    |---------    |
-| RE_100   |      | control     | B       | 2           |
-| RE_110   |      | drought     | C       | 1           | 
-| RE_227   |      | drought     | C       | 2           |
-| RE_119   |      | control     | A       | 4           |
-| RE_147   |      | drought     | C       | 1           |
-| RE_117   |      | drought     | A       | 4           |
-  
-  
+<div style = "border-style:solid;">
+  <center><img src = "www/example_table.png"></center>
+</div>
   
 <H2><b>Interactive Exploration of your Data</H2></b>
   
 EcoPLOT allows for the interactive creation of new variables to capture patterns or trends not explained by exisiting variables in your experimental design. This feature, referred to as dynamic selection, is available in <b>scatter</b> and <b>ordination</b> plots found across the three modules. We explain the steps required to use dynamic selection below.  
   
-<center><img src = "www/dynamic_selection.png"></center>
+  <div style="width:100%;">
+<center><img src = "www/dynamic_selection.png" style="width:100%;"></center>
+</div>
   
   <h5> <b>Steps: </b></h5>  
  <ul>
@@ -47,7 +40,7 @@ EcoPLOT allows for the interactive creation of new variables to capture patterns
   <li> <b> Step 5: Click "Save Variable"</b> Clicking Save Variable will append your newly created variable as a column in your existing dataframe, where it can be accessed in statistical and graphical analyses across each module of EcoPLOT.</li>
   </ul
 
-<b>NOTE:</b> There is no limit to the number of variables you can create within EcoPLOT. If the sample point is selected in two or more groupings, it will be given the name of the group in which it first appears.  
+<h4><b> NOTE: </b> There is no limit to the number of variables you can create within EcoPLOT. If the same sample point is selected in two or more groupings, it will be given the name of the group in which it first appears.  </h4>
   
   
 <H2><b> Logging Information </b></H2>

@@ -37,31 +37,37 @@ output$alphadivoptions <- renderUI({
                                  multiple = FALSE,
                                  selected = "NULL"))
     ,
+    numericInput("alphaplotheight", "Select Plot Height:", value = 800, min = 200, max = 1500, step = 25)
+    ,
+    fluidRow(
+      column(6,
     textInput(inputId = "alphaphyloseqxaxis1", label = "Create X axis Label",
-              placeholder = "X Axis")
+              placeholder = "X Axis"))
     ,
+    column(6,
     numericInput("alphaphyloseqxaxislabelsize", "Select Size of X Axis Label Text",
-                 value = 15, min = 3, max = 30)
-    ,
-    sliderInput(inputId = "alphaphyloseqxaxisangle", label = "Select Angle of X Axis Text",
-                min = 0, max = 90, value = 0, step = 5)
+                 value = 10, min = 3, max = 30)))
     ,
     numericInput("alphaphyloseqxaxistextsize", label = "Select Size of X Axis Text",
                  value = 10, min = 3, max = 30)
     ,
-    textInput(inputId = "alphaphyloseqyaxis1", label = "Create Y axis Label",
-              placeholder = "Y Axis")
-    ,
-    numericInput("alphaphyloseqyaxislabelsize", "Select Size of Y Axis Label Text",
-                 value = 15, min = 3, max = 30)
-    ,
-    sliderInput(inputId = "alphaphyloseqyaxisangle", label = "Select Angle of Y Axis Text",
+    sliderInput(inputId = "alphaphyloseqxaxisangle", label = "Select Angle of X Axis Text",
                 min = 0, max = 90, value = 0, step = 5)
+    ,
+    fluidRow(
+      column(6,
+    textInput(inputId = "alphaphyloseqyaxis1", label = "Create Y axis Label",
+              placeholder = "Y Axis"))
+    ,
+    column(6,
+    numericInput("alphaphyloseqyaxislabelsize", "Select Size of Y Axis Label Text",
+                 value = 10, min = 3, max = 30)))
     ,
     numericInput("alphaphyloseqayaxistextsize", label = "Select Size of Y Axis Text",
                  value = 10, min = 3, max = 30)
     ,
-    actionButton("phyloseqplotrender1", "Render Plot", width = "100%")
+    sliderInput(inputId = "alphaphyloseqyaxisangle", label = "Select Angle of Y Axis Text",
+                min = 0, max = 90, value = 0, step = 5)
   )
   return(output)
 })
@@ -92,7 +98,7 @@ downloadTable(id = "alphadiversitystattable",tableid = phyloseqalpharichness())
 output$alphadivstatoptions <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
   output <- tagList(
-    actionButton("renderalphastattable", "Make Table")
+    actionButton("renderalphastattable", "Make Table", width = "100%")
     ,
     tags$div(tags$h5(tags$b("Note:"), "This will produce a table of standard alpha diversity 
             estimates."), align = "center")
@@ -112,14 +118,18 @@ output$alphadivstatoptions <- renderUI({
                                              "InvSimpson" = "InvSimpson"),
                                  multiple = FALSE)
                      ,
-                     actionButton("performalphastats", "Perform Statistics"))
+                     selectInput("alphaexclude", "Select Variables to Include in Statistics:",
+                                 choices = c(sample_variables(phyloseqobj())),
+                                 multiple = TRUE)
+                     ,
+                     actionButton("performalphastats", "Perform Statistics", width = "100%"))
   )
   return(output)
 })
 alphadivstatresult <- eventReactive(input$performalphastats, {
   if(is.null(phyloseqobj()))return(NULL)
   alphastats <- list()
-  for(i in sample_variables(ampliconuse())[!grepl(pattern = "ID",x = sample_variables(ampliconuse()))]){  
+  for(i in input$alphaexclude){#sample_variables(ampliconuse())[!grepl(pattern = "ID",x = sample_variables(ampliconuse()))]){  
     alphastats[[i]] <- pairwise.wilcox.test(phyloseqalpharichness()[[input$alphastatoptions]], sample_data(ampliconuse())[[i]], p.adjust.method = "bonf")
   }
   alphastats
@@ -129,11 +139,13 @@ output$alphadivstatprint <- renderPrint({
   alphadivstatresult()
 })
 ###Alpha Diversity Plot 
-phyloseqplot <- eventReactive(input$phyloseqplotrender1, {
-  req(input$phyloseqplotrender1)
+phyloseqplot <- reactive({
+  #eventReactive(input$phyloseqplotrender1, {
+  #req(input$phyloseqplotrender1)
   if(is.null(ampliconuse()))return(NULL)
-  withProgress(message = "Making Plot",
-               detail = "This may take a while...", {
+  #withProgress(message = "Making Plot",
+  #             detail = "This may take a while...", {
+  if(!is.null(input$phyloseqalphaoptions1) && !is.null(av(input$phyloxaxis))){
                  if(is.null(av(input$phylocolor))){
                    plot <- phyloseq::plot_richness(ampliconuse(), x = input$phyloxaxis,
                                                    measures = input$phyloseqalphaoptions1,
@@ -153,17 +165,28 @@ phyloseqplot <- eventReactive(input$phyloseqplotrender1, {
                                                                               angle = isolate(input$alphaphyloseqxaxisangle)),
                          axis.text.y = element_text(color = "black", size = input$alphaphyloseqyaxistextsize,
                                                     angle = input$alphaphyloseqyaxisangle),
-                         axis.title.x = element_text(size = input$alphaphyloseqxaxislabelsize), axis.title.y = element_text(size = input$alphaphyloseqyaxislabelsize))
+                         axis.title.x = element_text(size = input$alphaphyloseqxaxislabelsize), axis.title.y = element_text(size = input$alphaphyloseqyaxislabelsize)) + theme_bw()
                  if(!is.null(av(input$phylofacet)) && !is.null(av(input$phylofacet2))){
                    plot <- plot + facet_wrap(paste(input$phylofacet, paste("~", paste(input$phylofacet2))), scales = "free_y")#paste("~", paste(input$phylofacet, "+", paste(input$phylofacet2)))) 
                  }else if(!is.null(av(input$phylofacet))){
                    plot <- plot + facet_grid(paste("~", paste(input$phylofacet))) 
                  }
-               })
+  }else{
+    plot <- NULL
+  }
+              # })
   return(plot)
 })
 output$phyloseqplot1 <- renderPlot({
-  #if(is.null(phyloseqplot()))
+  if(is.null(phyloseqplot()))return(NULL)
   phyloseqplot()
+})
+output$phyloseqplot2 <- renderUI({
+  if(is.null(phyloseqplot()))return(NULL)
+  output <- tagList(
+  plotOutput("phyloseqplot1", height = input$alphaplotheight)
+  ,
+  downloadPlotUI(id = "alphadiversityplotdownload")
+  )
 })
 downloadPlot(id = "alphadiversityplotdownload", plotid = phyloseqplot())

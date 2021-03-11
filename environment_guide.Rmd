@@ -24,19 +24,19 @@ The following guide explains how to operate within the Environmental Data module
   
   To use the tool, simply enter your soils percentages of sand, silt, and clay and click "submit." A dot will appear at the corresponding location to inform you of your soil's classification. 
   
+  <div style="padding:10px;"></div>
+  
+  <div style = "border-style:solid;">
+  <center><img src = "www/soiltriangle_example.png"></center>
+</div>
+  
   <h2><b> Formatting Requirements</b></h2>
     
   In order to utilize EcoPLOT's soil stoichiometry and texture tools, it is important that your uploaded data contain the following column headers. Case does not matter.  
-   
-|sampleID    |nitrate    |phosphorus    |total_carbon    |potassium    |sand         |silt         |clay       |
-|--------    |-------    |----------    |------------    |---------    |---------    |---------    |---------  |
-| RE_100     |   19      | 33           | 40             | 266         | 55          | 25          | 20        |
-| RE_110     |   16      | 35           | 43             | 275         | 55          | 25          | 20        |
-| RE_227     |   17      | 34           | 49             | 271         | 55          | 25          | 20        |
-| RE_119     |   18      | 35           | 48             | 269         | 55          | 25          | 20        |
-| RE_147     |   16      | 33           | 43             | 277         | 55          | 25          | 20        |
-| RE_117     |   16      | 35           | 49             | 247         | 55          | 25          | 20        |
-  
+  <div style="padding:10px;"></div>
+<div style = "border-style:solid;">
+  <center><img src = "www/environment_table.png"></center>
+</div>
   
   
   <h2><b>Citations</b></h2> 

@@ -64,10 +64,12 @@ The following image depicts an example output, provided the user has chosen to h
 
 <h2><b> View iRF Results Graphically </h2></b>  
   
-  EcoPLOT provides two graphical representations of the iRF model for users to visualize: 
+  EcoPLOT provides three graphical representations of the iRF model for users to visualize: 
   <ul>
   <li> <b>Variable Importance Plot:</b> Returns a plot of important variables and their corresponding importance scores as measured by a Random Forest. Importance scores are determined by the mean decrease in Gini importance, a measurement of how a variable contributes to the purity/homogeneity of a node in the forest. The higher the Gini measurement, the more important the variable is in the model.</li>
-  <li> <b>Variable Interaction Plot:</b> Returns plot of variable interactions and their corresponding stability scores. Interactions are defined as variables that frequently appear together at splits of a tree in the forest. Variables that exhibit an interaction are listed together, separated by an underscore (_). Increasing the <b> depth </b> parameter can increase iRF's ability to uncover interactions. While statistically interesting, the returned interactions do not necessarily imply biological significance. We encourage users to generate novel hypotheses with their iRF results.</li>
+  <li><b>Partial Dependence Plot:</b> This plot shows the relative logit contribution of the selected variable on the class probability, if your y variable is categorical, or the outcome, if continuous. Essentially, this plot can be used to understand how the model interprets the effects of each predictor variable on the selected output variable. A negative value on the y-axis indicates that a predicion of that value or class is less likely given the independent variable value, whereas a positive value on the y-axis indicates that it is more likely. A value of zero implies no effect.</li>
+  <li> <b>Variable Interaction Plot:</b> Returns plot of variable interactions and their corresponding stability scores. Interactions are defined as variables that frequently appear together at splits of a tree in the forest. Variables that exhibit an interaction are listed together, separated by an underscore (_). Increasing the <b> depth </b> parameter can increase iRF's ability to uncover interactions. While statistically interesting, the returned interactions do not necessarily imply biological significance. We encourage users to generate novel hypotheses with their iRF results. <br>
+  <b> NOTE:</b> This plot will only appear if iRF was told to look for interactions.</li>
   </ul>  
   
   Raw tables can be viewed and downloaded for both variable importance and variable interaction plots. 

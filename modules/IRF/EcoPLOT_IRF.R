@@ -48,8 +48,8 @@ conditionalPanel("input.IRF == 3",
                  uiOutput("iRFdatasets")),
 conditionalPanel("input.IRF == 5",
                  hr(),
-                 uiOutput("irfinteractionoutput2"),
-                 uiOutput("partdepplot1")),
+                 uiOutput("partdepplot1"),
+                 uiOutput("irfinteractionoutput2")),
 conditionalPanel("input.IRF == 6",
                  uiOutput("irftableui"))
 )

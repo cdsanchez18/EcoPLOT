@@ -87,6 +87,7 @@ downloadPlot(id = "deseqasvplot1download", plotid = deseqasvplot())
 
 output$volcanoplotui <- renderUI({
   if(is.null(phyloseqobj()) && is.null(deseqresults()))return(NULL)
+  req(deseqresults())
   output <- tagList(
     selectInput("volcanotaxrank1", "Select Taxonomic Rank to Depict:",
                 choices = c(rank_names(phyloseqobj()), "threshold"),
@@ -112,7 +113,7 @@ output$volcanoplotui <- renderUI({
     numericInput("volcanoplotheight", "Select Height for Plot",
                  min = 0, value = 800)
     ,
-    actionButton("volcanoplotrender1", "Render Volcano Plot:")
+    actionButton("volcanoplotrender1", "Render Volcano Plot:", width = "100%")
     ,
     hr()
     ,

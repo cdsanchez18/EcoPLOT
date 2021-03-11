@@ -446,7 +446,6 @@ This guide provides a step-by-step explanation of the steps required to successf
 <p></b></p>
 <p>Following formatting, the next step is to create the training and testing datasets. For reference, the training dataset is used to create and train the model, whose accuracy is then evaulated against the testing dataset. Common practice is to place 80% of one’s data in the training set, however EcoPLOT allows users the ability to specify. EcoPLOT only visualizes columns 1:50 for each created dataset, due to rendering limitations within Shiny. The entire dataset, however, is available for download.</p>
 <p>Included in this step is the selection of your output variable and the removal of unnecessary ones. Your output variable is your variable of interest, aka that feature which you eventually want to make a prediction on. This variable can be continuous or a factor variable, iRF recognizes both and will use a classification model for categorical variables and a regression model for continouous ones. It is also important to remove undesired variables from being included in the analysis. These variables are often unique to each individual sample and do not contain any importance in experimental design. Failure to remove these extraneous variables may cause issues in the algorithm’s performance.</p>
-<p><b>Note:</b> The set seed feature is included for repeatability. This will ensure that you get the same result if you were to perform iRF at a later date with the same input variables and parameter settings.</p>
 <h2>
 <b> Step 3: Run IRF
 </h2>
@@ -481,13 +480,16 @@ We recommend that iRF first be performed using the default parameters. Following
 <b> View iRF Results Graphically
 </h2>
 <p></b></p>
-EcoPLOT provides two graphical representations of the iRF model for users to visualize:
+EcoPLOT provides three graphical representations of the iRF model for users to visualize:
 <ul>
 <li>
 <b>Variable Importance Plot:</b> Returns a plot of important variables and their corresponding importance scores as measured by a Random Forest. Importance scores are determined by the mean decrease in Gini importance, a measurement of how a variable contributes to the purity/homogeneity of a node in the forest. The higher the Gini measurement, the more important the variable is in the model.
 </li>
 <li>
-<b>Variable Interaction Plot:</b> Returns plot of variable interactions and their corresponding stability scores. Interactions are defined as variables that frequently appear together at splits of a tree in the forest. Variables that exhibit an interaction are listed together, separated by an underscore (_). Increasing the <b> depth </b> parameter can increase iRF’s ability to uncover interactions. While statistically interesting, the returned interactions do not necessarily imply biological significance. We encourage users to generate novel hypotheses with their iRF results.
+<b>Partial Dependence Plot:</b> This plot shows the relative logit contribution of the selected variable on the class probability, if your y variable is categorical, or the outcome, if continuous. Essentially, this plot can be used to understand how the model interprets the effects of each predictor variable on the selected output variable. A negative value on the y-axis indicates that a predicion of that value or class is less likely given the independent variable value, whereas a positive value on the y-axis indicates that it is more likely. A value of zero implies no effect.
+</li>
+<li>
+<b>Variable Interaction Plot:</b> Returns plot of variable interactions and their corresponding stability scores. Interactions are defined as variables that frequently appear together at splits of a tree in the forest. Variables that exhibit an interaction are listed together, separated by an underscore (_). Increasing the <b> depth </b> parameter can increase iRF’s ability to uncover interactions. While statistically interesting, the returned interactions do not necessarily imply biological significance. We encourage users to generate novel hypotheses with their iRF results. <br> <b> NOTE:</b> This plot will only appear if iRF was told to look for interactions.
 </li>
 </ul>
 <p>Raw tables can be viewed and downloaded for both variable importance and variable interaction plots.</p>
