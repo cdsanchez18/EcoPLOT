@@ -346,7 +346,7 @@ output$correlationoutput <- renderUI({
   req(phenotypedata$table)
   if(input$phenotypeplottype == "scatter"){
   verbatimTextOutput("phenotypecorrelation")
-  } else if(input$phenotypeplottype != "scatter"){
+  } else {#if(input$phenotypeplottype != "scatter"){
     NULL
   }
 })
@@ -405,11 +405,9 @@ output$phenotypedynamicselectbuttons <- renderUI({
              ,
              uiOutput("phenotypecontainer")
              ,
-             #fluidRow(
                column(4,
                       textInput("phenotypenotext", "Name for Points Not Grouped",
                                 value = "Not Grouped"))
-             #)
       )
       ),
       column(4,
@@ -451,16 +449,19 @@ output$phenotypedynamicselectbuttons <- renderUI({
 
 observeEvent(input$phenotypesaveselection, {
   updateActionButton(
+    session = getDefaultReactiveDomain(),
   inputId = "phenotypesaveselection",
   label = "Save Selected to Current Grouping")
 })
 observeEvent(input$phenotyperesetselection, {
   updateActionButton(
+    session = getDefaultReactiveDomain(),
     inputId = "phenotypesaveselection",
     label = "Save Selected")
 })
 observeEvent(input$phenotypeseparateselection, {
   updateActionButton(
+    session = getDefaultReactiveDomain(),
     inputId = "phenotypesaveselection",
     label = "Save Selected to Current Grouping")
 })

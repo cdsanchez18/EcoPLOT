@@ -135,3 +135,16 @@ observeEvent(input[["environmentstats"]], {
   }
 })
 
+observeEvent(input$environmentsidebarhide == TRUE, {
+  req(input$environmentsidebarhide == TRUE)
+  hideElement(selector = "#environmentplotsidebar")
+  removeCssClass("environmentplotmainpanel", "col-sm-8")
+  addCssClass("environmentplotmainpanel", "col-sm-12")
+})
+observeEvent(input$environmentsidebarhide == FALSE, {
+  req(input$environmentsidebarhide == FALSE)
+  showElement(selector = "#environmentplotsidebar")
+  removeCssClass("environmentplotmainpanel", "col-sm-12")
+  addCssClass("environmentplotmainpanel", "col-sm-8")
+})
+

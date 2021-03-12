@@ -41,20 +41,12 @@ EcoPLOTPlantUI <- tabPanel("Phenotype Data",
                              }
                                   "
                                             )
-                                            #background-color: #4C9F93;
-                                            #padding:5px;
-                                            #border: 1px;
-                                            #border-style: solid;
                                           )
                                         ),
                                         titlePanel("Menu"),
                                         sidebarLayout(
                                           sidebarPanel("",
                                                        uiOutput("plantfileupload")),
-                                          # ,
-                                          # hr(),
-                                          # tags$div(id = "sidebar",
-                                          # ),
                                           mainPanel("",
                                                     uiOutput("plantuploadmain")))),
                                       uiOutput("changeclassUI")

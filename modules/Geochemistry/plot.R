@@ -325,9 +325,11 @@ output$environmentcorrelation <- renderPrint({
 })
 output$environmentcorrelationoutput <- renderUI({
   req(environmentdata$table)
-  #if(input$environmentplottype == "scatter"){
-  verbatimTextOutput("environmentcorrelation")
-  #}
+  if(input$environmentplottype == "scatter"){
+    verbatimTextOutput("environmentcorrelation")
+  } else if(input$environmentplottype != "scatter"){
+    NULL
+  }
 })
 output$environmentplot1 <- renderPlot({
   req(environmentdata$table)
@@ -349,45 +351,94 @@ output$environmentdynamicselectbuttons <- renderUI({
   req(environmentdata$table)
   req(input$environmentplottype == "scatter")
   output <- tagList(
-    fluidRow(
-      column(6,
-             actionButton("environmentsaveselection", "Save Current Selection:", width = "100%")
-             ,
-             conditionalPanel(condition = "input.environmentsaveselection",
-                              hr()
-                              ,
-                              actionButton("environmentseparateselection", "Save With Different Grouping", width = "100%")
-             )
-             ,
-             hr()
-             ,
-             actionButton("environmentresetselection", "Reset Current Selection:", width = "100%")
-             ,
-             hr()
-             ,
-             actionButton("environmentactionbutton", "Add Column:", width = "100%")
+      checkboxInput("environmentsidebarhide", label = "Hide Sidebar Panel?", value = FALSE)
+      ,
+      fluidRow(
+        column(4,
+               hr()),
+        column(4,
+               tags$div(tags$h4(tags$b("Dynamic Selection")), align = "center")),
+        column(4,
+               hr())
+      ),
+      tags$div(tags$h4("Dynamic Selection allows users to create new variables within their dataset that capture unique patterns or trends 
+    not explained within their experimental design. EcoPLOT allows for the creation of up to 10 unique groupings within a created variable.
+                     To get started, create a name for you new variable and drag your mouse to select points of interest. 
+                     Clicking 'Save Selection' will group those points together under a name of your choosing. This process can be repeated
+                     to distinguish different groupings under the same variable heading. All created variables can be used in all graphical and 
+                     statistical analyses within EcoPLOT."), align = "center")
+      ,
+      tags$div(style = "padding:10px")
+      ,
+      fluidRow(
+        column(8,
+               column(4,
+                      textInput("environmentcolumnName", "Create Name for Variable",
+                                value = "New Variable"))
+               ,
+               conditionalPanel("input.environmentsaveselection",
+                                column(4,
+                                       textInput("environmentselectionName1", "Name for Group 1",
+                                                 value = "Group 1")
+                                )
+                                ,
+                                uiOutput("environmentcontainer")
+                                ,
+                                column(4,
+                                       textInput("environmentnotext", "Name for Points Not Grouped",
+                                                 value = "Not Grouped"))
+               )
+        ),
+        column(4,
+               actionButton("environmentsaveselection", "Save Selection", width = "100%")
+               ,
+               conditionalPanel(condition = "input.environmentsaveselection",
+                                hr()
+                                ,
+                                actionButton("environmentseparateselection", "Save Selection with New Grouping", width = "100%")
+                                
+                                ,
+                                hr()
+                                ,
+                                actionButton("environmentactionbutton", "Save Variable", width = "100%")
+                                ,
+                                hr()
+                                ,
+                                actionButton("environmentresetselection", "Reset Groupings", width = "100%")
+               )
+        )
       )
       ,
-      column(6,
-             column(6,
-                    textInput("environmentselectionName1", "Create Label for Selection 1:",
-                              value = "Selection 1")
-             )
-             ,
-             uiOutput("environmentcontainer")
-             ,
-             fluidRow(
-               column(6,
-                      textInput("environmentnotext", "Name Rows Not in Selections",
-                                value = "Not Grouped"))
-               ,
-               column(6,
-                      textInput("environmentcolumnName", "Create Name for Column",
-                                value = "New Column"))
-             )
-      )
-    )
+      hr()
+      ,
+      fluidRow(
+        column(6,
+               tags$h4("Points Currently Selected"),
+               verbatimTextOutput("environmentbrushtest")
+        ),
+        column(6,
+               tags$h4("Group Summary"),
+               splitLayout(verbatimTextOutput("environmenttable1")))
+      ),
+      hr(),
+      tags$h4("View Newly Created Variable in Your Data"),
+      splitLayout(dataTableOutput("environmenttesttable"))
   )
+})
+observeEvent(input$environmentsaveselection, {
+  updateActionButton(
+    inputId = "environmentsaveselection",
+    label = "Save Selected to Current Grouping")
+})
+observeEvent(input$environmentresetselection, {
+  updateActionButton(
+    inputId = "environmentsaveselection",
+    label = "Save Selected")
+})
+observeEvent(input$environmentseparateselection, {
+  updateActionButton(
+    inputId = "environmentsaveselection",
+    label = "Save Selected to Current Grouping")
 })
 observeEvent(input$environmentresetselection, {
   shinyjs::hide("environmentseparateselection")
@@ -411,6 +462,7 @@ observeEvent(input$environmentseparateselection, {
     IDpos <- which(grepl("ID", colnames(environmentdata$use)))[1]
     newGrouping <- brushedPoints(environmentdata$use, input$environmentbrush)[IDpos]
     environmentselections$samples <- cbindPad(environmentselections$samples, newGrouping)
+    environmentselections$samples[do.call(order, environmentselections$samples),]
   }else{
     NULL
   }
@@ -438,9 +490,9 @@ observeEvent(input$environmentseparateselection, {
       insertUI(
         selector = '#environmentcontainer',
         where = "beforeEnd",
-        ui = column(6,
-                    tags$div(textInput(paste("environmentselectionName", paste(environmentcounter()), sep = ""), paste("Create Label for Selection", paste(environmentcounter())),
-                                       value = paste("Selection", paste(environmentcounter()))),
+        ui = column(4,
+                    tags$div(textInput(paste("environmentselectionName", paste(environmentcounter()), sep = ""), paste("Name for Group", paste(environmentcounter())),
+                                       value = paste("Group", paste(environmentcounter()))),
                              id = paste0("environmentselection", paste(environmentcounter())))
         )
       )
@@ -463,10 +515,10 @@ observeEvent(input$environmentseparateselection, {
   }
 })
 #this produces the table to view selected points
-output$environmenttable1 <- renderDataTable({
+output$environmenttable1 <- renderPrint({
   req(environmentdata$table)
   req(input$environmentplottype == "scatter")
-  environmentselections$samples
+  print(as.list(environmentselections$samples), na.print = "")
 })
 #dynamically name selections and update the table with the new names
 environmenttest <- reactiveValues()
@@ -561,16 +613,21 @@ observeEvent(input$environmentactionbutton, {
   IDpos <- which(grepl("ID", colnames(environmentdata$table1)))[1]
   IDposname <- names(environmentdata$table1[which(grepl("ID", colnames(environmentdata$table1)))[1]])
   columnadd <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = IDposname) %>% unique()
+  columnadd[[2]][duplicated(columnadd[[2]])] <- NA
+  columnadd <- na.omit(columnadd)
   variables <- data.frame(environmentdata$table1[[IDpos]])
   names(variables)[1] <- IDposname
   columnadd <- right_join(x = columnadd, y = variables, by = IDposname)
   columnadd[is.na(columnadd)] <- input$environmentcolumnName
   environmentdata$table1 <- left_join(x = environmentdata$table1, y = columnadd, by = IDposname) %>% unique()
+  
   #adds column to filtered table 
   environmentdata$table1[is.na(environmentdata$table1)] <- input$environmentnotext
   IDpos2 <- which(grepl("ID", colnames(environmentdata$filter)))[1]
   IDposname2 <- names(environmentdata$filter[which(grepl("ID", colnames(environmentdata$filter)))[1]])
   columnadd2 <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = IDposname) %>% unique()
+  columnadd2[[2]][duplicated(columnadd2[[2]])] <- NA
+  columnadd2 <- na.omit(columnadd2)
   variables2 <- data.frame(environmentdata$filter[[IDpos]])
   names(variables2)[1] <- IDposname2
   columnadd2 <- right_join(x = columnadd2, y = variables2, by = IDposname2) %>% unique()

@@ -96,29 +96,15 @@ observeEvent(input[["plantstats"]], {
 
 observeEvent(input$phenotypesidebarhide == TRUE, {
   req(input$phenotypesidebarhide == TRUE)
-    #showNotification("test")
     hideElement(selector = "#plantplotsidebar")
     removeCssClass("plantplotmainpanel", "col-sm-8")
     addCssClass("plantplotmainpanel", "col-sm-12")
-  #}else{
-    #showElement(selector = "#plantstatssidebar")
-    #removeCssClass("plantplotmainpanel", "col-sm-12")
-    #addCssClass("plantplotmainpanel", "col-sm-8")
-    #NULL
-  #}
 })
 observeEvent(input$phenotypesidebarhide == FALSE, {
   req(input$phenotypesidebarhide == FALSE)
-  #showNotification("test")
-  # hideElement(selector = "#plantplotsidebar")
-  # removeCssClass("plantplotmainpanel", "col-sm-8")
-  # addCssClass("plantplotmainpanel", "col-sm-12")
-  #}else{
   showElement(selector = "#plantplotsidebar")
   removeCssClass("plantplotmainpanel", "col-sm-12")
   addCssClass("plantplotmainpanel", "col-sm-8")
-  #NULL
-  #}
 })
 
 #will merge with environment data if column req are met

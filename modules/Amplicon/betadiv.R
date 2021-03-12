@@ -87,17 +87,17 @@ downloadTable(id = "distancematrixtabledownload", tableid = as.matrix(distancema
 #   plotOutput("betadispersionplot1")
 # })
 #downloadPlot(id = "betadispersionplot2download", plotid = betadispersionplot())
-betadispstat <- eventReactive(input$renderbetadispersion, {
-  if(is.null(distancematrix()))return(NULL)
-  withProgress(message = "Performing Beta Dispersion", {
-    anova(betadisper(distancematrix(), sample_data(ampliconuse())[[input$betadispersionoptions1]]))
-  })
-})
-
-output$betadisptable <- renderPrint({
-  if(is.null(betadispstat()))return(NULL)
-  betadispstat()
-})
+# betadispstat <- eventReactive(input$renderbetadispersion, {
+#   if(is.null(distancematrix()))return(NULL)
+#   withProgress(message = "Performing Beta Dispersion", {
+#     anova(betadisper(distancematrix(), sample_data(ampliconuse())[[input$betadispersionoptions1]]))
+#   })
+# })
+# 
+# output$betadisptable <- renderPrint({
+#   if(is.null(betadispstat()))return(NULL)
+#   betadispstat()
+# })
 
 output$adonisUI <- renderUI({
   if(is.null(ampliconuse()))return(NULL)
@@ -108,7 +108,7 @@ output$adonisUI <- renderUI({
     textInput("adonisoptions1", "Write Formula",
               placeholder = "A + B*C", width = "100%")
     ,
-    tags$h4(tags$b("NOTE:"), "For assistance in writing a model formula, consult the Amplicon guide at the beginning of the module.")
+    tags$h5(tags$b("NOTE:"), "For assistance in writing a model formula, consult the Amplicon guide at the beginning of the module.")
     ,
     selectInput("adonisstrata", "Groups Within Which to Constrain Permutations",
                 choices = c("NULL", sample_variables(ampliconuse())),
@@ -117,7 +117,7 @@ output$adonisUI <- renderUI({
     numericInput("adonispermutations", "Select Number of Permutations",
                  value = 999, min =1, width = "100%")
     ,
-    actionButton("adonisrender1", "Perform Adonis:")
+    actionButton("adonisrender1", "Perform Adonis:", width = "100%")
   )
   return(output)
 })
@@ -169,24 +169,6 @@ output$adonisphyloseq <- renderPrint({
   ordinationadonis()
 })  
 
-pcoaobj <- eventReactive(input$makeordinationplot1, {
-  #if(is.null(distancematrix()))return(NULL)
-  if(input$phyloseqordinateoptions1 == "CCA" | input$phyloseqordinateoptions1 == "RDA" |input$phyloseqordinateoptions1 == "CAP"){
-    isolate(
-      ordinate(
-        physeq = ampliconuse(), 
-        method = input$phyloseqordinateoptions1, 
-        distance = distancematrix(),
-        formula = as.formula(paste("~", paste(input$formulaoptions1, collapse = "+")))
-      ))
-  }else if(input$phyloseqordinateoptions1 == "PCoA" | input$phyloseqordinateoptions1 == "NMDS"){
-    isolate(ordinate(
-      physeq = ampliconuse(), 
-      method = input$phyloseqordinateoptions1, 
-      distance = distancematrix()
-    ))
-  }
-})
 output$ordinationplotoptions <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
   output <- tagList(
@@ -195,12 +177,13 @@ output$ordinationplotoptions <- renderUI({
     ,
     selectInput("phyloseqordinateoptions1", "Select Ordination Method:",
                 choices = list(
+                  "NULL",
                   Unconstrained = c("PCoA" = "PCoA",
                                     "NMDS" = "NMDS"),
                   Constrained = c("CCA" = "CCA",
                                   "RDA" = "RDA",
                                   "CAP" = "CAP")),
-                selected = "PCoA")
+                selected = "NULL")
     ,
     conditionalPanel(condition = 
                        "input.phyloseqordinateoptions1 == 'CCA'|| input.phyloseqordinateoptions1 == 'RDA' || input.phyloseqordinateoptions1 == 'CAP'",
@@ -228,13 +211,42 @@ output$ordinationplotoptions <- renderUI({
                              "No" = "no"),
                  selected = "no", inline = TRUE)
     ,
-    actionButton("makeordinationplot1", "Render Plot", width = "100%")
+    numericInput("betaheight", "Select Plot Height:", value = 800, min = 200, max = 1600, step = 25)
     ,
     hr()
     ,
     downloadPlotUI("ordinationplotoutputdownload")
   )
   return(output)
+})
+
+pcoaobj <- reactive({
+  #eventReactive(input$makeordinationplot1, {
+  #if(is.null(distancematrix()))return(NULL)
+  if(!is.null(av(input$phyloseqordinateoptions1))){
+  if(input$phyloseqordinateoptions1 == "CCA" | input$phyloseqordinateoptions1 == "RDA" |input$phyloseqordinateoptions1 == "CAP"){
+    if(!is.null(input$formulaoptions1)){
+      ordinate(
+        physeq = ampliconuse(), 
+        method = input$phyloseqordinateoptions1, 
+        distance = distancematrix(),
+        formula = as.formula(paste("~", paste(input$formulaoptions1, collapse = "+")))
+      )
+    }else{
+      NULL
+    }
+  }else if(input$phyloseqordinateoptions1 == "PCoA" | input$phyloseqordinateoptions1 == "NMDS"){
+    #isolate(
+    ordinate(
+      physeq = ampliconuse(), 
+      method = input$phyloseqordinateoptions1, 
+      distance = distancematrix()
+    )
+    #)
+  }
+  }else{
+    NULL
+  }
 })
 
 ordinationplot <- reactive({
@@ -257,7 +269,9 @@ ordinationplot <- reactive({
       title = input$ordinationplottitle1)
 })
 
-ordinationplotoutput1 <- eventReactive(input$makeordinationplot1, {
+ordinationplotoutput1 <- reactive({
+  if(is.null(ordinationplot()))return(NULL)
+  #eventReactive(input$makeordinationplot1, {
   withProgress(message = "Making Ordination Plot",
                detail = "This may take a while...", {
                  if(input$phyloseqordinateoptions1 == "CCA"){
@@ -291,7 +305,7 @@ ordinationplotoutput1 <- eventReactive(input$makeordinationplot1, {
                        size = 4,  
                        data = arrowdf, 
                        show.legend = FALSE
-                     )
+                     ) + theme_bw()
                  }else if(input$phyloseqordinateoptions1 == "RDA"){
                    arrowmat <- vegan::scores(pcoaobj(), display = "bp")
                    arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
@@ -324,7 +338,7 @@ ordinationplotoutput1 <- eventReactive(input$makeordinationplot1, {
                                        size = 4,  
                                        data = arrowdf, 
                                        show.legend = FALSE
-                                     ))
+                                     )) + theme_bw()
                  }else if(input$phyloseqordinateoptions1 == "CAP"){
                    arrowmat <- vegan::scores(pcoaobj(), display = "bp")
                    arrowdf <- data.frame(labels = rownames(arrowmat), arrowmat)
@@ -356,9 +370,9 @@ ordinationplotoutput1 <- eventReactive(input$makeordinationplot1, {
                                        size = 4,  
                                        data = arrowdf, 
                                        show.legend = FALSE
-                                     ))
+                                     )) + theme_bw()
                  }else
-                   plot <- ordinationplot()
+                   plot <- ordinationplot() + theme_bw()
                })
   return(plot)
 })
@@ -370,8 +384,7 @@ output$ordinationplotoutputUI <- renderUI({
   if(input$renderdistancematrix == 0){
     output <- tags$h3("Please Create a Distance Matrix First")
   }else {
-    #req(distancematrix())
-    output <- plotOutput("ordinationplotoutput")
+    output <- plotOutput("ordinationplotoutput", height = input$betaheight)
   }
   return(output)
 })
