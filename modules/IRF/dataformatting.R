@@ -454,7 +454,7 @@ partialdependenceplot <- reactive({
                 list(x=IRFmodel()$rf.list[[1]], pred.data=data.matrix(Xtrain()), 
                      x.var = input$partdepxvar, which.class = input$partdepclass,
                      ylab = paste("Marginal Effect of", input$partdepxvar),
-                     main = paste("Partial Dependence on", input$partdepxvar, "on", input$IRFyvar)))
+                     main = paste("Partial Dependence on", input$partdepxvar, "on", input$IRFyvar, input$partdepclass)))
        plot
        }else{
         NULL

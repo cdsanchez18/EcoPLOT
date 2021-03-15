@@ -150,7 +150,7 @@ output$environmentplotUI <- renderUI({
                                                  value = "black"))
       ,
       numericInput("environmentplotheight", "Select Plot Height",
-                   value = 800)
+                   value = 500)
       ,
       downloadPlotUI("environmentplotdownload")
     )
@@ -225,6 +225,12 @@ environmentplot <- reactive({
         }else {
           plot
         }
+      }
+      if(!is.null(av(input$environmentfacet))){
+        environmentdata$use[[input$environmentfacet]] %>% sort()
+        plot <- plot + facet_wrap(paste("~", input$environmentfacet))
+      }else{
+        plot <- plot
       }
     }else{
       plot <- NULL
@@ -304,7 +310,7 @@ environmentplot <- reactive({
   }else {
     return(NULL)
   }
-  return(plot)
+  return(plot + theme_bw())
 })
 #prints correlation coefficient when viewing a scatter plot
 output$environmentcorrelation <- renderPrint({
@@ -442,9 +448,17 @@ observeEvent(input$environmentseparateselection, {
 })
 observeEvent(input$environmentresetselection, {
   shinyjs::hide("environmentseparateselection")
+  shinyjs::hide("environmentactionbutton")
+  shinyjs::hide("environmentresetselection")
+  shinyjs::hide("environmentselectionName1")
+  shinyjs::hide("environmentnotext")
 })
 observeEvent(input$environmentsaveselection, {
   shinyjs::show("environmentseparateselection")
+  shinyjs::show("environmentactionbutton")
+  shinyjs::show("environmentresetselection")
+  shinyjs::show("environmentselectionName1")
+  shinyjs::show("environmentnotext")
 })
 ####Dynamically select multiple points 
 environmentselections <- reactiveValues()

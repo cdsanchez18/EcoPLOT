@@ -170,7 +170,7 @@ output$phenotypeplotUI <- renderUI({
                                                  value = "black"))
       ,
       numericInput("phenotypeplotheight", "Select Plot Height",
-                   value = 800)
+                   value = 500)
       ,
       downloadPlotUI("phenotypeplotdownload")
     )
@@ -467,10 +467,20 @@ observeEvent(input$phenotypeseparateselection, {
 })
 observeEvent(input$phenotyperesetselection, {
   shinyjs::hide("phenotypeseparateselection")
+  shinyjs::hide("phenotypeactionbutton")
+  shinyjs::hide("phenotyperesetselection")
+  shinyjs::hide("phenotypeselectionName1")
+  shinyjs::hide("phenotypenotext")
 })
+
 observeEvent(input$phenotypesaveselection, {
   shinyjs::show("phenotypeseparateselection")
+  shinyjs::show("phenotypeactionbutton")
+  shinyjs::show("phenotyperesetselection")
+  shinyjs::show("phenotypeselectionName1")
+  shinyjs::show("phenotypenotext")
 })
+
 ####Dynamically select multiple points 
 phenotypeselections <- reactiveValues()
 phenotypeselections$samples <- data.frame()
