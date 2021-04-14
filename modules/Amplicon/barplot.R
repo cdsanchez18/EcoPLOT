@@ -46,8 +46,8 @@ output$bpplotui <- renderUI({
     ,
     numericInput("bpyaxislabelsize", "Select Size of Y Axis Label:",
                  min = 3, max = 30, value = 10)
-    ,
-    actionButton("bptaxrender1", "Make Barplot", width = '100%')
+    #,
+    #actionButton("bptaxrender1", "Make Barplot", width = '100%')
   )
   return(output)
 })
