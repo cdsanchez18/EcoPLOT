@@ -422,30 +422,34 @@ The following guide explains how to operate within the Amplicon Data module of E
 <h2>
 <b>What is Amplicon Data?</b>
 </h2>
-<p>In biology, an Amplicon refers to a piece of DNA that results from an amplification event like polymerase chain reaction (PCR). 16S Amplicons are generated from all or some of the 16S rRNA gene. As an essential gene, this region is slow to undergo mutations, but exhibits enough variability between microbial species that it is often used as a unique identifier of species identity.</p>
+<p>In biology, an Amplicon refers to a piece of DNA that results from an amplification event, such as polymerase chain reaction (PCR). 16S Amplicons are generated from all or some of the 16S rRNA gene. As an essential gene, this region is slow to undergo mutations, but exhibits enough variability between microbial species that it is often used as a unique identifier of species identity.</p>
 <p>The Amplicon Data module of EcoPLOT is well equipped to assist in your analysis of microbial communities from any ecosystem.</p>
+<hr>
 <h2>
 <b>Amplicon Data Format Guide</b>
 </h2>
 <p>EcoPLOT accepts <strong>.biom</strong>, <strong>.qza</strong>, or non-formatted text files (<strong>.csv</strong>, <strong>.tsv</strong>) for upload. We require that you upload a corresponding mapping file with any upload.</p>
 <p>Additionally, you can upload a phylogenetic tree in <strong>.newick</strong> or <strong>.nexus</strong> file formats. Uploading a tree is optional.</p>
 <p>If the uploaded mapping file contains the same sample ID’s to those contained in files previously uploaded to the Environment or Phenotype modules, they will be merged, allowing you to access all experimental design variables when constructing graphs or performing analyses.</p>
+<hr>
 <h2>
 <b>Filtering of Data</b>
 </h2>
 <p>EcoPLOT provides users with a variety of options to filter their data. Users can filter by individual ASV or taxonomic rank, by sample ID, or by experimental design. Multiple experimental design filters can be applied by clicking “Add Mapping Filter.” Additionally, we allow for ASV’s to be filtered by their presence in a minimum number of samples or by their individual counts.</p>
 <p>Two separate histograms are shown displaying the number of reads per sample and per ASV for both the filtered and original datasets.</p>
-<p>Users can select which dataset they wish to use at the top of each section.</p>
+<p>Users can access both the original and filtered datasets across module sections.</p>
+<hr>
 <h2>
 <b>Community Composition</b>
 </h2>
 <p>The community composition tab provides an overview of the microbes present in your ecosystem. Filtering by minimum sample presence will group low abundance taxa together in the barplot, denoted as “low abundance.”</p>
 <p><strong>Note:</strong> Lower taxonomic ranks may cause the plot legend to obstruct the plot itself. You may alter the position of the legend using the legend position option.</p>
-<p>If a phylogenetic tree was uploaded, you may plot in the “Phylogenetic Tree” tab. Plotting options are taken directly from the uploaded file and may take a bit to load. You may select which node and how many ancestral levels to show.</p>
+<p>If a phylogenetic tree was uploaded, you may plot it in the “Phylogenetic Tree” tab. Plotting options are taken directly from the uploaded file and may take a bit to load. You may select which node and how many ancestral levels to show.</p>
+<hr>
 <h2>
 <b>Alpha Diversity</b>
 </h2>
-Alpha diversity measurements are used to estimate the diversity within a single sample. Alpha diversity focuses on observing species envenness, how similar each microbe is distributed within a sample, and richness, the number of different species present. In EcoPLOT, we provide users with a table of standard alpha diversity estimators (Observed ASV’s, Chao1, ACE, Shannon, Simpson, Inverse Simpson, and Fisher). These methods can then be viewed graphically in the following tab, titled “Plot.” Below we explain the differences between each method so that you may determine which best suits your data:<br />
+Alpha diversity measurements are used to estimate the diversity within a single sample. Alpha diversity focuses on observing species <b>evenness</b>, how similar each microbe is distributed within a sample, and <b>richness</b>, the number of different species present. In EcoPLOT, we provide users with a table of standard alpha diversity estimators (Observed ASV’s, Chao1, ACE, Shannon, Simpson, Inverse Simpson, and Fisher). These methods can then be viewed graphically in the following tab, titled “Plot.” <br> Below we explain the differences between each method so that you may determine which best suits your data:<br />
 
 <ul>
 <li>
@@ -470,7 +474,8 @@ Alpha diversity measurements are used to estimate the diversity within a single 
 <b>Fisher:</b>This method assumes that the species abundance and total number of species follow a log scale. This method places a large importance on rare species.
 </li>
 </ul>
-<p>Using the statistics tool provided in the sidebar of this tab will inform users of statistically significant differences between experimental design variables as given by a Tukey Pairwise Comparison.</p>
+<p>The statistics tool provided in the sidebar of this tab will inform users of statistically significant differences between experimental design variables as given by a Tukey Pairwise Comparison. Users are asked to select which variables they would like to compare. Once selected, a print-out will show the pairwise comparisons and their corresponding significance.</p>
+<hr>
 <h2>
 <b>Beta Diversity</b>
 </h2>
@@ -540,10 +545,12 @@ Alpha diversity measurements are used to estimate the diversity within a single 
 <b> * </b> The asterisk (*) indicates a crossing event and is used when you want to include two variables AND their interaction.
 </li>
 </ul>
+<hr>
 <h2>
 <b>Heatmap</b>
 </h2>
 <p>The heatmap function in EcoPLOT taken from the Phyloseq package and utilizes ordination methods to organize columns and rows. Because it utilizes a distance matrix, rendering times may vary depending on the size of your dataset. The default axis labels, “NULL”, show sample ID and OTU, however can be overwritten by specifying a variable to show.</p>
+<hr>
 <h2>
 <b>Differential Abundance</b>
 </h2>
@@ -554,6 +561,7 @@ Alpha diversity measurements are used to estimate the diversity within a single 
 <p>Volcano plots are scatter plots showing significance versus fold-change on the axes to represent changes in large datasets, making them an effective way to view the results of differential expression analysis. In EcoPLOT, users can group significantly different ASV’s with customized labels using the interative analysis tool.</p>
 <p><b> Log2FoldChange Plot </b></p>
 <p>The log2foldchange plot displays the increased or decreased presence of taxonomic ranks by experimental design. For example, given two conditions, A and B, with values of 10 and 100 respectively, the fold change is 10 because B is 10 times greater than A. When B is greater than A, the value will be positive, whereas when A is greater it will be negative. When thinking of a log 2 fold change, it is helpful to know that a value of 1 means that B is twice as large as A, while a value of -2 would mean A is four times as large as B. By default, EcoPLOT will show all values on the plot, however these values can be filtered by specifying a log2foldchange threshold.</p>
+<hr>
 <h2>
 <b>Citations</b>
 </h2>

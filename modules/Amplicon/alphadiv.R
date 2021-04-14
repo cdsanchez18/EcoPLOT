@@ -1,6 +1,7 @@
 #alpha div using phyloseq options-----
 output$alphadivoptions <- renderUI({
-  if(is.null(ampliconuse()))return(NULL)
+  #if(is.null(ampliconuse()))return(NULL)
+  req(amplicondata$use)
   output <- tagList(
     tags$div(tags$h4("You are Viewing the", paste(input$amplicondatasource), "Dataset"),
              align = "center")
@@ -15,25 +16,25 @@ output$alphadivoptions <- renderUI({
                 multiple = TRUE)
     ,
     selectInput("phyloxaxis", "Select Which Factor to Compare on the X-Axis:",
-                choices = c("NULL", as.list(sample_variables(phyloseqobj()))),
+                choices = c("NULL", as.list(sample_variables(amplicondata$use))),
                 multiple = FALSE,
                 selected = "NULL")
     ,
     selectInput("phylocolor", "Select What Factor to Color:",
-                choices = c( "NULL", as.list(sample_variables(phyloseqobj()))),
+                choices = c( "NULL", as.list(sample_variables(amplicondata$use))),
                 multiple = FALSE,
                 selected = "NULL")
     ,
     tags$div(tags$h5(tags$b("Note:"),"If multiple methods selected, use 'variable' option to maintain separation."), align = "center")
     ,
     selectInput("phylofacet", "Select Facet Option:",
-                choices = c("NULL", "variable",as.list(sample_variables(phyloseqobj()))),
+                choices = c("NULL", "variable",as.list(sample_variables(amplicondata$use))),
                 multiple = FALSE,
                 selected = "NULL")
     ,
     conditionalPanel(condition = "input.phylofacet != 'NULL'",
                      selectInput("phylofacet2", "Select Second Facet Option:",
-                                 choices = c("NULL", "variable", as.list(sample_variables(phyloseqobj()))),
+                                 choices = c("NULL", "variable", as.list(sample_variables(amplicondata$use))),
                                  multiple = FALSE,
                                  selected = "NULL"))
     ,
@@ -76,7 +77,7 @@ phyloseqalpharichness <- eventReactive(input$renderalphastattable, {
   if(is.null(phyloseqobj()))return(NULL)
   withProgress(message = "Performing Diversity Metrics",
                detail = "This may take a while...", {
-                 phyloseq::estimate_richness(ampliconuse())
+                 phyloseq::estimate_richness(amplicondata$use)
                })
 })
 output$phyloseqalphatable <- renderDataTable({
@@ -119,7 +120,7 @@ output$alphadivstatoptions <- renderUI({
                                  multiple = FALSE)
                      ,
                      selectInput("alphaexclude", "Select Variables to Include in Statistics:",
-                                 choices = c(sample_variables(phyloseqobj())),
+                                 choices = c(sample_variables(amplicondata$use)),
                                  multiple = TRUE)
                      ,
                      actionButton("performalphastats", "Perform Statistics", width = "100%"))
@@ -130,7 +131,7 @@ alphadivstatresult <- eventReactive(input$performalphastats, {
   if(is.null(phyloseqobj()))return(NULL)
   alphastats <- list()
   for(i in input$alphaexclude){#sample_variables(ampliconuse())[!grepl(pattern = "ID",x = sample_variables(ampliconuse()))]){  
-    alphastats[[i]] <- pairwise.wilcox.test(phyloseqalpharichness()[[input$alphastatoptions]], sample_data(ampliconuse())[[i]], p.adjust.method = "bonf")
+    alphastats[[i]] <- pairwise.wilcox.test(phyloseqalpharichness()[[input$alphastatoptions]], sample_data(amplicondata$use)[[i]], p.adjust.method = "bonf")
   }
   alphastats
 })
@@ -141,18 +142,18 @@ output$alphadivstatprint <- renderPrint({
 ###Alpha Diversity Plot 
 phyloseqplot <- reactive({
   #eventReactive(input$phyloseqplotrender1, {
-  #req(input$phyloseqplotrender1)
-  if(is.null(ampliconuse()))return(NULL)
+  req(amplicondata$use)
+  #if(is.null(ampliconuse()))return(NULL)
   #withProgress(message = "Making Plot",
   #             detail = "This may take a while...", {
   if(!is.null(input$phyloseqalphaoptions1) && !is.null(av(input$phyloxaxis))){
                  if(is.null(av(input$phylocolor))){
-                   plot <- phyloseq::plot_richness(ampliconuse(), x = input$phyloxaxis,
+                   plot <- phyloseq::plot_richness(amplicondata$use, x = input$phyloxaxis,
                                                    measures = input$phyloseqalphaoptions1,
                                                    scales = "free_y")
                    #plot$layers <- plot$layers[-1]
                  }else {
-                   plot <- phyloseq::plot_richness(ampliconuse(), color = input$phylocolor, x = input$phyloxaxis,
+                   plot <- phyloseq::plot_richness(amplicondata$use, color = input$phylocolor, x = input$phyloxaxis,
                                                    measures = input$phyloseqalphaoptions1,
                                                    scales = "free_y")
                    #plot$layers <- plot$layers[-1]

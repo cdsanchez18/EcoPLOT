@@ -3,7 +3,7 @@
 output$phyloseq_tax_ranks <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
   ranks <- list("NULL"="NULL")
-  ranks <- c(ranks, as.list(rank_names(phyloseqobj(), errorIfNULL=FALSE)))
+  ranks <- c(ranks, as.list(rank_names(amplicondata$original, errorIfNULL=FALSE)))
   ranks <- c(ranks, list(ASV="ASV"))
   return(
     selectInput("filter_rank", "Taxonomic Ranks", 
@@ -16,9 +16,9 @@ output$unique_taxa <- renderUI({
   unique <- list("NULL" = "NULL")
   if(!is.null(av(input$filter_rank))){
     if(input$filter_rank == "ASV"){
-      unique <- c(unique, as.list(taxa_names(phyloseqobj())))
+      unique <- c(unique, as.list(taxa_names(amplicondata$original)))
     } else {
-      unique <- c(unique, as.list(get_taxa_unique(phyloseqobj(), input$filter_rank)))
+      unique <- c(unique, as.list(get_taxa_unique(amplicondata$original, input$filter_rank)))
     }
   }
   return(
@@ -30,7 +30,7 @@ output$unique_taxa <- renderUI({
 output$samplefilter <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
   sampleIDs <-  list("NULL"="NULL")
-  sampleIDs <- c(sampleIDs, as.list(sample_variables(phyloseqobj(), errorIfNULL=FALSE)))
+  sampleIDs <- c(sampleIDs, as.list(sample_variables(amplicondata$original, errorIfNULL=FALSE)))
   output <- tagList(
     selectInput("filter_sample1", "Mapping Variable Category:",
                 choices = sampleIDs,
@@ -50,7 +50,7 @@ observe({
     updateSelectInput(session, 
                       inputId = "filter_sample_selection1",
                       label = "Subcategory",
-                      choices = c("NULL", as.list(unique(as(get_variable(phyloseqobj(), input$filter_sample1), "character")))),
+                      choices = c("NULL", as.list(unique(as(get_variable(amplicondata$original, input$filter_sample1), "character")))),
                       selected = "NULL")
   }
 }) 
@@ -70,7 +70,7 @@ observeEvent(input$addsamplefilter1, {
   samplecounter1 <<- samplecounter() + 1
   samplecounter(samplecounter1)
   sampleIDs <-  list("NULL"="NULL")
-  sampleIDs <- c(sampleIDs, as.list(sample_variables(phyloseqobj(), errorIfNULL=FALSE)))
+  sampleIDs <- c(sampleIDs, as.list(sample_variables(amplicondata$original, errorIfNULL=FALSE)))
   if(samplecounter() <= 5){
     insertUI(
       selector = '#samplecontainer',
@@ -101,7 +101,7 @@ observe({
     updateSelectInput(session, 
                       inputId = "filter_sample_selection2",
                       label = "Subcategory:",
-                      choices = c("NULL", as.list(unique(as(get_variable(phyloseqobj(), input$filter_sample2), "character")))),
+                      choices = c("NULL", as.list(unique(as(get_variable(amplicondata$original, input$filter_sample2), "character")))),
                       selected = "NULL")
   }
 })
@@ -110,7 +110,7 @@ observe({
     updateSelectInput(session, 
                       inputId = "filter_sample_selection3",
                       label = "Mapping Variable Category:",
-                      choices = c("NULL", as.list(unique(as(get_variable(phyloseqobj(), input$filter_sample3), "character")))),
+                      choices = c("NULL", as.list(unique(as(get_variable(amplicondata$original, input$filter_sample3), "character")))),
                       selected = "NULL")
   } 
 })
@@ -119,7 +119,7 @@ observe({
     updateSelectInput(session, 
                       inputId = "filter_sample_selection4",
                       label = "Subcategory:",
-                      choices = c("NULL", as.list(unique(as(get_variable(phyloseqobj(), input$filter_sample4), "character")))),
+                      choices = c("NULL", as.list(unique(as(get_variable(amplicondata$original, input$filter_sample4), "character")))),
                       selected = "NULL")
   } 
 })
@@ -128,7 +128,7 @@ observe({
     updateSelectInput(session, 
                       inputId = "filter_sample_selection5",
                       label = "Mapping Variable Category:",
-                      choices = c("NULL", as.list(unique(as(get_variable(phyloseqobj(), input$filter_sample5), "character")))),
+                      choices = c("NULL", as.list(unique(as(get_variable(amplicondata$original, input$filter_sample5), "character")))),
                       selected = "NULL")
   } 
 })
@@ -148,7 +148,7 @@ observe({
 output$phyloseq_sample_variables <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
   sampleIDs <-  list("NULL"="NULL")
-  sampleIDs <- c(sampleIDs, as.list(sample_names(phyloseqobj())))
+  sampleIDs <- c(sampleIDs, as.list(sample_names(amplicondata$original)))
   return(
     selectInput("filter_sample", "Sample Variables", sampleIDs, "NULL", multiple = TRUE)
   )
@@ -178,7 +178,7 @@ output$phyloseqfilteroptions <- renderUI({
 
 updatedphyloseq <- eventReactive(input$phyloseqfilter, {
   withProgress(message = "Applying Filters:", {
-    obj <- phyloseqobj()
+    obj <- amplicondata$original
     isolate({
       if(inherits(obj, "phyloseq")){
         if(!is.null(av(input$filter_taxa)) ){
@@ -259,6 +259,10 @@ updatedphyloseq <- eventReactive(input$phyloseqfilter, {
     })
   })
 })
+# observeEvent(input$phyloseqfilter, {
+#   req(updatedphyloseq())
+#   amplicondata$filtered <- updatedphyloseq()
+# })
 observeEvent(input$phyloseqfilter, {
   if(input$phyloseqminpresence != 0 && input$phyloseqminpresencenumber != 0){
     showNotification(ui= "Filtering by Percentage and Sample Number Can Greatly Decrease Size of Dataset",
@@ -271,11 +275,11 @@ observeEvent(input$phyloseqfilter, {
 #updated OTU table ----
 updatedphylootu <- reactive({
   if(is.null(updatedphyloseq()))return(NULL)
-  otu_table(updatedphyloseq())
+  otu_table(amplicondata$filtered)
 })
 output$updatedphyloseqtable <- renderDataTable({
   if(is.null(updatedphyloseq()))return(NULL)
-  otu_table(updatedphyloseq())
+  otu_table(amplicondata$filtered)
 })
 output$updatedphyloseqtableoutput <- renderUI({
   if(input$phyloseqfilter == 0){
@@ -289,15 +293,15 @@ output$updatedphyloseqtableoutput <- renderUI({
   }
   return(output)
 })
-downloadTable(id = "filteredphylotabledownload", tableid = updatedpylootu())
+downloadTable(id = "filteredphylotabledownload", tableid = updatedphylootu())
 #updated taxonomy table -----
 updatedtaxtablefile <- reactive({
   if(is.null(updatedphyloseq()))return(NULL)
-  tax_table(updatedphyloseq())
+  tax_table(amplicondata$filtered)
 })
 output$updatedtaxtable <- renderDataTable({
   if(is.null(updatedphyloseq()))return(NULL)
-  tax_table(updatedphyloseq())
+  tax_table(amplicondata$filtered)
 })
 output$updatedtaxtableoutput <- renderUI({
   if(input$phyloseqfilter == 0){
@@ -315,11 +319,11 @@ downloadTable(id = "filteredtaxtabledownload", tableid = updatedtaxtablefile())
 #updated sample data table ----
 updatedphylosample <- reactive({
   if(is.null(updatedphyloseq()))return(NULL)
-  sample_data(updatedphyloseq())
+  sample_data(amplicondata$filtered)
 })
 output$updatedmappingtable <- renderDataTable({
   if(is.null(updatedphyloseq()))return(NULL)
-  sample_data(updatedphyloseq())
+  sample_data(amplicondata$filtered)
 })
 output$updatedmappingtableoutput <- renderUI({
   if(input$phyloseqfilter == 0){
@@ -338,7 +342,7 @@ downloadTable(id= "filteredmappingtabledownload", tableid = updatedphylosample()
 #updated tree data -----
 updatedtreedf <- reactive({
   if(is.null(updatedphyloseq()))return(NULL)
-  tibble::as_tibble(phy_tree(updatedphyloseq()))
+  tibble::as_tibble(phy_tree(amplicondata$filtered))
 })
 output$updatedtreetable <- renderDataTable({
   if(is.null(updatedphyloseq()))return(NULL)

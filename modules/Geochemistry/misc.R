@@ -1,16 +1,16 @@
 
-observeEvent(input$phenotypeexampledata, {
-  req(environmentdata$table1)
-  req(phenotypedata$table1)
-  if(!is.null(environmentdata$table1) && !is.null(phenotypedata$table1)){
-    if(length(intersect(names(environmentdata$table1), names(phenotypedata$table))) >= 1){
-      phenotypedata$table1 <- left_join(phenotypedata$table1, environmentdata$table1) %>% na.omit()
-      phenotypedata$filter <- phenotypedata$table1
-    } 
-  }else if(is.null(environmentdata$table)){
-    NULL
-  }
-})
+# observeEvent(input$phenotypeexampledata, {
+#   req(environmentdata$table1)
+#   req(phenotypedata$table1)
+#   if(!is.null(environmentdata$table1) && !is.null(phenotypedata$table1)){
+#     if(length(intersect(names(environmentdata$table1), names(phenotypedata$table))) >= 1){
+#       phenotypedata$table1 <- left_join(phenotypedata$table1, environmentdata$table1) %>% na.omit()
+#       phenotypedata$filter <- phenotypedata$table1
+#     } 
+#   }else if(is.null(environmentdata$table)){
+#     NULL
+#   }
+# })
 
 
 ##Add reactivity to dataset choice, if one option changes so will the other 

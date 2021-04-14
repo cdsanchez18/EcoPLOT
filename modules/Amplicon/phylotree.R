@@ -17,7 +17,7 @@ output$treeoptions <- renderUI({
                                  selected = "rectangular")
                      ,
                      selectInput("treenode1", "Select Node to View:",
-                                 choices = as_tibble(phy_tree(ampliconuse())) %>% 
+                                 choices = as_tibble(phy_tree(amplicondata$use)) %>% 
                                    select(label) %>% 
                                    arrange(label) %>% 
                                    pull(label))
@@ -77,7 +77,7 @@ phylotreeplotrender <- eventReactive(input$phylotreeplotrender1, {
                  
                  # ggtree(phylotreesubset, layout = input$treestyle1) + #%<+% labels_df +
                  #   geom_tiplab(size = input$phylotreelabelsize1) + geom_nodelab() 
-                 plot_tree(ampliconuse(), shape="Family", label.tips="Genus", size="Abundance") + 
+                 plot_tree(amplicondata$use, shape="Family", label.tips="Genus", size="Abundance") + 
                    ggtitle("tree annotation using phyloseq") + theme(legend.position = "none")
                  
                  

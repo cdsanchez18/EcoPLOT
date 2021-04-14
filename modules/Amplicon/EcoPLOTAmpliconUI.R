@@ -20,7 +20,8 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                                                       uiOutput("fileuploadoptions"),
                                                       uiOutput("phyloaction"),
                                                       hr(),
-                                                      uiOutput("phyloreset"))),
+                                                      uiOutput("phyloreset"),
+                                                      uiOutput("phylomerge"))),
                         mainPanel("",
                                   tabsetPanel(id = "tabstart",
                                               tabPanel(value = 1, title = "Upload Files",
@@ -153,7 +154,7 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                     fluidPage(
                       titlePanel("Menu"),
                       sidebarLayout(
-                        sidebarPanel("",
+                        sidebarPanel(id = "ordinationplotsidebar",
                                      conditionalPanel(condition="input.ordinationstart == 1",
                                                       shiny::radioButtons("amplicondatasource2", "Select Dataset to Use:",
                                                                           choices = c("Original"),
@@ -163,17 +164,22 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                                      conditionalPanel(condition= "input.ordinationstart == 3",
                                                       uiOutput("adonisUI")),
                                      conditionalPanel(condition= "input.ordinationstart == 2",
-                                                      uiOutput("ordinationplotoptions"))
+                                                      uiOutput("ordinationplotoptions")),
+                                     conditionalPanel(condition = "input.ordinationstart == 4",
+                                                      uiOutput("threeDordinationplotoptions"))
                         ),
-                        mainPanel("",
+                        mainPanel(id = "ordinationplotmainpanel",
                                   tabsetPanel(id = "ordinationstart",
                                               tabPanel(value = 1, "Step 1: Create Distance Matrix",
                                                        splitLayout(dataTableOutput("distancematrixtable"))),
                                               tabPanel(value = 2, "Step 2: Plot Ordination",
-                                                       uiOutput("ordinationplotoutputUI")),
+                                                       uiOutput("ordinationplotoutputUI"),
+                                                       uiOutput("ordinationdynamicselectbuttons")),
                                               tabPanel(value = 3, "Step 3: Perform Statistics",
                                                        uiOutput("adonissamplevars"),
-                                                       verbatimTextOutput("adonisphyloseq"))
+                                                       verbatimTextOutput("adonisphyloseq")),
+                                              tabPanel(value = 4, "Optional: 3D Ordination Plot",
+                                                       uiOutput("threedordinationplotoutput"))
                                   )
                         )
                       )
@@ -235,10 +241,10 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                                                        uiOutput("scatter12"),
                                                        verbatimTextOutput("volcanobrushtest"),
                                                        splitLayout(dataTableOutput("volcanotable1")),
-                                                       uiOutput("volcanodynamicselectbuttons"),
-                                                       splitLayout(dataTableOutput("volcanotesttable")),
-                                                       splitLayout(downloadTableUI("volcanoselectionstable"),
-                                                                   downloadTableUI("volcanodesequpdated"))
+                                                       #uiOutput("volcanodynamicselectbuttons"),
+                                                       #splitLayout(dataTableOutput("volcanotesttable")),
+                                                       #splitLayout(downloadTableUI("volcanoselectionstable"),
+                                                       #            downloadTableUI("volcanodesequpdated"))
                                               ),
                                               tabPanel(value=3, "Log2FoldChange Plot",
                                                        uiOutput("log2foldchangegraphoutput"))))

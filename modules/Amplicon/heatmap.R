@@ -25,7 +25,7 @@ output$heatmapoptions1 <- renderUI({
 output$heatmapoptions2 <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
   samplevars <-  list()
-  samplevars <- c(samplevars, as.list(sample_variables(phyloseqobj(), errorIfNULL=FALSE)))
+  samplevars <- c(samplevars, as.list(sample_variables(amplicondata$original, errorIfNULL=FALSE)))
   samplevars <- c(samplevars, list(Sample="Sample", NULL = "NULL"))
   return(
     selectInput("heatmapxaxis", "Select How to Label Xaxis:", samplevars, "NULL", multiple = FALSE)
@@ -34,7 +34,7 @@ output$heatmapoptions2 <- renderUI({
 output$heatmapoptions3 <- renderUI({
   if(is.null(phyloseqobj()))return(NULL)
   ranks <- list()
-  ranks <- c(ranks, as.list(rank_names(phyloseqobj(), errorIfNULL=FALSE)))
+  ranks <- c(ranks, as.list(rank_names(amplicondata$original, errorIfNULL=FALSE)))
   ranks <- c(ranks, list(OTU="OTU", NULL = "NULL"))
   return(
     selectInput("heatmapyaxis", "Select How to Label Yaxis:", 
@@ -54,19 +54,19 @@ output$heatmapaction <- renderUI({
 heatmapplot <- eventReactive(input$heatmaprender, {
   withProgress(message = "Applying Filters:", {
     if(!is.null(av(input$heatmapxaxis)) && !is.null(av(input$heatmapyaxis))){
-      plot <- plot_heatmap(ampliconuse(), method = input$heatmapmethod,
+      plot <- plot_heatmap(amplicondata$use, method = input$heatmapmethod,
                            distance = input$heatmapdistance,
                            sample.label = input$heatmapxaxis,
                            taxa.label = input$heatmapyaxis)
     }else if(!is.null(av(input$heatmapxaxis)) && is.null(av(input$heatmapyaxis))){
-      plot <- plot_heatmap(ampliconuse(), method = input$heatmapmethod,
+      plot <- plot_heatmap(amplicondata$use, method = input$heatmapmethod,
                            sample.label = input$heatmapxaxis)
     }else if(is.null(av(input$heatmapxaxis)) && !is.null(av(input$heatmapyaxis))){
-      plot <- plot_heatmap(ampliconuse(),
+      plot <- plot_heatmap(amplicondata$use,
                            distance = input$heatmapdistance,
                            taxa.label = input$heatmapyaxis)
     } else if(is.null(av(input$heatmapxaxis)) && is.null(av(input$heatmapyaxis))){
-      plot <- plot_heatmap(ampliconuse())
+      plot <- plot_heatmap(amplicondata$use)
     }
   })
   return(plot)

@@ -341,23 +341,48 @@ observe({
   }
 })
 
+observe({
+  req(phyloseqobj())
+  if(is.null(amplicondata$filtered)){
+    amplicondata$use <- amplicondata$original
+  }else{
+    if(input$amplicondatasource == "Original"){
+      amplicondata$use <- amplicondata$original
+    }else if(input$amplicondatasource == "Filtered"){
+      amplicondata$use <- amplicondata$filtered
+    }
+  }
+})
 
 
 ##this will change the dataset choice based on which radio button is selected 
-ampliconuse <- reactive({
-  if(is.null(phyloseqobj()))return(NULL)
-  if(is.null(input$phyloseqfilter)){
-    data <- phyloseqobj()
-  }else{
-    if(input$amplicondatasource == "Original" || input$amplicondatasource2 == "Original" || 
-       input$amplicondatasource3 == "Original" || input$amplicondatasource4 == "Original" ||
-       input$irfDatasetselect == "Original"){
-      data <- phyloseqobj()
-    }else if(input$amplicondatasource == "Filtered" || input$amplicondatasource2 == "Filtered" ||
-             input$amplicondatasource3 == "Filtered" || input$amplicondatasource4 == "Filtered" ||
-             input$irfDatasetselect == "Filtered"){
-      data <- updatedphyloseq()
-    }
-  }
-  return(data)
+# ampliconuse <- reactive({
+#   if(is.null(phyloseqobj()))return(NULL)
+#   if(is.null(input$phyloseqfilter)){
+#     data <- phyloseqobj()
+#   }else{
+#     if(input$amplicondatasource == "Original" || input$amplicondatasource2 == "Original" || 
+#        input$amplicondatasource3 == "Original" || input$amplicondatasource4 == "Original" ||
+#        input$irfDatasetselect == "Original"){
+#       data <- phyloseqobj()
+#     }else if(input$amplicondatasource == "Filtered" || input$amplicondatasource2 == "Filtered" ||
+#              input$amplicondatasource3 == "Filtered" || input$amplicondatasource4 == "Filtered" ||
+#              input$irfDatasetselect == "Filtered"){
+#       data <- updatedphyloseq()
+#     }
+#   }
+#   return(data)
+# })
+
+observeEvent(input$ordinationsidebarhide == TRUE, {
+  req(input$ordinationsidebarhide == TRUE)
+  hideElement(selector = "#ordinationplotsidebar")
+  removeCssClass("ordinationplotmainpanel", "col-sm-8")
+  addCssClass("ordinationplotmainpanel", "col-sm-12")
+})
+observeEvent(input$ordinationsidebarhide == FALSE, {
+  req(input$ordinationsidebarhide == FALSE)
+  showElement(selector = "#ordinationplotsidebar")
+  removeCssClass("ordinationplotmainpanel", "col-sm-12")
+  addCssClass("ordinationplotmainpanel", "col-sm-8")
 })

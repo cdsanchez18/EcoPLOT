@@ -16,7 +16,51 @@ EcoPLOTGeochemUI <- tabPanel("Environmental Data",
                                               titlePanel("Menu"),
                                               sidebarLayout(
                                                 sidebarPanel("",
-                                                             uiOutput("environmentfileupload")),
+                                                             #uiOutput("environmentfileupload")
+                                                             checkboxInput("environmentexampledata", "Use Example Data", value = FALSE, width = "100%")
+                                                             ,
+                                                             fluidRow(
+                                                               column(5, hr()),
+                                                               column(2,tags$div(tags$h4("OR"), align="center")),
+                                                               column(5, hr())
+                                                             )
+                                                             ,
+                                                             h4(tags$u("Upload File:")," EcoPLOT accepts",tags$b(".csv, .txt, .xlsx "),"file formats.")
+                                                             ,
+                                                             fileInput("environmentdata", "Select File",
+                                                                       multiple = FALSE,
+                                                                       accept = c("text/csv",
+                                                                                  "text/comma-separated-values,text/plain",
+                                                                                  ".csv"))
+                                                             ,
+                                                             tags$hr(),
+                                                             fluidRow(
+                                                               column(4,
+                                                                      checkboxInput("header", "Header", TRUE)),
+                                                               column(4,
+                                                                      radioButtons("sep", "Separator",
+                                                                                   choices = c(Comma = ",",
+                                                                                               Semicolon = ";",
+                                                                                               Tab = "\t"),
+                                                                                   selected = ","))
+                                                               ,
+                                                               column(4,
+                                                                      radioButtons("quote", "Quote",
+                                                                                   choices = c(None = "",
+                                                                                               "Double Quote" = '"',
+                                                                                               "Single Quote" = "'"),
+                                                                                   selected = '"')))
+                                                             ,
+                                                             uiOutput("environmentmergeUI")
+                                                             #conditionalPanel("input.phenotypedata || input.phenotypeexampledata",
+                                                              #                conditionalPanel("input.environmentdata || input.environmentexampledata",
+                                                              #                                 hr()
+                                                              #                                 ,
+                                                              #                                 tags$h4("Merge Datasets")
+                                                              #                                 ,
+                                                               #                                checkboxInput("environmentmergefiles", "Merge Environment and Phenotype Datasets?", value = FALSE, width = "100%")))
+                                                ),
+                                                #),
                                                 mainPanel("",
                                                           uiOutput("environmentuploadmain")))),
                                             uiOutput("environmentchangeclassUI")

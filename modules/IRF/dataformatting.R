@@ -8,20 +8,20 @@ observeEvent(input$phyloseqfilter, {
                      selected = "Original", inline = TRUE)
 }, once = TRUE)
 #update selected dataset to reflect changes made in other tabs
-observe({
-  if(is.null(updatedphyloseq()))return(NULL)
-  if(input$amplicondatasource == "Original"){
-    updateRadioButtons(session, "irfDatasetselect", "Select Dataset to Use:",
-                       choices = c("Original",
-                                   "Filtered"),
-                       selected = "Original", inline = TRUE)
-  }else if(input$amplicondatasource == "Filtered"){
-    updateRadioButtons(session, "irfDatasetselect", "Select Dataset to Use:",
-                       choices = c("Original",
-                                   "Filtered"),
-                       selected = "Filtered", inline = TRUE)
-  }
-})
+# observe({
+#   #if(is.null(updatedphyloseq()))return(NULL)
+#   if(input$amplicondatasource == "Original"){
+#     updateRadioButtons(session, "irfDatasetselect", "Select Dataset to Use:",
+#                        choices = c("Original",
+#                                    "Filtered"),
+#                        selected = "Original", inline = TRUE)
+#   }else if(input$amplicondatasource == "Filtered"){
+#     updateRadioButtons(session, "irfDatasetselect", "Select Dataset to Use:",
+#                        choices = c("Original",
+#                                    "Filtered"),
+#                        selected = "Filtered", inline = TRUE)
+#   }
+# })
 
 ##dataset is amplicon use
 output$irfUIoptions <- renderUI({
@@ -42,11 +42,11 @@ output$irfUIoptions <- renderUI({
                                  value = 80)
                      ,
                      selectInput("IRFyvar", "Select Output Variable",
-                                 choices = c("NULL", sample_variables(phyloseqobj())),
+                                 choices = c("NULL", sample_variables(amplicondata$use)),
                                  selected = "NULL")
                      ,
                      selectInput("IRFexclude", "Select Variables to Exclude From Analysis",
-                                 choices = c(sample_variables(phyloseqobj())),
+                                 choices = c(sample_variables(amplicondata$use)),
                                  multiple = TRUE)
                      ,
                      actionButton("parseIRF", "Parse Datasets for IRF", width = "100%"))
@@ -100,7 +100,7 @@ output$irfUIoptions <- renderUI({
 IRFdataset <- eventReactive(input$makeIRFdataset, {
   if(is.null(phyloseqobj()))return(NULL)
   withProgress(message = "Preparing Dataset", {
-  phylomelt <- psmelt(ampliconuse()) %>% tidyr::fill(c(Kingdom, Phylum, Class, Order, Family, Genus))#%>% na.omit()
+  phylomelt <- psmelt(amplicondata$use) %>% tidyr::fill(c(Kingdom, Phylum, Class, Order, Family, Genus))#%>% na.omit()
   
   phylomelt <- phylomelt %>% 
     mutate(taxonomy = paste(phylomelt$Kingdom, phylomelt$Phylum, phylomelt$Class, phylomelt$Order, phylomelt$Family,
@@ -112,10 +112,10 @@ IRFdataset <- eventReactive(input$makeIRFdataset, {
                                                 names_from = c(taxonomy),
                                                 values_from = Abundance,
                                                 values_fill = 0)
-  mapping <- data.frame(sample_data(ampliconuse()))
+  mapping <- data.frame(sample_data(amplicondata$use))
   #mapping$Sample <- row.names(mapping)
   
-  phylomelt <- left_join(data.frame(sample_data(ampliconuse())), phylomelt)
+  phylomelt <- left_join(data.frame(sample_data(amplicondata$use)), phylomelt)
   phylomelt[sapply(phylomelt, is.character)] <- lapply(phylomelt[sapply(phylomelt, is.character)], 
                                              as.factor)
    #return(phylomelt)
@@ -232,7 +232,7 @@ output$iRFdatasets <- renderUI({
 #   }
 # })
 output$testtest <- renderPrint({
-  str(IRFdataset() %>% select(colnames(data.frame(sample_data(ampliconuse())) %>% select(-c(input$IRFexclude)))))
+  str(IRFdataset() %>% select(colnames(data.frame(sample_data(amplicondata$use)) %>% select(-c(input$IRFexclude)))))
       #[, sapply(Xtrain(), is.factor)])
   #X_train %>% select(colnames(sample_data %>% select( -"Sample_ID", -"File_name", -"Sample", -"PlantID", -"Date.Collected"))))
 })
@@ -365,7 +365,13 @@ output$IRFvarimp <- renderPlot({
 })
 output$IRFplotui <- renderUI({
   if(is.null(IRFmodel()))return(NULL)
+  output <- tagList(
+    tags$div(tags$h3("Variable Importance Plots show how each variable affects the accuracy of the model. Those variables that exhibit a larger effect are given a
+                     larger importance measurement. Variables are listed in descending order of importance."), align = "center")
+    ,
     plotOutput("IRFvarimp", height = input$IRFvarimpplotsize)
+    )
+  return(output)
 })
 downloadPlot("IRFvarimpdownload", importanceplot())
 
@@ -423,7 +429,7 @@ output$partdepplot1 <- renderUI({
     wellPanel(tags$h3("Partial Dependence Plot")
               ,
     selectInput("partdepxvar", "Select Variable to Observe Partial Dependence",
-                choices = c("NULL", sample_variables(phyloseqobj())),
+                choices = c("NULL", sample_variables(amplicondata$use)),
                 selected = "NULL")
     ,
     if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
@@ -450,7 +456,7 @@ partialdependenceplot <- reactive({
   if(!is.null(av(input$partdepxvar))){
     if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
       if(!is.null(av(input$partdepclass))){
-        plot <- do.call("partialPlot", 
+        plot <- BiocGenerics::do.call("partialPlot", 
                 list(x=IRFmodel()$rf.list[[1]], pred.data=data.matrix(Xtrain()), 
                      x.var = input$partdepxvar, which.class = input$partdepclass,
                      ylab = paste("Marginal Effect of", input$partdepxvar),
@@ -460,7 +466,7 @@ partialdependenceplot <- reactive({
         NULL
       }
     }else if(is.integer(IRFdataset()[train_index1(), input$IRFyvar]) || is.numeric(IRFdataset()[train_index1(), input$IRFyvar])){
-      plot <- do.call("partialPlot", 
+      plot <- BiocGenerics::do.call("partialPlot", 
                       list(x=IRFmodel()$rf.list[[1]], pred.data=data.matrix(Xtrain()), 
                            x.var = input$partdepxvar,
                            ylab = paste("Marginal Effect of", input$partdepxvar),
@@ -480,11 +486,7 @@ output$partialdependenceplot1 <- renderPlot({
 output$partialdependenceplot2 <- renderPrint({
   if(is.null(IRFmodel()))return(NULL)
   if(!is.null(av(input$partdepxvar))){
-    #if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
-      str(IRFdataset() %>% select(colnames(data.frame(sample_data(ampliconuse())) %>% select(c(input$partdepxvar)))))
-    #}else if(is.integer(IRFdataset()[train_index1(), input$IRFyvar]) || is.numeric(IRFdataset()[train_index1(), input$IRFyvar])){
-   #   NULL
-   # }
+      str(IRFdataset() %>% select(colnames(data.frame(sample_data(amplicondata$use)) %>% select(c(input$partdepxvar)))))
   }else {
     NULL
   }
@@ -493,14 +495,17 @@ output$partialdependenceplot2 <- renderPrint({
 output$partialdependenceplotoutput <- renderUI({
   if(is.null(IRFmodel()))return(NULL)
   output <- tagList(
+    tags$div(tags$h4("Partial Dependence Plots allow you to observe the marginal effect of each independent variable on the machine learning model's
+                     ability to predict the selected output variable value or class. This plot can be used along with the Variable Importance Plot above 
+                     to see the relationship between the independent variable and output variable."), align = "center")
+    ,
     plotOutput("partialdependenceplot1")
     ,
     verbatimTextOutput("partialdependenceplot2")
     ,
-    wellPanel(tags$div(tags$h4("If you have selected a categorical variable to view on the x axis, you will notice 
-                      that the variable names have been converted to their numeric identifiers. Using the
-                      output above, you may observe the number assigned to each variable level to assist in 
-                      your interpretation of the results above..")), align = "center")
+    wellPanel(tags$div(tags$h4("If you have selected a categorical variable to view on the x-axis, you will notice 
+                      that the variable names have been converted to numeric identifiers. The output above prints the internal numeric structure assigned 
+                               to each level of a factor variable and should be used to guide your analysis.")), align = "center")
     )
   return(output)
 })
@@ -516,7 +521,7 @@ output$varimportancetable1 <- renderDataTable({
 downloadTable("downloadvarimptable", varimportancetable())
 varinteractiontable <- reactive({
   if(is.null(IRFmodel()$interaction))return(NULL)
-  data.frame(model$interaction)
+  data.frame(IRFmodel()$interaction)
 })
 output$varinteractiontable1 <- renderDataTable({
   if(is.null(IRFmodel()$interaction))return(NULL)

@@ -1,44 +1,85 @@
 
 ##Plant File upload (phenotype data)
 
-output$plantfileupload <- renderUI({
+# output$plantfileupload <- renderUI({
+#   output <- tagList(
+#     checkboxInput("phenotypeexampledata", "Use Example Data", value = FALSE, width = "100%")
+#     ,
+#     fluidRow(
+#       column(5, hr()),
+#       column(2,tags$div(tags$h4("OR"), align="center")),
+#       column(5, hr())
+#     )
+#     ,
+#     h4(tags$u("Upload File:")," EcoPLOT accepts",tags$b(".csv, .txt, .xlsx "),"file formats.")
+#     ,
+#     fileInput("phenotypedata", "Select File",
+#               multiple = FALSE,
+#               accept = c("text/csv",
+#                          "text/comma-separated-values,text/plain",
+#                          ".csv"))
+#     ,
+#     tags$hr(),
+#     fluidRow(
+#       column(4,
+#              checkboxInput("header", "Header", TRUE)),
+#       column(4,
+#              radioButtons("sep", "Separator",
+#                           choices = c(Comma = ",",
+#                                       Semicolon = ";",
+#                                       Tab = "\t"),
+#                           selected = ","))
+#       ,
+#       column(4,
+#              radioButtons("quote", "Quote",
+#                           choices = c(None = "",
+#                                       "Double Quote" = '"',
+#                                       "Single Quote" = "'"),
+#                           selected = '"')))
+#     ,
+#     uiOutput("phenotypemergeUI")
+#     # conditionalPanel("input.environmentdata || input.environmentexampledata",
+#     #                  conditionalPanel("input.phenotypedata || input.phenotypeexampledata",
+#     #                  hr()
+#     #                  ,
+#     #                  tags$h4("Merge Datasets")
+#     #                  ,
+#     #                  checkboxInput("phenotypemergefiles", "Merge Environment and Phenotype Datasets?", value = FALSE, width = "100%")))
+#   )
+#   return(output)
+# })
+output$phenotypemergeUI <- renderUI({
+  req(phenotypedata$table1)
+  req(environmentdata$table1)
   output <- tagList(
-    checkboxInput("phenotypeexampledata", "Use Example Data", value = FALSE, width = "100%")
+    hr()
     ,
-    fluidRow(
-      column(5, hr()),
-      column(2,tags$div(tags$h4("OR"), align="center")),
-      column(5, hr())
-    )
+    tags$div(tags$h4("Merge Environment and Phenotype Datasets"), align = "center")
     ,
-    h4(tags$u("Upload File:")," EcoPLOT accepts",tags$b(".csv, .txt, .xlsx "),"file formats.")
-    ,
-    fileInput("phenotypedata", "Select File",
-              multiple = FALSE,
-              accept = c("text/csv",
-                         "text/comma-separated-values,text/plain",
-                         ".csv"))
-    ,
-    tags$hr(),
-    fluidRow(
-      column(4,
-             checkboxInput("header", "Header", TRUE)),
-      column(4,
-             radioButtons("sep", "Separator",
-                          choices = c(Comma = ",",
-                                      Semicolon = ";",
-                                      Tab = "\t"),
-                          selected = ","))
-      ,
-      column(4,
-             radioButtons("quote", "Quote",
-                          choices = c(None = "",
-                                      "Double Quote" = '"',
-                                      "Single Quote" = "'"),
-                          selected = '"')))
+    uiOutput("phenotypemergeUI2")
+    # ,
+    # selectInput("environmentmergeColumn", "Select Common Column ID to Join By:",
+    #             choices = c("NULL", as.list(intersect(colnames(environmentdata$table1), colnames(phenotypedata$table1)))),
+    #             selected = "NULL")
   )
   return(output)
 })
+output$phenotypemergeUI2 <- renderUI({
+  isolate(
+  actionButton("phenotypemergefiles", "Merge Files", width = "100%")
+  )
+})
+#observeEvent(input$phenotypemergefiles, {
+#   #req(input$phenotypemergefiles)
+#   #updateCheckboxInput(session = getDefaultReactiveDomain(), "phenotypemergefiles", "Merge Environment and Phenotype Datasets?", value = TRUE)
+#   updateCheckboxInput(session = getDefaultReactiveDomain(), "environmentmergefiles", "Merge Environment and Phenotype Datasets?", value = TRUE)
+# })
+# observeEvent(input$environmentmergefiles, {
+#   #req(input$environmentmergefiles)
+#   updateCheckboxInput(session = getDefaultReactiveDomain(), "phenotypemergefiles", "Merge Environment and Phenotype Datasets?", value = TRUE)
+#   #updateCheckboxInput(session = getDefaultReactiveDomain(), "environmentmergefiles", "Merge Environment and Phenotype Datasets?", value = TRUE)
+# })
+
 #create reactive values object
 phenotypedata <- reactiveValues(path = NULL)
 #code to upload file and display error message if an error occurs
@@ -46,22 +87,26 @@ observeEvent(input$phenotypedata, {
   req(input$phenotypedata)
   if(tolower(tools::file_ext(input$phenotypedata$datapath)) == "csv" ||
      tolower(tools::file_ext(input$phenotypedata$datapath)) == "txt"){
-    if(!is.null(environmentdata$table)){
+    #if(!is.null(environmentdata$table)){
       phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, header = input$header)
-      if(length(intersect(names(phenotypedata$table), names(environmentdata$table))) >= 1){
-        phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
-                                        header = input$header)
-        phenotypedata$table <- left_join(phenotypedata$table, environmentdata$table) %>% na.omit()
-      } else {
-        phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
-                                        header = input$header)
-      }
-    }else if(is.null(environmentdata$table)){
-      phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
-                                      header = input$header)
-    }
+    #   if(length(intersect(names(phenotypedata$table), names(environmentdata$table))) >= 1){
+    #     phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
+    #                                     header = input$header)
+    #     phenotypedata$table <- left_join(phenotypedata$table, environmentdata$table) %>% na.omit()
+    #     phenotypeselections$table[["Row_ID"]] <- rownames(phenotypeselections$table)
+    #   } else {
+    #     phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
+    #                                     header = input$header)
+    #     #phenotypeselections$table[["Row_ID"]] <- rownames(phenotypeselections$table)
+    #   }
+    # }else if(is.null(environmentdata$table)){
+    #   phenotypedata$table <- read.csv(input$phenotypedata$datapath, sep = input$sep, quote = input$quote, 
+    #                                   header = input$header)
+    #   #phenotypeselections$table[["Row_ID"]] <- rownames(phenotypeselections$table)
+    # }
   }else if(tolower(tools::file_ext(input$phenotypedata$datapath)) == "xlsx"){
     phenotypedata$table <- read_excel(path = input$phenotypedata$datapath)
+    #phenotypeselections$table[["Row_ID"]] <- rownames(phenotypeselections$table)
   } else {
     showNotification("File Type Not Recognized. Please Select a Different File.", duration = NULL, type = "error")
   }
@@ -75,6 +120,7 @@ observeEvent(input$phenotypedata, {
 observeEvent(input$phenotypeexampledata, {
   req(input$phenotypeexampledata)
   phenotypedata$table <- read.csv("data/testphenotype.csv") %>% na.omit()
+  #phenotypeselections$table$Row_ID <- rownames(phenotypeselections$table)
 })
 observeEvent(input$phenotypedata, {
   updateCheckboxInput(session, "phenotypeexampledata", "Use Example Data", value = FALSE)
@@ -83,36 +129,64 @@ observeEvent(input$phenotypedata, {
 observeEvent(input$phenotypeexampledata, {
   if(is.null(phenotypedata$table))return(NULL)
   req(phenotypedata$table)
-  phenotypedata$table1 <- phenotypedata$table
-  phenotypedata$filter <- phenotypedata$table1
-})
-observeEvent(input$phenotypedata, {
-  req(phenotypedata$table)
-  if(is.null(phenotypedata$table))return(NULL)
-  phenotypedata$table1 <- phenotypedata$table
+  output <- phenotypedata$table
+  output$Row_ID <- rownames(phenotypedata$table)
+  phenotypedata$table1 <- output #phenotypedata$table
   phenotypedata$filter <- phenotypedata$table1
 })
 observeEvent(input$phenotypedata, {
   req(input$phenotypedata)
-  if(!is.null(environmentdata$table1) && !is.null(phenotypedata$table1)){
-    if(length(intersect(names(environmentdata$table1), names(phenotypedata$table1))) >= 1){
-      showNotification("Phenotype and Environmental datasets have been merged.", type = "warning")
-    } 
-  }else if(is.null(environmentdata$table)){
-    NULL
-  }
+  req(phenotypedata$table)
+  if(is.null(phenotypedata$table))return(NULL)
+  output <- phenotypedata$table
+  output$Row_ID <- rownames(phenotypedata$table)
+  phenotypedata$table1 <- output #phenotypedata$table
+  phenotypedata$filter <- phenotypedata$table1
 })
-observeEvent(input$phenotypeexampledata, {
-  req(environmentdata$table1)
+
+##merge datasets if user chooses to do so
+mergedata <- reactiveValues(path = NULL)
+observeEvent(input$phenotypemergefiles, {
   req(phenotypedata$table1)
-  if(!is.null(environmentdata$table1) && !is.null(phenotypedata$table1)){
-    if(length(intersect(names(environmentdata$table1), names(phenotypedata$table1))) >= 1){
-      showNotification("Phenotype and Environmental datasets have been merged.", type = "warning")
-    } 
-  }else if(is.null(environmentdata$table)){
-    NULL
+  req(environmentdata$table1)
+  req(input$phenotypemergefiles)
+  #req(input$environmentmergefiles)
+  
+  if(length(intersect(colnames(phenotypedata$table1), colnames(environmentdata$table1))) >= 1){
+  mergedata$table <- left_join(phenotypedata$table1 %>% select(-Row_ID), environmentdata$table1 %>% select(-Row_ID))
+  mergedata$table <- mergedata$table %>% mutate(Row_ID = rownames(mergedata$table))
+  phenotypedata$table1 <- mergedata$table
+  phenotypedata$filter <- mergedata$table
+  environmentdata$table1 <- mergedata$table
+  environmentdata$filter <- mergedata$table
+  }else{
+    showNotification("No common column ID's are shared between the datasets. They will not be merged", type = "warning")
   }
+  
+  #environmentdata$table1 <- mergedata
+  
 })
+# observeEvent(input$phenotypedata, {
+#   req(input$phenotypedata)
+#   if(!is.null(environmentdata$table1) && !is.null(phenotypedata$table1)){
+#     if(length(intersect(names(environmentdata$table1), names(phenotypedata$table1))) >= 1){
+#       showNotification("Phenotype and Environmental datasets have been merged.", type = "warning")
+#     } 
+#   }else if(is.null(environmentdata$table)){
+#     NULL
+#   }
+# })
+# observeEvent(input$phenotypeexampledata, {
+#   req(environmentdata$table1)
+#   req(phenotypedata$table1)
+#   if(!is.null(environmentdata$table1) && !is.null(phenotypedata$table1)){
+#     if(length(intersect(names(environmentdata$table1), names(phenotypedata$table1))) >= 1){
+#       showNotification("Phenotype and Environmental datasets have been merged.", type = "warning")
+#     } 
+#   }else if(is.null(environmentdata$table)){
+#     NULL
+#   }
+# })
 #code to melt dataframe for boxplot (required for plotting)
 observe({
   if(is.null(phenotypedata$table))return(NULL)

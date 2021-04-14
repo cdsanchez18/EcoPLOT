@@ -12,6 +12,8 @@ The following guide explains how to operate within the Amplicon Data module of E
   In biology, an Amplicon refers to a piece of DNA that results from an amplification event, such as polymerase chain reaction (PCR). 16S Amplicons are generated from all or some of the 16S rRNA gene. As an essential gene, this region is slow to undergo mutations, but exhibits enough variability between microbial species that it is often used as a unique identifier of species identity. 
   
   The Amplicon Data module of EcoPLOT is well equipped to assist in your analysis of microbial communities from any ecosystem. 
+  
+<hr>
 
 <h2><b>Amplicon Data Format Guide</b></h2>  
 
@@ -20,7 +22,8 @@ EcoPLOT accepts **.biom**, **.qza**, or non-formatted text files (**.csv**, **.t
 Additionally, you can upload a phylogenetic tree in **.newick** or **.nexus** file formats. Uploading a tree is optional.  
   
 If the uploaded mapping file contains the same sample ID's to those contained in files previously uploaded to the Environment or Phenotype modules, they will be merged, allowing you to access all experimental design variables when constructing graphs or performing analyses.  
-  
+
+<hr>  
   
 <h2><b>Filtering of Data</b></h2>  
   
@@ -30,6 +33,8 @@ If the uploaded mapping file contains the same sample ID's to those contained in
   
   Users can access both the original and filtered datasets across module sections. 
   
+  <hr>
+  
 <h2><b>Community Composition</b></h2>  
   
   The community composition tab provides an overview of the microbes present in your ecosystem. Filtering by minimum sample presence will group low abundance taxa together in the barplot, denoted as "low abundance."  
@@ -37,6 +42,8 @@ If the uploaded mapping file contains the same sample ID's to those contained in
   **Note:** Lower taxonomic ranks may cause the plot legend to obstruct the plot itself. You may alter the position of the legend using the legend position option.  
   
   If a phylogenetic tree was uploaded, you may plot it in the "Phylogenetic Tree" tab. Plotting options are taken directly from the uploaded file and may take a bit to load. You may select which node and how many ancestral levels to show. 
+  
+  <hr>
   
 <h2><b>Alpha Diversity</b></h2>  
   
@@ -53,6 +60,8 @@ If the uploaded mapping file contains the same sample ID's to those contained in
   
   
   The statistics tool provided in the sidebar of this tab will inform users of statistically significant differences between experimental design variables as given by a Tukey Pairwise Comparison. Users are asked to select which variables they would like to compare. Once selected, a print-out will show the pairwise comparisons and their corresponding significance. 
+  
+  <hr>
   
 <h2><b>Beta Diversity</b></h2>   
   
@@ -98,10 +107,13 @@ If the uploaded mapping file contains the same sample ID's to those contained in
   <li><b> \* </b> The asterisk (\*) indicates a crossing event and is used when you want to include two variables AND their interaction.</li>
   </ul>
   
+  <hr>
   
 <h2><b>Heatmap</b></h2>  
 
 The heatmap function in EcoPLOT taken from the Phyloseq package and utilizes ordination methods to organize columns and rows. Because it utilizes a distance matrix, rendering times may vary depending on the size of your dataset. The default axis labels, "NULL", show sample ID and OTU, however can be overwritten by specifying a variable to show. 
+  
+  <hr>
   
 <h2><b>Differential Abundance</b></h2>  
   
@@ -111,13 +123,19 @@ The heatmap function in EcoPLOT taken from the Phyloseq package and utilizes ord
   
   Additionally, after the results are given, EcoPLOT allows for the distribution of individual ASV's to be viewed graphically. Using the results table provided, the distribution of individual ASV's with significant p-values can be viewed graphically. To do so, simply enter the ASV ID you wish to see and click "Render ASV Count Plot."  
   
+  
+  
   <b> Volcano Plot </b> 
   
   Volcano plots are scatter plots showing significance versus fold-change on the axes to represent changes in large datasets, making them an effective way to view the results of differential expression analysis. In EcoPLOT, users can group significantly different ASV's with customized labels using the interative analysis tool.  
   
+  
+  
   <b> Log2FoldChange Plot </b>
   
   The log2foldchange plot displays the increased or decreased presence of taxonomic ranks by experimental design. For example, given two conditions, A and B, with values of 10 and 100 respectively, the fold change is 10 because B is 10 times greater than A. When B is greater than A, the value will be positive, whereas when A is greater it will be negative. When thinking of a log 2 fold change, it is helpful to know that a value of 1 means that B is twice as large as A, while a value of -2 would mean A is four times as large as B. By default, EcoPLOT will show all values on the plot, however these values can be filtered by specifying a log2foldchange threshold.  
+  
+  <hr>
   
 <h2><b>Citations</b></h2>
   

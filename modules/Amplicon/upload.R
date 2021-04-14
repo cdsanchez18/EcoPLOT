@@ -178,29 +178,14 @@ taxonomyfile <- eventReactive(input$makefile, {
 mappingfile <- eventReactive(input$makefile, {
   if(input$ampliconexampledata == TRUE){
     obj <- read.csv("data/testmapping.txt", sep = "\t")
-    rownames(obj) <- obj[[1]] %>% na.omit
-    if(!is.null(phenotypedata$table) && !is.null(environmentdata$table)){
-      if(length(intersect(names(obj), names(phenotypedata$table))) >= 1 && length(intersect(names(obj), names(environmentdata$table))) >= 1){
-        obj <- left_join(obj, phenotypedata$table1)
-        obj <- left_join(obj, environmentdata$table1) %>% na.omit()
-        rownames(obj) <- obj[[1]]
-      }
-    }else if(!is.null(phenotypedata$table) && is.null(environmentdata$table)){
-      if(length(intersect(names(obj), names(phenotypedata$table))) >= 1){
-        obj <- left_join(obj, phenotypedata$table1) %>% na.omit()
-        rownames(obj) <- obj[[1]]
-      }
-    }else if(is.null(phenotypedata$table) && !is.null(environmentdata$table)){
-      if(length(intersect(names(obj), names(environmentdata$table))) >= 1){
-        obj <- left_join(obj, environmentdata$table1) %>% na.omit()
-        rownames(obj) <- obj[[1]]
-      }
-    }
+    rownames(obj) <- obj[[1]]
     if(is.data.frame(obj)){
       obj$Sample <- rownames(obj)
+      obj$Row_ID <- 1:nrow(obj)
       file <- phyloseq::sample_data(obj)
     } else {
       obj$Sample <- rownames(obj)
+      obj$Row_ID <- 1:nrow(obj)
       obj <- as.data.frame(obj)
       file <- phyloseq::sample_data(obj)
     }
@@ -210,41 +195,20 @@ mappingfile <- eventReactive(input$makefile, {
       if(input$fileformat == "none" || input$fileformat == "qiime1"){
         obj <- read.csv(file = inFile$datapath, sep = input$mappingformat) %>% na.omit()
         rownames(obj) <- obj[[1]]
-        #file <- sample_data(obj)
-        if(!is.null(phenotypedata$table) && !is.null(environmentdata$table)){
-          if(length(intersect(names(obj), names(phenotypedata$table))) >= 1 && length(intersect(names(obj), names(environmentdata$table))) >= 1){
-            obj <- left_join(obj, phenotypedata$table1)
-            obj <- left_join(obj, environmentdata$table1) %>% na.omit()
-            rownames(obj) <- obj[[1]]
-          }
-        }else if(!is.null(phenotypedata$table) && is.null(environmentdata$table)){
-          if(length(intersect(names(obj), names(phenotypedata$table))) >= 1){
-            obj <- left_join(obj, phenotypedata$table1) %>% na.omit()
-            rownames(obj) <- obj[[1]]
-          }
-        }else if(is.null(phenotypedata$table) && !is.null(environmentdata$table)){
-          if(length(intersect(names(obj), names(environmentdata$table))) >= 1){
-            obj <- left_join(obj, environmentdata$table1) %>% na.omit()
-            rownames(obj) <- obj[[1]]
-          }
-        }
         if(is.data.frame(obj)){
           obj$Sample <- rownames(obj)
+          obj$Row_ID <- 1:nrow(obj)
           file <- phyloseq::sample_data(obj)
         } else {
           obj$Sample <- rownames(obj)
+          obj$Row_ID <- 1:nrow(obj)
           obj <- as.data.frame(obj)
           file <- phyloseq::sample_data(obj)
         }
       }else if(input$fileformat == "qiime2"){
         file <- inFile$datapath
-        
-      }#else if(input$fileformat == "qiime1"){
-      #   obj <- read.csv(file = inFile$datapath,
-      #                   sep = input$mappingformat,
-      #                   row.names = 1)
-      #   file <- sample_data(obj)
-      # }
+        #file$Row_ID <- rownames(file)
+      }
     }else {
       NULL
     }
@@ -276,6 +240,15 @@ output$phyloaction <- renderUI({
 })
 output$phyloreset <- renderUI({
   actionButton("resetfile", "Reset Uploaded Files", width = "100%")
+})
+output$phylomerge <- renderUI({
+  req(input$makefile)
+  output <- tagList(
+    hr()
+    ,
+    actionButton("mergefiles", "Merge Files", width = "100%")
+  )
+  return(output)
 })
 observeEvent(input$resetfile, {
   reset("otufile1")
@@ -309,10 +282,9 @@ phyloseqobj <- eventReactive(input$makefile, {
                                           return(NULL)
                                         })
                      } else if(input$fileformat == "qiime2"){
-                       file <- tryCatch(qiime2R::qza_to_phyloseq(features = otufile(), 
+                       file <- tryCatch(qza_to_phyloseq(features = otufile(), 
                                                         taxonomy = taxonomyfile(), 
-                                                        metadata = mappingfile(), 
-                                                        tree = phylotree()),
+                                                        metadata = mappingfile()),
                                         error = function(cond){
                                           message("Error")
                                           return(NULL)
@@ -321,7 +293,10 @@ phyloseqobj <- eventReactive(input$makefile, {
                                           message("Warning")
                                           return(NULL)
                                         })
-                     } else if(input$fileformat == "qiime1"){
+                       updated_mapping <- data.frame(sample_data(file))
+                       updated_mapping$Row_ID <- 1:nrow(updated_mapping)
+                       sample_data(file) <- updated_mapping
+                     }else if(input$fileformat == "qiime1"){
                        file <- tryCatch(merge_phyloseq(otufile(), mappingfile(), phylotree()),
                                         error = function(cond){
                                           message("Error")
@@ -355,6 +330,9 @@ phyloseqobj <- eventReactive(input$makefile, {
                                           message("Warning")
                                           return(NULL)
                                         })
+                       updated_mapping <- data.frame(sample_data(file))
+                       updated_mapping$Row_ID <- 1:nrow(updated_mapping)
+                       sample_data(file) <- updated_mapping
                      } else if(input$fileformat == "qiime1"){
                        file <- tryCatch(merge_phyloseq(otufile(), mappingfile()),
                                         error = function(cond){
@@ -376,20 +354,58 @@ observe({
     showNotification("Error Uploading Files. Please make sure files are formatted correctly.",
                      type = "error")
 })
+observeEvent(input$mergefiles, {
+  if(is.null(phyloseqobj()))return(NULL)
+  updated_mapping <- data.frame(sample_data(phyloseqobj())) %>% select(-Row_ID)
+  if(!is.null(phenotypedata$table) && !is.null(environmentdata$table)){
+    phenotype <- phenotypedata$table1 %>% select(-Row_ID)
+    environment <- environmentdata$table1 %>% select(-Row_ID)
+    if(length(intersect(names(updated_mapping), names(phenotype))) >= 1 && length(intersect(names(updated_mapping), names(environment))) >= 1){
+      updated_mapping <- left_join(updated_mapping, phenotype)
+      updated_mapping <- left_join(updated_mapping, environment) #%>% na.omit()
+    }
+  }else if(!is.null(phenotypedata$table) && is.null(environmentdata$table)){
+    phenotype <- phenotypedata$table1 %>% select(-Row_ID)
+    if(length(intersect(names(updated_mapping), names(phenotype))) >= 1){
+      updated_mapping <- left_join(updated_mapping, phenotype) #%>% na.omit()
+    }
+  }else if(is.null(phenotypedata$table) && !is.null(environmentdata$table)){
+    environment <- environmentdata$table1 %>% select(-Row_ID)
+    if(length(intersect(names(updated_mapping), names(environment))) >= 1){
+      updated_mapping <- left_join(updated_mapping, environment) #%>% na.omit()
+    }
+  }else if(is.null(phenotypedata$table) && is.null(environmentdata$table)){
+    showNotification("No Phenotype or Environmental Files have been Uploaded", type = "warning")
+  }
+  updated_mapping$Row_ID <- 1:nrow(updated_mapping)
+  rownames(updated_mapping) <- updated_mapping[["Sample"]]
+  sample_data(amplicondata$original) <- updated_mapping
+})
 output$phyloseqprint <- renderPrint({
   if(is.null(phyloseqobj()))return(NULL)
-  phyloseqobj()
+  #phyloseqobj()
+  amplicondata$original
 })
-output$phyloseqprint1 <- renderUI({
-  output <- tagList(
-    
-  )
+
+#Turn amplicon datasets from reactive values into observer, makes updating the files easier
+amplicondata <- reactiveValues()
+amplicondata$original <- data.frame(NULL)
+amplicondata$filtered <- data.frame(NULL)
+
+observe({
+  req(phyloseqobj())
+  amplicondata$original <- phyloseqobj()
 })
+observe({
+  req(updatedphyloseq())
+  amplicondata$filtered <- updatedphyloseq()
+})
+
 ## Produce Initial Tables -----
 output$otutable <- renderDataTable({
   if(is.null(phyloseqobj()))return(NULL)
   withProgress(message = "Rendering OTU Table:", {
-    otu_table(phyloseqobj())
+    otu_table(amplicondata$original)
   })
 })
 output$otutableoutput <- renderUI({
@@ -402,7 +418,7 @@ output$otutableoutput <- renderUI({
 output$taxtable <- renderDataTable({
   if(is.null(phyloseqobj()))return(NULL)
   withProgress(message = "Rendering Taxonomy Table:", {
-    tax_table(phyloseqobj())
+    tax_table(amplicondata$original)
   })
 })
 output$taxtableoutput <- renderUI({
@@ -415,12 +431,12 @@ output$taxtableoutput <- renderUI({
 output$mappingtableoutput <- renderDataTable({
   if(is.null(phyloseqobj()))return(NULL)
   withProgress(message = "Rendering Mapping Table:", {
-    sample_data(phyloseqobj())
+    sample_data(amplicondata$original)
   })
 })
 output$mappingtablesummary <- renderPrint({
   if(is.null(phyloseqobj()))return(NULL)
-  Hmisc::describe(sample_data(phyloseqobj()))
+  Hmisc::describe(sample_data(amplicondata$original))
 })
 output$mappingtableoutputdisplay <- renderUI({
   if(input$makefile == 0){

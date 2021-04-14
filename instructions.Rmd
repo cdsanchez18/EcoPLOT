@@ -8,7 +8,13 @@ output:
 <div style = "text-align:center"><h1> <b>EcoPLOT Operating Instructions</b></h1></div>
 
 <H2><b>Overview</b></H2>
-EcoPLOT was developed to faciliate the exploration and study of multivariate, biogeochemical datasets. EcoPLOT is organized into three modules (Environmental Data, Phenotype Data, and Amplicon Data), each featuring a variety of statistical and graphical tools unique to each data type. Below we explain how to properly format your data for upload into EcoPLOT and highlight some of the unique features of our tool. For module specific instructions, please consult the guides at the beginning of each section.  
+<div style="padding:5px;"><center>
+EcoPLOT was developed to faciliate the exploration and study of multivariate, biogeochemical datasets. EcoPLOT is organized into three modules (Environmental Data, Phenotype Data, and Amplicon Data), each featuring a variety of statistical and graphical tools unique to each data type. Additionally, EcoPLOT allows users to perform machine learning in the form the iterative Random Forest. This feature promotes the generation of novel hypotheses and can guide future directions of study.<br> <br>Below we explain how to properly format your data for upload into EcoPLOT and highlight some of the unique features of our tool. For module specific instructions, please consult the guides at the beginning of each section.  </center></div>
+
+<div style = "border-style:solid;padding:10px;">
+  <center><img src = "www/ecoplot_structure.png"></center>
+</div>
+<hr>
   
 <H2><b> Formatting Your Data For Upload  </b></H2>
 EcoPLOT currently accepts **.csv** , **.tsv**, and **.xlsx** file formats.  
@@ -23,25 +29,8 @@ Example datasets are included in each module.
   <center><img src = "www/example_table.png"></center>
 </div>
   
-<H2><b>Interactive Exploration of your Data</H2></b>
-  
-EcoPLOT allows for the interactive creation of new variables to capture patterns or trends not explained by exisiting variables in your experimental design. This feature, referred to as dynamic selection, is available in <b>scatter</b> and <b>ordination</b> plots found across the three modules. We explain the steps required to use dynamic selection below.  
-  
-  <div style="width:100%;">
-<center><img src = "www/dynamic_selection.png" style="width:100%;"></center>
-</div>
-  
-  <h5> <b>Steps: </b></h5>  
- <ul>
-  <li> <b> Step 1: Name your new variable</b> When visualizing your data graphically, it is common to encounter interesting trends or patterns in your data. When one such trend is encountered, enter a name for this new variable and make your first selection. </li> 
-  <li> <b> Step 2: Make your first grouping</b> Simply click and drag your mouse over the points you wish to include in your first grouping. You may make additional selections under the same grouping by clicking "Save Selected to Current Grouping." This will append your new selection to the first under the same group name.</li>
-  <li> <b> Step 3: Create new groupings</b> Using the same click and drag method, you may create a new grouping of points and assign a unique name to them. EcoPLOT allows for up to 10 unique groupings per created variable. </li>
-  <li> <b> Step 4: Name points not grouped</b> The final step in creating your variable is to assign a name for those points not included in any group selection. </li>
-  <li> <b> Step 5: Click "Save Variable"</b> Clicking Save Variable will append your newly created variable as a column in your existing dataframe, where it can be accessed in statistical and graphical analyses across each module of EcoPLOT.</li>
-  </ul
 
-<h4><b> NOTE: </b> There is no limit to the number of variables you can create within EcoPLOT. If the same sample point is selected in two or more groupings, it will be given the name of the group in which it first appears.  </h4>
-  
+<hr>  
   
 <H2><b> Logging Information </b></H2>
   
@@ -49,6 +38,7 @@ EcoPLOT allows for the interactive creation of new variables to capture patterns
   
 Logged steps can also be viewed in the R studio console window.  
   
+<hr>
   
 <H2><b> Contact</H2></b>
 The most recent version of EcoPLOT can be accessed via [gitHub](https://github.com/cdsanchez18/EcoPLOT).   

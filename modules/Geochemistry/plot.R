@@ -317,7 +317,7 @@ output$environmentcorrelation <- renderPrint({
   req(environmentdata$table)
   if(input$environmentplottype == "scatter"){
     if(!is.null(av(input$environmentx1)) && !is.null(av(input$environmenty))){
-      if(is.numeric(input$environmentx1) && is.numeric(input$environmenty)){
+      if(is.numeric(environmentdata$use[[input$environmentx1]]) && is.numeric(environmentdata$use[[input$environmenty]])){
       paste("Pearson's Correlation Coefficient:", cor(environmentdata$use[[input$environmentx1]], environmentdata$use[[input$environmenty]]))
       }else{
         "Pearson's Correlation Coefficient: NA"
@@ -370,8 +370,8 @@ output$environmentdynamicselectbuttons <- renderUI({
       tags$div(tags$h4("Dynamic Selection allows users to create new variables within their dataset that capture unique patterns or trends 
     not explained within their experimental design. EcoPLOT allows for the creation of up to 10 unique groupings within a created variable.
                      To get started, create a name for you new variable and drag your mouse to select points of interest. 
-                     Clicking 'Save Selection' will group those points together under a name of your choosing. This process can be repeated
-                     to distinguish different groupings under the same variable heading. All created variables can be used in all graphical and 
+                     Clicking 'Save Selection' will group those points together under a name of your choosing within your created variable. This process can be repeated
+                     to distinguish different groupings under the same new variable. All created variables can be used in all graphical and 
                      statistical analyses within EcoPLOT."), align = "center")
       ,
       tags$div(style = "padding:10px")
@@ -380,19 +380,19 @@ output$environmentdynamicselectbuttons <- renderUI({
         column(8,
                column(4,
                       textInput("environmentcolumnName", "Create Name for Variable",
-                                value = "New Variable"))
+                                value = "New_Variable"))
                ,
                conditionalPanel("input.environmentsaveselection",
                                 column(4,
                                        textInput("environmentselectionName1", "Name for Group 1",
-                                                 value = "Group 1")
+                                                 value = "Group_1")
                                 )
                                 ,
                                 uiOutput("environmentcontainer")
                                 ,
                                 column(4,
                                        textInput("environmentnotext", "Name for Points Not Grouped",
-                                                 value = "Not Grouped"))
+                                                 value = "Not_Grouped"))
                )
         ),
         column(4,
@@ -433,16 +433,19 @@ output$environmentdynamicselectbuttons <- renderUI({
 })
 observeEvent(input$environmentsaveselection, {
   updateActionButton(
+    session = getDefaultReactiveDomain(),
     inputId = "environmentsaveselection",
     label = "Save Selected to Current Grouping")
 })
 observeEvent(input$environmentresetselection, {
   updateActionButton(
+    session = getDefaultReactiveDomain(),
     inputId = "environmentsaveselection",
     label = "Save Selected")
 })
 observeEvent(input$environmentseparateselection, {
   updateActionButton(
+    session = getDefaultReactiveDomain(),
     inputId = "environmentsaveselection",
     label = "Save Selected to Current Grouping")
 })
@@ -465,17 +468,20 @@ environmentselections <- reactiveValues()
 environmentselections$samples <- data.frame()
 #add selection to dataframe
 observeEvent(input$environmentsaveselection, {
-  IDpos <- which(grepl("ID", colnames(environmentdata$use)))[1]
-  newLine <- brushedPoints(environmentdata$use, input$environmentbrush)[IDpos]
+  #IDpos <- which(grepl("ID", colnames(environmentdata$use)))[1]
+  #newLine <- brushedPoints(environmentdata$use, input$environmentbrush)[IDpos]
+  newLine <- brushedPoints(environmentdata$use, input$environmentbrush)["Row_ID"]
   environmentselections$samples <- rbindPad(data = environmentselections$samples, selections = newLine)
+  environmentselections$samples[do.call(order, environmentselections$samples),]
   return(environmentselections$samples)
 })
 #add selection as different grouping 
 observeEvent(input$environmentseparateselection, {
   if(ncol(environmentselections$samples) == 1 || ncol(environmentselections$samples) < 10 && ncol(environmentselections$samples >1)){
-    IDpos <- which(grepl("ID", colnames(environmentdata$use)))[1]
-    newGrouping <- brushedPoints(environmentdata$use, input$environmentbrush)[IDpos]
-    environmentselections$samples <- cbindPad(environmentselections$samples, newGrouping)
+    #IDpos <- which(grepl("ID", colnames(environmentdata$use)))[1]
+    #newGrouping <- brushedPoints(environmentdata$use, input$environmentbrush)[IDpos]
+    newLine <- brushedPoints(environmentdata$use, input$environmentbrush)["Row_ID"]
+    environmentselections$samples <- cbindPad(environmentselections$samples, newLine)
     environmentselections$samples[do.call(order, environmentselections$samples),]
   }else{
     NULL
@@ -506,7 +512,7 @@ observeEvent(input$environmentseparateselection, {
         where = "beforeEnd",
         ui = column(4,
                     tags$div(textInput(paste("environmentselectionName", paste(environmentcounter()), sep = ""), paste("Name for Group", paste(environmentcounter())),
-                                       value = paste("Group", paste(environmentcounter()))),
+                                       value = paste0("Group_", paste(environmentcounter()))),
                              id = paste0("environmentselection", paste(environmentcounter())))
         )
       )
@@ -624,29 +630,38 @@ observe({
 observeEvent(input$environmentactionbutton, {
   req(environmentdata$table)
   #adds column to original table
-  IDpos <- which(grepl("ID", colnames(environmentdata$table1)))[1]
-  IDposname <- names(environmentdata$table1[which(grepl("ID", colnames(environmentdata$table1)))[1]])
-  columnadd <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = IDposname) %>% unique()
+  #IDpos <- which(grepl("ID", colnames(environmentdata$table1)))[1]
+  #IDposname <- names(environmentdata$table1[which(grepl("ID", colnames(environmentdata$table1)))[1]])
+  #columnadd <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = IDposname) %>% unique()
+  columnadd <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = "Row_ID") %>% unique()
   columnadd[[2]][duplicated(columnadd[[2]])] <- NA
   columnadd <- na.omit(columnadd)
-  variables <- data.frame(environmentdata$table1[[IDpos]])
-  names(variables)[1] <- IDposname
-  columnadd <- right_join(x = columnadd, y = variables, by = IDposname)
+  #variables <- data.frame(environmentdata$table1[[IDpos]])
+  variables <- data.frame(environmentdata$table1[["Row_ID"]])
+  #names(variables)[1] <- IDposname
+  names(variables)[1] <- "Row_ID"
+  #columnadd <- right_join(x = columnadd, y = variables, by = IDposname)
+  columnadd <- right_join(x = columnadd, y = variables, by = "Row_ID") %>% unique()
   columnadd[is.na(columnadd)] <- input$environmentcolumnName
-  environmentdata$table1 <- left_join(x = environmentdata$table1, y = columnadd, by = IDposname) %>% unique()
+  #environmentdata$table1 <- left_join(x = environmentdata$table1, y = columnadd, by = IDposname) %>% unique()
+  environmentdata$table1 <- left_join(x = environmentdata$table1, y = columnadd, by = "Row_ID")
   
   #adds column to filtered table 
-  environmentdata$table1[is.na(environmentdata$table1)] <- input$environmentnotext
-  IDpos2 <- which(grepl("ID", colnames(environmentdata$filter)))[1]
-  IDposname2 <- names(environmentdata$filter[which(grepl("ID", colnames(environmentdata$filter)))[1]])
-  columnadd2 <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = IDposname) %>% unique()
+  #IDpos2 <- which(grepl("ID", colnames(environmentdata$filter)))[1]
+  #IDposname2 <- names(environmentdata$filter[which(grepl("ID", colnames(environmentdata$filter)))[1]])
+  #columnadd2 <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = IDposname) %>% unique()
+  columnadd2 <- pivot_longer(environmentselections$samples, everything(), names_to = input$environmentcolumnName, values_to = "Row_ID") %>% unique()
   columnadd2[[2]][duplicated(columnadd2[[2]])] <- NA
   columnadd2 <- na.omit(columnadd2)
-  variables2 <- data.frame(environmentdata$filter[[IDpos]])
-  names(variables2)[1] <- IDposname2
-  columnadd2 <- right_join(x = columnadd2, y = variables2, by = IDposname2) %>% unique()
+  #variables2 <- data.frame(environmentdata$filter[[IDpos]])
+  variables2 <- data.frame(environmentdata$table1[["Row_ID"]])
+  #names(variables2)[1] <- IDposname2
+  names(variables2)[1] <- "Row_ID"
+  #columnadd2 <- right_join(x = columnadd2, y = variables2, by = IDposname2) %>% unique()
+  columnadd2 <- right_join(x = columnadd2, y = variables2, by = "Row_ID") %>% unique()
   columnadd2[is.na(columnadd2)] <- input$environmentcolumnName
-  environmentdata$filter <- left_join(x = environmentdata$filter, y = columnadd2, by = IDposname2)
+  #environmentdata$filter <- left_join(x = environmentdata$filter, y = columnadd2, by = IDposname2)
+  environmentdata$filter <- left_join(x = environmentdata$filter, y = columnadd2, by = "Row_ID")
 })
 
 #Make Updated table
@@ -661,7 +676,7 @@ observeEvent(input$environmentx1, {
   environmentcurrentselectionx1(input$environmentx1)
 })
 observeEvent(input$environmentactionbutton, {
-  updateSelectInput(session, "environmentx1", "Select Variable to Graph Along X-Axis:", 
+  updateSelectInput(session, "environmentx1", "Select Variable to Graph Along X-Axis:",
                     choices = c("NULL", colnames(environmentdata$table1)),
                     selected = environmentcurrentselectionx1()
   )
