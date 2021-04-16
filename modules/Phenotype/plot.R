@@ -172,6 +172,9 @@ output$phenotypeplotUI <- renderUI({
       numericInput("phenotypeplotheight", "Select Plot Height",
                    value = 500)
       ,
+      numericInput("phenotypeplottextsize", "Select Text Size",
+                   value = 16)
+      ,
       downloadPlotUI("phenotypeplotdownload")
     )
   })
@@ -323,7 +326,7 @@ phenotypeplot <- reactive({
   }else {
     return(NULL)
   }
-  return(plot + theme_bw())
+  return(plot + theme_bw()+ theme(text = element_text(size = input$phenotypeplottextsize)))
 })
 #prints correlation coefficient when viewing a scatter plot
 output$phenotypecorrelation <- renderPrint({
@@ -358,7 +361,11 @@ output$phenotypeplot1 <- renderPlot({
 })
 ##ui options for phenotype plot brush
 output$phenotypeplotmainUI <- renderUI({
-  req(phenotypedata$table)
+  #req(phenotypedata$table)
+  validate(
+    need(!is.null(phenotypedata$table), "Please Upload a Dataset")
+  )
+  
   plotOutput("phenotypeplot1", brush = "phenotypebrush", height = input$phenotypeplotheight)
 })
 #tells you which points you have selected 

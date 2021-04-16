@@ -66,6 +66,7 @@ output$environmentmergeUI <- renderUI({
 
 #create reactive values object
 environmentdata <- reactiveValues(path = NULL)
+environmentdata$table <- NULL
 #code to upload file and display error message if an error occurs
 observeEvent(input$environmentdata, {
   req(input$environmentdata)
@@ -321,7 +322,10 @@ output$environmentchangeclassUI <- renderUI({
   return(output)
 })
 output$environmentuploadmain <- renderUI({
-  req(environmentdata$table)
+  #req(environmentdata$table)
+  validate(
+    need(!is.null(environmentdata$table), "Please Upload a Dataset")
+  )
   output <- tagList(
     splitLayout(dataTableOutput("environmentdatatable"))
   )

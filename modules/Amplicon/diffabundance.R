@@ -57,6 +57,9 @@ deseqresults <- reactive({
                })
 })
 output$deseqresultprint <- renderPrint({
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+  )
   if(is.null(deseqresults()))return(NULL)
   resultsNames(deseqobj())
 })
@@ -233,6 +236,9 @@ output$log2foldchangegraph <- renderPlot({
   log2foldchangeplot()
 })
 output$log2foldchangegraphoutput <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+  )
   if(is.null(log2foldchangeplot()))return(NULL)
   plotOutput("log2foldchangegraph", height = input$log2foldplotheight)
 })
@@ -243,6 +249,9 @@ output$scatter1 <- renderPlot({
   volcanoplot()
 })
 output$scatter12 <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+  )
   if(is.null(volcanoplot()))return(NULL)
   plotOutput("scatter1", brush = "volcanobrush", height = input$volcanoplotheight)
 })

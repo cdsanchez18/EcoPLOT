@@ -141,6 +141,9 @@ output$environmentnonparametricwork <- renderPrint({
   }
 })
 output$environmentnonparametricMain <- renderUI({
+  validate(
+    need(!is.null(environmentdata$table), "Please Upload a Dataset")
+  )
   output <- tagList(
     verbatimTextOutput("environmentnonparametricwork")
   )

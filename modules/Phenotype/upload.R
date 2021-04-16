@@ -319,7 +319,11 @@ output$phenotypedatatable <- renderDataTable({
   phenotypedata$table1
 })
 output$plantuploadmain <- renderUI({
-  req(phenotypedata$table)
+  #req(phenotypedata$table)
+  validate(
+    need(!is.null(phenotypedata$table), "Please Upload a Dataset")
+  )
+  
   output <- tagList(
     splitLayout(dataTableOutput("phenotypedatatable"))
   )

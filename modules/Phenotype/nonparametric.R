@@ -155,6 +155,9 @@ output$phenotypenonparametricwork <- renderPrint({
   }
 })
 output$phenotypenonparametricMain <- renderUI({
+  validate(
+    need(!is.null(phenotypedata$table), "Please Upload a Dataset")
+  )
   output <- tagList(
     verbatimTextOutput("phenotypenonparametricwork")
   )

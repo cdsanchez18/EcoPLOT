@@ -89,20 +89,29 @@ EcoPLOTGeochemUI <- tabPanel("Environmental Data",
                                                        ,
                                                        hr()
                                                 )),
-                                              fluidRow(
-                                                column(width = 12,
-                                                       splitLayout(dataTableOutput("environmenttable")))),
-                                              fluidRow(
-                                                column(width = 6,
-                                                       h5("This is your C to N to P Ratio:"),
-                                                       wellPanel(textOutput("CNP"))),
-                                                column(width = 6,
-                                                       h5("This is your N to P to K Ratio:"),
-                                                       wellPanel(textOutput("NPK")))),
-                                              fluidRow(
-                                                column(width = 6, offset = 5,
-                                                       h5("Sand, Silt, Clay Particle Sizes"),
-                                                       splitLayout(tableOutput("ssc"))))
+                                              uiOutput("soilindexuioutput")
+                                              #fluidRow(
+                                              #   column(width = 12,
+                                              #          shiny::radioButtons("environmentdatasource2", "Select Dataset to Use:",
+                                              #                              choices = c("Original"),
+                                              #                              selected = "Original", inline = TRUE)
+                                              #          ,
+                                              #          hr()
+                                              #   )),
+                                              # fluidRow(
+                                              #   column(width = 12,
+                                              #          splitLayout(dataTableOutput("environmenttable")))),
+                                              # fluidRow(
+                                              #   column(width = 6,
+                                              #          h5("This is your C to N to P Ratio:"),
+                                              #          wellPanel(textOutput("CNP"))),
+                                              #   column(width = 6,
+                                              #          h5("This is your N to P to K Ratio:"),
+                                              #          wellPanel(textOutput("NPK")))),
+                                              # fluidRow(
+                                              #   column(width = 6, offset = 5,
+                                              #          h5("Sand, Silt, Clay Particle Sizes"),
+                                              #          splitLayout(tableOutput("ssc"))))
                                             )),
                                    tabPanel("Soil Texture Triangle",
                                             titlePanel(""),

@@ -1,5 +1,6 @@
 #create tree plot-----
 output$treeoptions <- renderUI({
+  req(amplicondata$use)
   if(is.null(phy_tree(phyloseqobj()))){
     output <- tags$h3("Phylogenetic Tree Required")
   }else{
@@ -16,24 +17,26 @@ output$treeoptions <- renderUI({
                                              "Daylight" = "daylight"), 
                                  selected = "rectangular")
                      ,
-                     selectInput("treenode1", "Select Node to View:",
+                     selectInput("treenode1", "Select Node to View",
                                  choices = as_tibble(phy_tree(amplicondata$use)) %>% 
                                    select(label) %>% 
                                    arrange(label) %>% 
                                    pull(label))
                      ,
-                     numericInput("treetaxonomy1", "Select Ancestral Levels:",
+                     numericInput("treetaxonomy1", "Select Ancestral Levels",
                                   min = 1,
                                   value = 10)
                      ,
-                     numericInput("phylotreeplotheight1", "Select Height of Plot:",
+                     textInput("treeplottitle", "Create Title for Plot")
+                     ,
+                     numericInput("phylotreeplotheight1", "Select Height of Plot",
                                   value = 1250)
                      ,
-                     numericInput("phylotreelabelsize1", "Select Label Size:",
+                     numericInput("phylotreelabelsize1", "Select Label Size",
                                   min = 2,
                                   value = 3)
                      ,
-                     actionButton("phylotreeplotrender1", "Render Tree Plot:")
+                     actionButton("phylotreeplotrender1", "Render Tree Plot", width = "100%")
                      ,
                      hr()
                      ,
@@ -56,14 +59,14 @@ phylotreeplotrender <- eventReactive(input$phylotreeplotrender1, {
   if(is.null(phy_tree(phyloseqobj())))return(NULL)
   withProgress(message = "Making Tree",
                detail = "This may take a while...", {
-                 # phylotreesubset <- tree_subset(phy_tree(ampliconuse()),
-                 #                                node = input$treenode1,
-                 #                                levels_back = input$treetaxonomy1)
-                 # if (isS4(phylotreesubset)) {
-                 #   labels <- phylotreesubset@phylo$tip.label
-                 # } else {
-                 #   labels <- phylotreesubset$tip.label
-                 # }
+                 phylotreesubset <- tree_subset(phy_tree(amplicondata$use),
+                                                node = input$treenode1,
+                                                levels_back = input$treetaxonomy1)
+                 if (isS4(phylotreesubset)) {
+                   labels <- phylotreesubset@phylo$tip.label
+                 } else {
+                   labels <- phylotreesubset$tip.label
+                 }
                  
                  # labels_df <- tibble(
                  #   label = labels,
@@ -75,10 +78,11 @@ phylotreeplotrender <- eventReactive(input$phylotreeplotrender1, {
                  #     genus = if_else(is.na(genus), label, str_replace(genus, "g__", ""))
                  #   )
                  
-                 # ggtree(phylotreesubset, layout = input$treestyle1) + #%<+% labels_df +
-                 #   geom_tiplab(size = input$phylotreelabelsize1) + geom_nodelab() 
-                 plot_tree(amplicondata$use, shape="Family", label.tips="Genus", size="Abundance") + 
-                   ggtitle("tree annotation using phyloseq") + theme(legend.position = "none")
+                 ggtree(phylotreesubset, layout = input$treestyle1) + #%<+% labels_df +
+                   geom_tiplab(size = input$phylotreelabelsize1) + geom_nodelab() + ggtitle(input$treeplottitle)
+                 #plot_tree(amplicondata$use, shape="Family", label.tips="Genus", size="Abundance") + 
+                 #  ggtitle(input$treeplottitle) +
+                 #  theme(legend.position = "none")
                  
                  
                })
@@ -89,6 +93,9 @@ output$phylotreeplot <- renderPlot({
   isolate(phylotreeplotrender())
 })
 output$phylotreeplotui <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+  )
   req(input$phylotreeplotrender1)
   if(is.null(phylotree()))return(NULL)
   isolate(plotOutput("phylotreeplot", height = input$phylotreeplotheight1))

@@ -76,4 +76,12 @@ output$heatmapplotoutput <- renderPlot({
     heatmapplot()
   })
 })
+output$heatmapplotoutputui <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+  )
+  plotOutput("heatmapplotoutput")
+})
+
+
 downloadPlot(id = "heatmapplotoutputdownload",plotid = heatmapplot())

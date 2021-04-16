@@ -39,6 +39,17 @@ Example datasets are included in each module.
 Logged steps can also be viewed in the R studio console window.  
   
 <hr>
+
+
+<H2><b> Merging Data </b></H2>
+  
+<p>Data uploaded to each module can be merged with that in other sections using the <b> Merge Files </b> button.  
+  
+Merging of the datasets will occur based on the <b>SampleID</b> column. Rows with matching SampleID's will be aligned together following the merge.   
+  
+  
+<hr>
+  
   
 <H2><b> Contact</H2></b>
 The most recent version of EcoPLOT can be accessed via [gitHub](https://github.com/cdsanchez18/EcoPLOT).   

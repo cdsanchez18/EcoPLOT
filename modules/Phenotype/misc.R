@@ -47,6 +47,17 @@ observeEvent(input$phenotypeactionbutton, {
                     selected = currentselectionx1()
   )
 })
+observeEvent(input$phenotypex, {
+  currentselectionx1(input$phenotypebarplotxaxis)
+})
+observeEvent(input$phenotypeactionbutton, {
+  updateSelectInput(session, "phenotypebarplotxaxis", "Select Variable to Graph Along X-Axis:", 
+                    choices = c("NULL", colnames(dplyr::select_if(phenotypedata$use, is.factor)),
+                                colnames(dplyr::select_if(phenotypedata$use, is.character))),
+                    selected = currentselectionx1()
+  )
+})
+
 currentselectiony <- reactiveVal(NULL)
 observeEvent(input$phenotypey, {
   currentselectiony(input$phenotypey)

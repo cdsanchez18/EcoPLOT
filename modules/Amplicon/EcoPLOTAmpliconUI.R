@@ -25,8 +25,9 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                         mainPanel("",
                                   tabsetPanel(id = "tabstart",
                                               tabPanel(value = 1, title = "Upload Files",
-                                                       tags$div(tags$h3("Data Summary")),
-                                                       verbatimTextOutput("phyloseqprint")
+                                                       uiOutput("uploaddisplayui")
+                                                       # tags$div(tags$h3("Data Summary")),
+                                                       # verbatimTextOutput("phyloseqprint")
                                               ),
                                               tabPanel(value = 2, title = "ASV Table",
                                                        uiOutput("otutableoutput")),
@@ -43,57 +44,14 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                       titlePanel("Filter Menu"),
                       sidebarLayout(
                         sidebarPanel(id = "filtersidebar", "",
-                                     tags$div(tags$h5("Filter by Taxonomy or ASV:"),
-                                              align = "center"),
-                                     uiOutput("phyloseq_tax_ranks"),
-                                     uiOutput("unique_taxa"),
-                                     hr(),
-                                     tags$div(tags$h5("Filter by Sample ID:"),
-                                              align = "center"),
-                                     uiOutput("phyloseq_sample_variables"),
-                                     hr(),
-                                     tags$div(tags$h5("Filter by Experimental Design:"),
-                                              align = "center"),
-                                     uiOutput("samplefilter"),
-                                     uiOutput("samplecontainer"),
-                                     uiOutput("addsamplefilter"),
-                                     hr(),
-                                     tags$div(tags$h5("Filter by Presence:"),
-                                              align = "center"),
-                                     uiOutput("phyloseqfilteroptions")),
+                                     uiOutput("sidebarfilteroutputui")
+                                     ),
                         mainPanel("",
                                   tabsetPanel(id = "filtertabset",
                                               tabPanel(value = 1, title ="Summary",
-                                                       tags$h3("Original Data Summary"),
-                                                       verbatimTextOutput("originalphyloseqsummary"),
-                                                       splitLayout(
-                                                         plotOutput("originalsamplecounthist"),
-                                                         plotOutput("originaltaxacounthist")
+                                                       uiOutput("mainpanelfilteroutputui"),
+                                                       uiOutput("mainpanelfilteroutputui2")
                                                        ),
-                                                       splitLayout(
-                                                         uiOutput("counthistsummaryorigsample"),
-                                                         uiOutput("counthisttaxa")
-                                                       ),
-                                                       splitLayout(
-                                                         downloadPlotUI("originalsamplecounthistplot"),
-                                                         downloadPlotUI("originaltaxacounthistplot")
-                                                       )
-                                                       ,
-                                                       hr(),
-                                                       tags$h3("Filtered Data Summary"),
-                                                       verbatimTextOutput("updatedphyloseqsummary"),
-                                                       splitLayout(
-                                                         plotOutput("updatedsamplecounthist"),
-                                                         plotOutput("updatedtaxacounthist")
-                                                       ),
-                                                       splitLayout(
-                                                         uiOutput("counthistsummaryorigsampleupdated"),
-                                                         uiOutput("counthisttaxaupdated")
-                                                       ),
-                                                       splitLayout(
-                                                         downloadPlotUI("updatedsamplecounthistplot"),
-                                                         downloadPlotUI("updatedtaxacounthistplot")
-                                                       )),
                                               tabPanel(value= 2 , title = "Filtered ASV Table",
                                                        uiOutput("updatedphyloseqtableoutput")),
                                               tabPanel(value = 3, title = "Filtered Taxonomy Table",
@@ -102,8 +60,10 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                                                        uiOutput("updatedmappingtableoutput")),
                                               tabPanel(value = 5, title = "Filtered Tree Table",
                                                        uiOutput("updatedtreetableoutput"))
-                                  ), id = "filtermain"))
-                    )),
+                                  ), id = "filtermain")),
+                      conditionalPanel("input.filtertabset == 1",
+                                       uiOutput("filtertabledownloadsidebar"))
+                      )),
            tabPanel("Community Composition",
                     fluidPage(
                       titlePanel("Menu"),
@@ -119,15 +79,15 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                         mainPanel("",
                                   tabsetPanel(id = "bpstart",
                                               tabPanel(value = 1, title = "Phylogenetic Bar Plot",
-                                                       uiOutput("stackedbarplotgraph"),
-                                                       fluidRow(
-                                                         column(6,
-                                                                downloadPlotUI("barplotdownload")))),
+                                                       uiOutput("stackedbarplotgraph")),
                                               tabPanel(value = 2, title = "Phylogenetic Tree",
                                                        uiOutput("phylotreeplotui"))
                                   )
                         ))
-                    )),
+                      ,
+                      conditionalPanel("input.bpstart == 1",
+                                       uiOutput("barplotdownloadUI"))
+                      )),
            tabPanel("Alpha Diversity", 
                     fluidPage(
                       titlePanel(""),
@@ -201,7 +161,7 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                         mainPanel("",
                                   tabsetPanel(id = "heatmaptab",
                                               tabPanel(value = 1, "Heatmap",
-                                                       plotOutput("heatmapplotoutput")))
+                                                       uiOutput("heatmapplotoutputui")))
                                   , id = "heatmapmain")
                       )
                     )),

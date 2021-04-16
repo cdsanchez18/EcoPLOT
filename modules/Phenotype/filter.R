@@ -89,7 +89,11 @@ output$phenotypefilteredtable <- renderDataTable({
 downloadTable(id = "phenotypefiltertabledownload", tableid = phenotypedata$filter)
 #table output, updates when filters are applied
 output$phenotypefiltertableUI <- renderUI({
-  req(phenotypedata$table)
+  #req(phenotypedata$table)
+  validate(
+    need(!is.null(phenotypedata$table), "Please Upload a Dataset")
+  )
+  
   if(is.null(phenotypedata$filter)){
     output <- tagList(
       tags$h3("Original Table")

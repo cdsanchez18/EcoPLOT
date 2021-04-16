@@ -37,64 +37,14 @@ distancematrix <- eventReactive(input$renderdistancematrix, {
                })
 })
 output$distancematrixtable <- renderDataTable({
+  validate(
+    need(input$makefile, message =  "Please Upload a Dataset")
+  )
   if(is.null(distancematrix()))return(NULL)
   as.matrix(distancematrix())
 })
 downloadTable(id = "distancematrixtabledownload", tableid = as.matrix(distancematrix()))
 
-# output$dispersionUI <- renderUI({
-#   if(is.null(distancematrix()))return(NULL)
-#   output<- tagList(
-#     tags$div(tags$h4("You are Viewing the", paste(input$ordinationdataset), "Dataset"),
-#              align = "center")
-#     ,
-#     selectInput("betadispersionoptions1", "Select Factors to View Dispersion:",
-#                 choices = sample_variables(ampliconuse()),
-#                 multiple = FALSE)
-#     ,
-#     actionButton("renderbetadispersion", "Visualize Dispersion:")
-#     ,
-#     hr()
-#     ,
-#     downloadPlotUI(id = "betadispersionplot2download")
-#   )
-#   return(output)
-# })
-
-# betadispersionplot <- reactive({
-#   if(is.null(distancematrix()))return(NULL)
-#   #eventReactive(input$renderbetadispersion,{
-#   #withProgress(message = "Constructing Beta Dispersion Plot", {
-#     mod <- betadisper(distancematrix(), sample_data(ampliconuse())[[input$betadispersionoptions1]])
-#     centroids<- data.frame(grps=rownames(mod$centroids),data.frame(mod$centroids))
-#     vectors<- data.frame(group=mod$group,data.frame(mod$vectors))
-#     seg.data<- cbind(vectors[,1:3],centroids[rep(1:nrow(centroids),as.data.frame(table(vectors$group))$Freq),2:3])
-#     names(seg.data)<-c("grps","v.PCoA1","v.PCoA2","PCoA1","PCoA2")
-#     ggplot() + 
-#       geom_point(data=centroids, aes(x=PCoA1,y=PCoA2),size=4,colour="red",shape=16) + 
-#       geom_point(data=seg.data, aes(x=v.PCoA1,y=v.PCoA2),size=2,shape=16) +
-#       labs(title="Dispersion Plot",x="",y="") + facet_grid(~grps) + stat_ellipse(type = "t")
-#   #})
-# })
-# output$betadispersionplot1 <- renderPlot({
-#   if(is.null(betadispersionplot()))return(NULL)
-#   betadispersionplot()
-# })
-# output$betadispersionplot2 <- renderUI({
-#   plotOutput("betadispersionplot1")
-# })
-#downloadPlot(id = "betadispersionplot2download", plotid = betadispersionplot())
-# betadispstat <- eventReactive(input$renderbetadispersion, {
-#   if(is.null(distancematrix()))return(NULL)
-#   withProgress(message = "Performing Beta Dispersion", {
-#     anova(betadisper(distancematrix(), sample_data(ampliconuse())[[input$betadispersionoptions1]]))
-#   })
-# })
-# 
-# output$betadisptable <- renderPrint({
-#   if(is.null(betadispstat()))return(NULL)
-#   betadispstat()
-# })
 
 output$adonisUI <- renderUI({
   #if(is.null(ampliconuse()))return(NULL)
@@ -120,24 +70,15 @@ output$adonisUI <- renderUI({
   return(output)
 })
 
-# output$adonisoptions <- renderUI({
-# # varSelectInput("adonisoptions1", "Select Variable to Compare:",
-# #                  data = mappingfile(),
-# #                  multiple = FALSE)
-#   selectInput("adonisoptions1", "Select Variable to Compare",
-#               choices = sample_variables(ordinationdatasetuse()),
-#               multiple = FALSE)
-#   })
-# output$adonisrender <- renderUI({
-# actionButton("adonisrender1", "Perform Adonis:")
-# })
 output$adonissamplevars1 <- renderPrint({
-  #if(is.null(ampliconuse()))return(NULL)
   req(amplicondata$use)
   sample_variables(amplicondata$use)
 })
 output$adonissamplevars <- renderUI({
-  #if(is.null(ampliconuse()))return(NULL)
+  validate(
+    need(input$makefile, message =  "Please Upload a Dataset"),
+    need(input$renderdistancematrix, "You Must First Complete Step 1")
+  )
   output <- tagList(
     tags$div(
       tags$h3("Select Which Sample Variables to Include in Adonis"), align = "center"
@@ -279,7 +220,10 @@ output$testordinationoutput <- renderPlotly({
                                        zaxis = list(title = 'Axis 3')))
 })
 output$threedordinationplotoutput <- renderUI({
-  if(is.null(threedplot()))return(NULL)
+  validate(
+    need(input$makefile, "Please Upload a Dataset"),
+    need(input$renderdistancematrix, "You Must First Complete Step 1")
+  )
   plotlyOutput("testordinationoutput", height = input$threedbetaheight)
 })
 ordinationobject <- reactiveValues()
@@ -466,17 +410,14 @@ output$ordinationplotoutput <- renderPlot({
   ordinationobject$updateplot
 })
 output$ordinationplotoutputUI <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload a Dataset"),
+    need(input$renderdistancematrix, "You Must First Complete Step 1")
+  )
   if(is.null(phyloseqobj()))return(NULL)
-  if(input$renderdistancematrix == 0){
-    output <- tags$h3("Please Create a Distance Matrix First")
-  }else {
     output <- tagList(
       plotOutput("ordinationplotoutput", height = input$betaheight, brush = "ordinationbrush")
-      #,
-      #uiOutput("ordinationdynamicselectbuttons")
-      #verbatimTextOutput("ordinationbrushtest")
     )
-  }
   return(output)
 })
 output$ordinationbrushtest <- renderPrint(

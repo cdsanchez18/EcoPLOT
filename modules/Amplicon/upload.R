@@ -388,9 +388,9 @@ output$phyloseqprint <- renderPrint({
 })
 
 #Turn amplicon datasets from reactive values into observer, makes updating the files easier
-amplicondata <- reactiveValues()
-amplicondata$original <- data.frame(NULL)
-amplicondata$filtered <- data.frame(NULL)
+amplicondata <- reactiveValues(path = NULL)
+#amplicondata$original <- NULL
+#amplicondata$filtered <- data.frame(NULL)
 
 observe({
   req(phyloseqobj())
@@ -409,11 +409,11 @@ output$otutable <- renderDataTable({
   })
 })
 output$otutableoutput <- renderUI({
-  if(input$makefile == 0){
-    tags$h3("Please Upload Files")
-  }else {
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+  )
     splitLayout(dataTableOutput("otutable"))
-  }
+  
 })
 output$taxtable <- renderDataTable({
   if(is.null(phyloseqobj()))return(NULL)
@@ -422,11 +422,11 @@ output$taxtable <- renderDataTable({
   })
 })
 output$taxtableoutput <- renderUI({
-  if(input$makefile == 0){
-    tags$h3("Please Upload Files")
-  }else{
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+  )
     splitLayout(dataTableOutput("taxtable"))
-  }
+  
 })
 output$mappingtableoutput <- renderDataTable({
   if(is.null(phyloseqobj()))return(NULL)
@@ -439,14 +439,14 @@ output$mappingtablesummary <- renderPrint({
   Hmisc::describe(sample_data(amplicondata$original))
 })
 output$mappingtableoutputdisplay <- renderUI({
-  if(input$makefile == 0){
-    tags$h3("Please Upload Files")
-  }else{
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+  )
     output <- tagList(
     splitLayout(dataTableOutput("mappingtableoutput")),
     verbatimTextOutput("mappingtablesummary")
     )
-  }
+  return(output)
 })
 treedf <- reactive({
   if(is.null(phylotree()))return(NULL)
@@ -458,6 +458,9 @@ output$treedftable <- renderDataTable({
   tibble::as_tibble(phylotree())
 })
 output$treedftableoutput <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+  )
   if(is.null(phylotree())){
     output <- tags$h3("No Tree File Uploaded")
   }else {
@@ -470,3 +473,18 @@ output$treedftableoutput <- renderUI({
   }
   return(output)
 })
+
+output$uploaddisplayui <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+    )
+  
+  output <- tagList(
+    tags$div(tags$h3("Data Summary")),
+    verbatimTextOutput("phyloseqprint")
+  )
+  return(output)
+})
+
+
+

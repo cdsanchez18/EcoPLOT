@@ -177,6 +177,9 @@ output$phenotypeparametricwork <- renderPrint({
   }
 })
 output$phenotypeparametricMain <- renderUI({
+  validate(
+    need(!is.null(phenotypedata$table), "Please Upload a Dataset")
+  )
   output <- tagList(
     verbatimTextOutput("phenotypeparametricwork")
   )

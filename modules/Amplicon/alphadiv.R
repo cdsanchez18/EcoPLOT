@@ -85,7 +85,7 @@ output$phyloseqalphatable <- renderDataTable({
 })
 output$phyloseqalphatableui <- renderUI({
   validate(
-    need(input$makefile, message =  "Please Upload Files"),
+    need(input$makefile, message =  "Please Upload a Dataset"),
     need(input$renderalphastattable, message =  "Table Will Appear Here")
   )
   output <- tagList(
@@ -147,21 +147,22 @@ phyloseqplot <- reactive({
   #withProgress(message = "Making Plot",
   #             detail = "This may take a while...", {
   if(!is.null(input$phyloseqalphaoptions1) && !is.null(av(input$phyloxaxis))){
-                 if(is.null(av(input$phylocolor))){
+                # if(is.null(av(input$phylocolor))){
                    plot <- phyloseq::plot_richness(amplicondata$use, x = input$phyloxaxis,
                                                    measures = input$phyloseqalphaoptions1,
                                                    scales = "free_y")
                    #plot$layers <- plot$layers[-1]
-                 }else {
-                   plot <- phyloseq::plot_richness(amplicondata$use, color = input$phylocolor, x = input$phyloxaxis,
-                                                   measures = input$phyloseqalphaoptions1,
-                                                   scales = "free_y")
+                 #}else {
+                 #  plot <- phyloseq::plot_richness(amplicondata$use, color = input$phylocolor, x = input$phyloxaxis,
+                 #                                  measures = input$phyloseqalphaoptions1,
+                 #                                  scales = "free_y")
                    #plot$layers <- plot$layers[-1]
-                 }
+                 #}
                  #if(input$phyloseqplottype1 == "box"){
-                 plot <- plot + geom_boxplot(aes(group = !!as.symbol(input$phyloxaxis))) +
+                 plot <- plot + geom_boxplot(aes(#group = !!as.symbol(input$phyloxaxis), 
+                   fill = if(!is.null(av(input$phylocolor))){!!as.symbol(input$phylocolor)}else{NULL})) +
                    labs(x = paste(input$alphaphyloseqxaxis1), y = paste(input$alphaphyloseqyaxis1),
-                        title = "Alpha Diversity") +
+                        title = "Alpha Diversity", fill = if(!is.null(av(input$phylocolor))){input$phylocolor}else{NULL}) +
                    theme(legend.position= "right", axis.text.x = element_text(color = "black", size = isolate(input$alphaphyloseqxaxistextsize), 
                                                                               angle = isolate(input$alphaphyloseqxaxisangle)),
                          axis.text.y = element_text(color = "black", size = input$alphaphyloseqyaxistextsize,
@@ -183,6 +184,9 @@ output$phyloseqplot1 <- renderPlot({
   phyloseqplot()
 })
 output$phyloseqplot2 <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+  )
   if(is.null(phyloseqplot()))return(NULL)
   output <- tagList(
   plotOutput("phyloseqplot1", height = input$alphaplotheight)

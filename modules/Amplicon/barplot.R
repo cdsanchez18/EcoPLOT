@@ -8,43 +8,45 @@ output$bpplotui <- renderUI({
   names <- c(names, as.list(rank_names(amplicondata$use)))
   
   output <- tagList(
-    selectInput("bptaxrank1", "Select Taxonomic Rank to Depict:",
+    selectInput("bptaxrank1", "Select Taxonomic Rank to Depict",
                 choices = c(names),
                 selected = "NULL",
                 multiple = FALSE)
     ,
-    numericInput("bptaxthreshold1", label = "Filter Out Low Abundance Taxa (min percent):",
+    numericInput("bptaxthreshold1", label = "Filter Out Low Abundance Taxa (min percent)",
                  value = 2, min = 0, max = 100, step = 1)
     ,
-    selectInput("bpfacetoption", "Select Variable to Facet Around:",
+    selectInput("bpfacetoption", "Select Variable to Facet Around",
                 choices = c("NULL", data),
                 selected = "NULL",
                 multiple = FALSE)
     ,
     conditionalPanel(condition = "input.bpfacetoption != 'NULL'",
-                     selectInput("bpfacetoption2", "Select Second Variable to Facet Around:",
+                     selectInput("bpfacetoption2", "Select Second Variable to Facet Around",
                                  choices = c("NULL", data),
                                  selected = "NULL",
                                  multiple = FALSE))
     ,
     numericInput("bpplotsize", "Select Height of Plot:", value = 800)
     ,
-    sliderInput("bpaxisangle1", "Select Angle of X Axis Text:",
+    numericInput("barplotfontsize", "Select Text Size", value = 16)
+    ,
+    sliderInput("bpaxisangle1", "Select Angle of X Axis Text",
                 min = 0, max = 90, value = 45, step = 5)
     ,
-    numericInput("bpaxistextsize", "Select Size of X Axis Text:",
+    numericInput("bpaxistextsize", "Select Size of X Axis Text",
                  min = 3, max = 20, value = 5)
     ,
-    numericInput("bpxaxislabelsize", "Select Size of X Axis Label:",
+    numericInput("bpxaxislabelsize", "Select Size of X Axis Label",
                  min = 3, max = 30, value = 10)
     ,
-    sliderInput("bpyaxisangle1", "Select Angle of Y Axis Text:",
+    sliderInput("bpyaxisangle1", "Select Angle of Y Axis Text",
                 min = 0, max = 90, value = 45, step = 5)
     ,
-    numericInput("bpyaxistextsize", "Select Size of Y Axis Text:",
+    numericInput("bpyaxistextsize", "Select Size of Y Axis Text",
                  min = 3, max = 20, value = 5)
     ,
-    numericInput("bpyaxislabelsize", "Select Size of Y Axis Label:",
+    numericInput("bpyaxislabelsize", "Select Size of Y Axis Label",
                  min = 3, max = 30, value = 10)
     #,
     #actionButton("bptaxrender1", "Make Barplot", width = '100%')
@@ -85,12 +87,13 @@ barplotplot1 <- reactive({
                    geom_bar(aes(x = Sample, y = Abundance, fill = !!as.symbol(input$bptaxrank1)), stat = "identity", position = "stack") + #theme(axis.text.x = element_blank()) + 
                    labs(x = "Samples", y = "Abundance", #fill = input$bptaxrank1,
                         title = paste(input$bptaxrank1, "Community Composition")) +
-                   theme(legend.position= "right", axis.text.x = element_text(color = "black", size = input$bpaxistextsize, 
-                                                                              angle = input$bpaxisangle1),
-                         axis.text.y = element_text(color = "black", size = input$bpyaxistextsize,
-                                                    angle = input$bpyaxisangle1),
-                         axis.title.x = element_text(size = input$bpxaxislabelsize), axis.title.y = element_text(size = input$bpyaxislabelsize),
-                         legend.text = element_text(face = "italic")) + theme_bw()
+                   #theme(legend.position= "right", axis.text.x = element_text(color = "black", size = input$bpaxistextsize, 
+                  #                                                            angle = input$bpaxisangle1),
+                   #      axis.text.y = element_text(color = "black", size = input$bpyaxistextsize,
+                  #                                  angle = input$bpyaxisangle1),
+                   #      axis.title.x = element_text(size = input$bpxaxislabelsize), axis.title.y = element_text(size = input$bpyaxislabelsize),
+                  #       legend.text = element_text(face = "italic")) + 
+                   theme_bw()
                  
                  if(!is.null(av(input$bpfacetoption)) && is.null(av(input$bpfacetoption2))){
                    plot <- plot + facet_grid(paste("~", paste(input$bpfacetoption)), scales = "free_x", drop = TRUE)
@@ -100,7 +103,13 @@ barplotplot1 <- reactive({
                    plot 
                  }
                })
-  return(plot)
+  return(plot + theme(text = element_text(size = input$barplotfontsize),
+                      legend.position= "right", 
+                      axis.text.x = element_text(color = "black", size = input$bpaxistextsize, angle = input$bpaxisangle1),
+                      axis.text.y = element_text(color = "black", size = input$bpyaxistextsize, angle = input$bpyaxisangle1),
+                      axis.title.x = element_text(size = input$bpxaxislabelsize), 
+                      axis.title.y = element_text(size = input$bpyaxislabelsize),
+                      legend.text = element_text(face = "italic")))
 })
 
 output$barplotplot <- renderPlot({
@@ -108,7 +117,19 @@ output$barplotplot <- renderPlot({
 })
 output$stackedbarplotgraph <- renderUI({
   #if(is.null(ampliconuse())) return(NULL)
-  req(amplicondata$use)
+  #req(amplicondata$use)
+  validate(
+    need(input$makefile, "Please Upload a Dataset")
+  )
   plotOutput("barplotplot", height = input$bpplotsize)
 })
+
+output$barplotdownloadUI <- renderUI({
+  req(amplicondata$use)
+  fluidRow(
+    column(4,
+           wellPanel(
+           downloadPlotUI("barplotdownload"))))
+})
+
 downloadPlot(id = "barplotdownload", plotid = barplotplot1())

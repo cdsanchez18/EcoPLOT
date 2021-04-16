@@ -40,7 +40,7 @@ output$counthistsummaryorigsample <- renderUI({
     paste(avg, min, max, sep = '<br/>')
   )
 })
-downloadPlot(id = "originalsamplecounthistplot", originalsamplehistplot())
+#downloadPlot(id = "originalsamplecounthistplot", originalsamplehistplot())
 originaltaxahistplot <- reactive({
   if(is.null(phyloseqobj()))return(NULL)
   ggplot(data.frame(taxa_sums(phyloseqobj())), 
@@ -59,7 +59,7 @@ output$counthisttaxa <- renderUI({
   max <- paste("Maximum Number of Counts:", max(taxa_sums(phyloseqobj())))
   HTML(paste(avg, min, max, sep = '<br/>'))
 })
-downloadPlot(id = "originaltaxacounthistplot", plotid = originaltaxahistplot())
+
 updatedsamplehistplot <- reactive({
   if(is.null(updatedphyloseq()))return(NULL)
   ggplot(data.frame(sample_sums(updatedphyloseq())), 
@@ -80,7 +80,7 @@ output$counthistsummaryorigsampleupdated <- renderUI({
     paste(avg, min, max, sep = '<br/>')
   )
 })
-downloadPlot(id = "updatedsamplecounthistplot", plotid = updatedsamplehistplot())
+
 updatedtaxahistplot <- reactive({
   if(is.null(updatedphyloseq()))return(NULL)
   ggplot(data.frame(taxa_sums(updatedphyloseq())), 
@@ -99,7 +99,7 @@ output$counthisttaxaupdated <- renderUI({
   max <- paste("Maximum Number of Counts:", max(taxa_sums(updatedphyloseq())))
   HTML(paste(avg, min, max, sep = '<br/>'))
 })
-downloadPlot(id = "updatedtaxacounthistplot", plotid = updatedtaxahistplot())
+
 output$originalphyloseqsummary <- renderPrint({
   if(is.null(phyloseqobj()))return(NULL)
   phyloseqobj()

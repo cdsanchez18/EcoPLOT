@@ -78,3 +78,35 @@ output$ssc <- renderTable({
 output$texturetriangle <- renderUI({
   includeHTML("www/sand_silt_clay_Test_indexNOV16.html")
 })
+
+
+
+output$soilindexuioutput <- renderUI({
+  #req(environmentdata$table)
+  validate(
+    need(!is.null(environmentdata$table), "Please Upload a Dataset")
+  )
+  
+  output <- tagList(
+  fluidRow(
+    column(width = 12,
+           splitLayout(dataTableOutput("environmenttable")))),
+  fluidRow(
+    column(width = 6,
+           h5("This is your C to N to P Ratio:"),
+           wellPanel(textOutput("CNP"))),
+    column(width = 6,
+           h5("This is your N to P to K Ratio:"),
+           wellPanel(textOutput("NPK")))),
+  fluidRow(
+    column(width = 6, offset = 5,
+           h5("Sand, Silt, Clay Particle Sizes"),
+           splitLayout(tableOutput("ssc"))))
+  )
+  return(output)
+})
+
+
+
+
+

@@ -39,6 +39,9 @@ EcoPLOTPlantUI <- tabPanel("Phenotype Data",
                                left: calc(40%);
                                width: 35%;
                              }
+                             .shiny-output-error-validation {
+                               font-size: 26px;
+                             }
                                   "
                                             )
                                           )

@@ -180,6 +180,9 @@ output$environmentparametricwork <- renderPrint({
   }
 })
 output$environmentparametricMain <- renderUI({
+  validate(
+    need(!is.null(environmentdata$table), "Please Upload a Dataset")
+  )
   output <- tagList(
     verbatimTextOutput("environmentparametricwork")
   )

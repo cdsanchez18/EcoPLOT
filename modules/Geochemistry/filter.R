@@ -90,7 +90,11 @@ output$environmentfilteredtable <- renderDataTable({
 downloadTable(id = "environmentfiltertabledownload", tableid = environmentdata$filter)
 #table output, updates when filters are applied
 output$environmentfiltertableUI <- renderUI({
-  req(environmentdata$table)
+  #req(environmentdata$table)
+  validate(
+    need(!is.null(environmentdata$table), "Please Upload a Dataset")
+  )
+  
   if(is.null(environmentdata$filter)){
     output <- tagList(
       tags$h3("Original Table")

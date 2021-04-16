@@ -152,6 +152,9 @@ output$environmentplotUI <- renderUI({
       numericInput("environmentplotheight", "Select Plot Height",
                    value = 500)
       ,
+      numericInput("environmentplottextsize", "Select Text Size",
+                  value = 16)
+      ,
       downloadPlotUI("environmentplotdownload")
     )
   })
@@ -310,7 +313,7 @@ environmentplot <- reactive({
   }else {
     return(NULL)
   }
-  return(plot + theme_bw())
+  return(plot + theme_bw() + theme(text = element_text(size = input$environmentplottextsize)))
 })
 #prints correlation coefficient when viewing a scatter plot
 output$environmentcorrelation <- renderPrint({
@@ -343,7 +346,11 @@ output$environmentplot1 <- renderPlot({
 })
 ##ui options for environment plot
 output$environmentplotmainUI <- renderUI({
-  req(environmentdata$table)
+  #req(environmentdata$table)
+  validate(
+    need(!is.null(environmentdata$table), "Please Upload a Dataset")
+  )
+  
   plotOutput("environmentplot1", brush = "environmentbrush", height = input$environmentplotheight)
 })
 #tells you which points you have selected 

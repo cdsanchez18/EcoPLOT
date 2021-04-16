@@ -7,21 +7,6 @@ observeEvent(input$phyloseqfilter, {
                                  "Filtered"),
                      selected = "Original", inline = TRUE)
 }, once = TRUE)
-#update selected dataset to reflect changes made in other tabs
-# observe({
-#   #if(is.null(updatedphyloseq()))return(NULL)
-#   if(input$amplicondatasource == "Original"){
-#     updateRadioButtons(session, "irfDatasetselect", "Select Dataset to Use:",
-#                        choices = c("Original",
-#                                    "Filtered"),
-#                        selected = "Original", inline = TRUE)
-#   }else if(input$amplicondatasource == "Filtered"){
-#     updateRadioButtons(session, "irfDatasetselect", "Select Dataset to Use:",
-#                        choices = c("Original",
-#                                    "Filtered"),
-#                        selected = "Filtered", inline = TRUE)
-#   }
-# })
 
 ##dataset is amplicon use
 output$irfUIoptions <- renderUI({
@@ -127,7 +112,12 @@ output$IRFdatasetoutput <- DT::renderDT({
   if(is.null(IRFdataset()))return(NULL)
   IRFdataset() %>% select(1:50)
 }, server = TRUE, options = list(searching = FALSE, pageLength = 50))
+
 output$IRFdatasetoutputUI <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload an Amplicon Dataset"),
+    need(input$makeIRFdataset, "Table Will Appear Here.")
+  )
   withProgress(message = "Preparing dataset", {
     splitLayout(
       DT::DTOutput("IRFdatasetoutput"))
@@ -237,6 +227,10 @@ output$testtest <- renderPrint({
   #X_train %>% select(colnames(sample_data %>% select( -"Sample_ID", -"File_name", -"Sample", -"PlantID", -"Date.Collected"))))
 })
 output$testtest1 <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload an Amplicon Dataset"),
+         need(input$makeIRFdataset, "You Must First Complete Step 1")
+  )
   output <- tagList(
     wellPanel(tags$div(tags$h4("The following lists your sample variables and their associated classes in R. iRF treats factor variables
                      differently than it does numeric or integer variables. A", tags$b("classification model"), "will be used for categorical variables
@@ -347,6 +341,11 @@ output$IRFoutput <- renderPrint({
   IRFmodel()
 })
 output$IRFoutputui<- renderUI({
+  validate(
+    need(input$makefile, "Please Upload an Amplicon Dataset"),
+    need(input$makeIRFdataset, "You Must First Complete Step 1"),
+    need(input$parseIRF, "You Must First Complete Step 2")
+  )
   if(is.null(IRFmodel()))return(NULL)
   output <- tagList(
     hr(),
@@ -364,6 +363,12 @@ output$IRFvarimp <- renderPlot({
   importanceplot()
 })
 output$IRFplotui <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload an Amplicon Dataset"),
+    need(input$makeIRFdataset, "You Must First Complete Step 1"),
+    need(input$parseIRF, "You Must First Complete Step 2"),
+    need(input$performIRF, "You Must First Complete Step 3")
+  )
   if(is.null(IRFmodel()))return(NULL)
   output <- tagList(
     tags$div(tags$h3("Variable Importance Plots show how each variable affects the accuracy of the model. Those variables that exhibit a larger effect are given a
@@ -549,6 +554,12 @@ output$varinteractiontable2 <- renderUI({
   return(output)
 })
 output$irftableui <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload an Amplicon Dataset"),
+    need(input$makeIRFdataset, "You Must First Complete Step 1"),
+    need(input$parseIRF, "You Must First Complete Step 2"),
+    need(input$performIRF, "You Must First Complete Step 3")
+  )
   if(is.null(IRFmodel()))return(NULL)
   output <- tagList(
     fluidRow(

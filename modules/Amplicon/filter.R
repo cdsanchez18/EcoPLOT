@@ -282,15 +282,17 @@ output$updatedphyloseqtable <- renderDataTable({
   otu_table(amplicondata$filtered)
 })
 output$updatedphyloseqtableoutput <- renderUI({
-  if(input$phyloseqfilter == 0){
-    output <- tags$h3("No Filters Applied")
-  }else {
+  validate(
+    need(input$makefile, "Please Upload a Dataset"),
+    need(input$phyloseqfilter, "No Filters Have Been Applied")
+  )
+  
     output <- tagList(
       splitLayout(dataTableOutput("updatedphyloseqtable"))
       ,
       downloadTableUI("filteredphylotabledownload")
     )
-  }
+  
   return(output)
 })
 downloadTable(id = "filteredphylotabledownload", tableid = updatedphylootu())
@@ -304,15 +306,19 @@ output$updatedtaxtable <- renderDataTable({
   tax_table(amplicondata$filtered)
 })
 output$updatedtaxtableoutput <- renderUI({
-  if(input$phyloseqfilter == 0){
-    output <- tags$h3("No Filters Applied")
-  }else {
+  # if(input$phyloseqfilter == 0){
+  #   output <- tags$h3("No Filters Applied")
+  # }else {
+  validate(
+    need(input$makefile, "Please Upload a Dataset"),
+    need(input$phyloseqfilter, "No Filters Have Been Applied")
+  )
     output <- tagList(
       splitLayout(dataTableOutput("updatedtaxtable"))
       ,
       downloadTableUI("filteredtaxtabledownload")
     )
-  }
+  
   return(output)
 })
 downloadTable(id = "filteredtaxtabledownload", tableid = updatedtaxtablefile())
@@ -326,15 +332,19 @@ output$updatedmappingtable <- renderDataTable({
   sample_data(amplicondata$filtered)
 })
 output$updatedmappingtableoutput <- renderUI({
-  if(input$phyloseqfilter == 0){
-    output <- tags$h3("No Filters Applied")
-  }else {
+  # if(input$phyloseqfilter == 0){
+  #   output <- tags$h3("No Filters Applied")
+  # }else {
+  validate(
+    need(input$makefile, "Please Upload a Dataset"),
+    need(input$phyloseqfilter, "No Filters Have Been Applied")
+  )
     output <- tagList(
       splitLayout(dataTableOutput("updatedmappingtable"))
       ,
       downloadTableUI("filteredmappingtabledownload")
     )
-  }
+  #}
   return(output)
 })
 downloadTable(id= "filteredmappingtabledownload", tableid = updatedphylosample())
@@ -349,9 +359,13 @@ output$updatedtreetable <- renderDataTable({
   updatedtreedf()
 })
 output$updatedtreetableoutput <- renderUI({
-  if(input$phyloseqfilter == 0){
-    output <- tags$h3("No Filters Applied")
-  }else {
+ # if(input$phyloseqfilter == 0){
+ #   output <- tags$h3("No Filters Applied")
+ # }else {
+  validate(
+    need(input$makefile, "Please Upload a Dataset"),
+    need(input$phyloseqfilter, "No Filters Have Been Applied")
+  )
     if(is.null(phylotree()))
       output <- tags$h3("No Tree Uploaded")
     else {
@@ -361,9 +375,140 @@ output$updatedtreetableoutput <- renderUI({
         downloadTableUI("filteredtreetabledownload")
       )
     }
-  }
+  #}
 })
 downloadTable(id= "filteredtreetabledownload", tableid = updatedtreedf())
+
+
+
+output$sidebarfilteroutputui <- renderUI({
+  req(amplicondata$use)
+  output <- tagList(
+    tags$div(tags$h5("Filter by Taxonomy or ASV:"),
+           align = "center"),
+  uiOutput("phyloseq_tax_ranks"),
+  uiOutput("unique_taxa"),
+  hr(),
+  tags$div(tags$h5("Filter by Sample ID:"),
+           align = "center"),
+  uiOutput("phyloseq_sample_variables"),
+  hr(),
+  tags$div(tags$h5("Filter by Experimental Design:"),
+           align = "center"),
+  uiOutput("samplefilter"),
+  uiOutput("samplecontainer"),
+  uiOutput("addsamplefilter"),
+  hr(),
+  tags$div(tags$h5("Filter by Presence:"),
+           align = "center"),
+  uiOutput("phyloseqfilteroptions")
+  )
+  return(output)
+})
+output$filtertabledownloadsidebar <- renderUI({
+  req(amplicondata$use)
+  output <- tagList(
+    fluidRow(
+      column(4,
+             wellPanel(
+  radioButtons("filtersamplecountplotdownload", "Select Histogram to Download",
+               choices = c("Original Sample Count",
+                           "Original Taxa Count"),
+               inline = TRUE)
+  ,
+  downloadPlotUI("filterhistogramplots"))
+      )
+    )
+  )
+  return(output)
+})
+observeEvent(input$phyloseqfilter, {
+  req(amplicondata$use)
+  updateRadioButtons(session = getDefaultReactiveDomain(),
+                     inputId = "filtersamplecountplotdownload",
+                     label = "Select Histogram to Download",
+                     choices = c("Original Sample Count",
+                                 "Original Taxa Count",
+                                 "Filtered Sample Count",
+                                 "Filtered Taxa Count"),
+                     inline = TRUE)
+})
+
+output$mainpanelfilteroutputui <- renderUI({
+  validate(
+    need(input$makefile, "Please Upload a Dataset")#,
+    #need(input$phyloseqfilter, "No Filters Have Been Applied")
+  )
+  
+  req(amplicondata$use)
+  output <- tagList(
+    tags$h3("Original Data Summary"),
+  verbatimTextOutput("originalphyloseqsummary"),
+  splitLayout(
+    plotOutput("originalsamplecounthist"),
+    plotOutput("originaltaxacounthist")
+  ),
+  wellPanel(
+  splitLayout(
+    uiOutput("counthistsummaryorigsample"),
+    uiOutput("counthisttaxa")
+    )
+  )
+  #,
+  #splitLayout(
+  #  downloadPlotUI("originalsamplecounthistplot"),
+  #  downloadPlotUI("originaltaxacounthistplot")
+  #)
+  ,
+  hr()
+  ,
+  tags$h3("Filtered Data Summary"),
+  )
+  return(output)
+})
+
+selectedPlot <- reactive({
+  req(amplicondata$use)
+  #if(is.null(updatedphyloseq())){
+ # switch(input$filtersamplecountplotdownload,
+  #       "Original Sample Count" = originalsamplehistplot(),
+  #       "Original Taxa Count" = originaltaxahistplot())
+  #}else {
+    switch(input$filtersamplecountplotdownload,
+           "Original Sample Count" = originalsamplehistplot(),
+           "Original Taxa Count" = originaltaxahistplot(),
+           "Filtered Sample Count" = updatedsamplehistplot(),
+           "Filtered Taxa Count" = updatedtaxahistplot())
+  #}
+})
+downloadPlot("filterhistogramplots", selectedPlot())
+
+output$mainpanelfilteroutputui2 <- renderUI({
+  validate(
+    #need(input$makefile, "Please Upload a Dataset"),
+    need(input$phyloseqfilter, "No Filters Have Been Applied")
+  )
+  
+  req(amplicondata$use)
+  output <- tagList(
+    verbatimTextOutput("updatedphyloseqsummary"),
+    splitLayout(
+      plotOutput("updatedsamplecounthist"),
+      plotOutput("updatedtaxacounthist")
+    ),
+    wellPanel(
+    splitLayout(
+      uiOutput("counthistsummaryorigsampleupdated"),
+      uiOutput("counthisttaxaupdated")
+      )
+    )#,
+    #splitLayout(
+    #  downloadPlotUI("updatedsamplecounthistplot"),
+    #  downloadPlotUI("updatedtaxacounthistplot")
+    #)
+  )
+  return(output)
+})
 
 
 
