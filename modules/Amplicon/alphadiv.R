@@ -15,6 +15,12 @@ output$alphadivoptions <- renderUI({
                             "InvSimpson" = "InvSimpson"),
                 multiple = TRUE)
     ,
+    radioButtons("phyloseqalphapoints", "Show Points?", 
+                choices = c("Yes", "No"), selected = "Yes", inline = TRUE)
+    ,
+    radioButtons("phyloseqalphaboxplot", "Add Boxplot?",
+                 choices = c("Yes", "No"), selected = "No", inline = TRUE)
+    ,
     selectInput("phyloxaxis", "Select Which Factor to Compare on the X-Axis:",
                 choices = c("NULL", as.list(sample_variables(amplicondata$use))),
                 multiple = FALSE,
@@ -40,6 +46,10 @@ output$alphadivoptions <- renderUI({
     ,
     numericInput("alphaplotheight", "Select Plot Height:", value = 800, min = 200, max = 1500, step = 25)
     ,
+    numericInput("alphaphyloseqtextsize", "Select Size of Text", value = 12, step = 2, width = "100%")
+    ,
+    hr()
+    ,
     fluidRow(
       column(6,
     textInput(inputId = "alphaphyloseqxaxis1", label = "Create X axis Label",
@@ -54,6 +64,8 @@ output$alphadivoptions <- renderUI({
     ,
     sliderInput(inputId = "alphaphyloseqxaxisangle", label = "Select Angle of X Axis Text",
                 min = 0, max = 90, value = 0, step = 5)
+    ,
+    hr()
     ,
     fluidRow(
       column(6,
@@ -141,42 +153,43 @@ output$alphadivstatprint <- renderPrint({
 })
 ###Alpha Diversity Plot 
 phyloseqplot <- reactive({
-  #eventReactive(input$phyloseqplotrender1, {
   req(amplicondata$use)
-  #if(is.null(ampliconuse()))return(NULL)
-  #withProgress(message = "Making Plot",
-  #             detail = "This may take a while...", {
   if(!is.null(input$phyloseqalphaoptions1) && !is.null(av(input$phyloxaxis))){
-                # if(is.null(av(input$phylocolor))){
-                   plot <- phyloseq::plot_richness(amplicondata$use, x = input$phyloxaxis,
+
+                   plot <- phyloseq::plot_richness(amplicondata$use, x = input$phyloxaxis,# color = input$phylocolor,
                                                    measures = input$phyloseqalphaoptions1,
-                                                   scales = "free_y")
-                   #plot$layers <- plot$layers[-1]
-                 #}else {
-                 #  plot <- phyloseq::plot_richness(amplicondata$use, color = input$phylocolor, x = input$phyloxaxis,
-                 #                                  measures = input$phyloseqalphaoptions1,
-                 #                                  scales = "free_y")
-                   #plot$layers <- plot$layers[-1]
-                 #}
-                 #if(input$phyloseqplottype1 == "box"){
-                 plot <- plot + geom_boxplot(aes(#group = !!as.symbol(input$phyloxaxis), 
-                   fill = if(!is.null(av(input$phylocolor))){!!as.symbol(input$phylocolor)}else{NULL})) +
+                                                   scales = "free_y") 
+                   plot$layers <- plot$layers[-1]
+
+                   plot <- plot + geom_point(aes(color = if(!is.null(av(input$phylocolor))){!!as.symbol(input$phylocolor)}else{NULL})) +
                    labs(x = paste(input$alphaphyloseqxaxis1), y = paste(input$alphaphyloseqyaxis1),
-                        title = "Alpha Diversity", fill = if(!is.null(av(input$phylocolor))){input$phylocolor}else{NULL}) +
-                   theme(legend.position= "right", axis.text.x = element_text(color = "black", size = isolate(input$alphaphyloseqxaxistextsize), 
-                                                                              angle = isolate(input$alphaphyloseqxaxisangle)),
-                         axis.text.y = element_text(color = "black", size = input$alphaphyloseqyaxistextsize,
-                                                    angle = input$alphaphyloseqyaxisangle),
-                         axis.title.x = element_text(size = input$alphaphyloseqxaxislabelsize), axis.title.y = element_text(size = input$alphaphyloseqyaxislabelsize)) + theme_bw()
+                        title = "Alpha Diversity", fill = if(!is.null(av(input$phylocolor))){input$phylocolor}else{NULL}) + theme_bw() +
+                   theme(legend.position= "right", 
+                         text = element_text(size = input$alphaphyloseqtextsize),
+                         axis.text.x = element_text(color = "black", size = input$alphaphyloseqxaxistextsize, angle = input$alphaphyloseqxaxisangle),
+                         axis.text.y = element_text(color = "black", size = input$alphaphyloseqyaxistextsize, angle = input$alphaphyloseqyaxisangle),
+                         axis.title.x = element_text(size = input$alphaphyloseqxaxislabelsize), axis.title.y = element_text(size = input$alphaphyloseqyaxislabelsize)) #+ 
+                   #theme_bw()
+                   
                  if(!is.null(av(input$phylofacet)) && !is.null(av(input$phylofacet2))){
-                   plot <- plot + facet_wrap(paste(input$phylofacet, paste("~", paste(input$phylofacet2))), scales = "free_y")#paste("~", paste(input$phylofacet, "+", paste(input$phylofacet2)))) 
+                   plot <- plot + facet_wrap(paste(input$phylofacet, paste("~", paste(input$phylofacet2))), scales = "free_y")
                  }else if(!is.null(av(input$phylofacet))){
                    plot <- plot + facet_grid(paste("~", paste(input$phylofacet))) 
+                 }
+                 if(input$phyloseqalphapoints == "No"){
+                   plot$layers <- plot$layers[-1]
+                 }else{
+                   plot <- plot
+                 }
+                 if(input$phyloseqalphaboxplot == "Yes"){
+                   plot <- plot + geom_boxplot(aes(
+                     fill = if(!is.null(av(input$phylocolor))){!!as.symbol(input$phylocolor)}else{NULL}))
+                 }else {
+                   plot <- plot
                  }
   }else{
     plot <- NULL
   }
-              # })
   return(plot)
 })
 output$phyloseqplot1 <- renderPlot({
