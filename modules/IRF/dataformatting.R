@@ -34,7 +34,9 @@ output$irfUIoptions <- renderUI({
                                  choices = c(sample_variables(amplicondata$use)),
                                  multiple = TRUE)
                      ,
-                     actionButton("parseIRF", "Parse Datasets for IRF", width = "100%"))
+                     actionButton("parseIRF", "Parse Datasets for IRF", width = "100%")
+                     ,
+                     uiOutput("IRFtabledownloadUI"))
     ,
     #conditionalPanel(condition = "input.IRF == 4", 
                      #hr(),
@@ -66,14 +68,17 @@ output$irfUIoptions <- renderUI({
                      tags$h6(tags$b("NOTE:"), "Finding interactions is computationally intensive. 
                              Run times may vary based on the size of your data. For more information and system requirements, please see the guide at the beginning of the module.")
                      ,
+                     numericInput("IRFiterations", "How Many Iterations of iRF Should be Performed?", value = 1, min = 1,max = 10,step = 1,width = "100%")
+                     ,
                      actionButton("performIRF", "Run IRF", width = "100%")
                      )
     ,
     conditionalPanel(condition = "input.IRF == 5",
-                     tags$h3("Variable Importance Plot"),
-                     numericInput("IRFvarimpplotsize", "Select Size of Plot:", value = 800, min = 100,width = "100%"),
-                     numericInput("IRFvarimpninteractions", "How Many Variables Should be Shown?", value = 30, min = 1, max = 50, step = 1),
-                     downloadPlotUI("IRFvarimpdownload")
+                     uiOutput("irfplotui")
+                     #tags$h3("Variable Importance Plot"),
+                     #numericInput("IRFvarimpplotsize", "Select Size of Plot:", value = 800, min = 100,width = "100%"),
+                     #numericInput("IRFvarimpninteractions", "How Many Variables Should be Shown?", value = 30, min = 1, max = 50, step = 1),
+                     #downloadPlotUI("IRFvarimpdownload")
                      )
   )
     
@@ -148,9 +153,6 @@ Ytrain <- eventReactive(input$parseIRF, {
   if(is.null(train_index1()))return(NULL)
   if(!is.null(av(input$IRFyvar))){
   IRFdataset()[train_index1(), ] %>% select(input$IRFyvar)
-  #data[sapply(data, is.character)] <- lapply(data[sapply(data, is.character)], 
-  #                                           as.factor)
-  
   }
 })
 Xtest <- eventReactive(input$parseIRF, {
@@ -166,9 +168,6 @@ Ytest <- eventReactive(input$parseIRF, {
   if(is.null(test_index1()))return(NULL)
   if(!is.null(av(input$IRFyvar))){
   IRFdataset()[test_index1(), ] %>% select(input$IRFyvar)
-  #data[sapply(data, is.character)] <- lapply(data[sapply(data, is.character)], 
-  #                                           as.factor)
-  #data
   }
 })
 observeEvent(input$parseIRF, {
@@ -209,22 +208,8 @@ output$iRFdatasets <- renderUI({
   return(output)
 })
 
-######ENCODING, TURNS FACTOR VARIABLES INTO NUMERIC COLUMNS (REQUIREMENT)
-# IRFencoding <- eventReactive(input$encodeIRF, {
-#   if(is.null(test_index1()))return(NULL)
-#   if(!is.null(av(input$IRFyvar))){
-#     req(Xtrain())
-#     withProgress(message = "Encoding Variables", {
-#     dataPreparation::build_encoding(data_set = Xtrain(), cols = "auto", verbose = TRUE)
-#     })
-#   }else {
-#     NULL
-#   }
-# })
 output$testtest <- renderPrint({
   str(IRFdataset() %>% select(colnames(data.frame(sample_data(amplicondata$use)) %>% select(-c(input$IRFexclude)))))
-      #[, sapply(Xtrain(), is.factor)])
-  #X_train %>% select(colnames(sample_data %>% select( -"Sample_ID", -"File_name", -"Sample", -"PlantID", -"Date.Collected"))))
 })
 output$testtest1 <- renderUI({
   validate(
@@ -262,18 +247,18 @@ IRFmodel <- eventReactive(input$performIRF, {
                    y = as.factor(IRFdataset()[train_index1(), input$IRFyvar]),#%>% select(input$IRFyvar),
                    xtest = data.matrix(Xtest()),
                    ytest = as.factor(IRFdataset()[test_index1(), input$IRFyvar]),
-                   n.iter = 1,   # Number of iterations
+                   n.iter = input$IRFiterations,   # Number of iterations
                    n.core = 1,    # Use 2 cores for parallel traininge
-                   interactions.return = c(1),
+                   int.return = as.numeric(1:input$IRFiterations),
                    # Return the iteration with highest OOB accuracy
                    select.iter = TRUE,
                    # Number of bootstrap samples to calculate stability scores
                    n.bootstrap = input$IRFnbootstrap,
                    # Use ranger as the underlying random forest package
-                   type = 'ranger',
+                   type = "randomForest",#'ranger',
                    # Parameters for RIT
-                   rit.param= rit.param,
-                   bootstrap.forest = FALSE
+                   rit.param= rit.param#,
+                   #bootstrap.forest = FALSE
       )
     }else{
       doParallel::registerDoParallel(cores = 2)
@@ -281,17 +266,17 @@ IRFmodel <- eventReactive(input$performIRF, {
                    y = as.factor(IRFdataset()[train_index1(), input$IRFyvar]),#%>% select(input$IRFyvar),
                    xtest = data.matrix(Xtest()),
                    ytest = as.factor(IRFdataset()[test_index1(), input$IRFyvar]),
-                   n.iter = 1,   # Number of iterations
+                   n.iter = input$IRFiterations,   # Number of iterations
                    n.core = 1,    # Use 2 cores for parallel traininge
                    # Return the iteration with highest OOB accuracy
                    select.iter = TRUE,
                    # Number of bootstrap samples to calculate stability scores
                    n.bootstrap = input$IRFnbootstrap,
                    # Use ranger as the underlying random forest package
-                   type = 'ranger',
+                   type = "randomForest",#'ranger',
                    # Parameters for RIT
-                   rit.param= rit.param,
-                   bootstrap.forest = FALSE
+                   rit.param= rit.param#,
+                   #bootstrap.forest = FALSE
       )
     }
   }else if(is.numeric(IRFdataset()[train_index1(), input$IRFyvar]) || is.integer(IRFdataset()[train_index1(), input$IRFyvar])){
@@ -301,18 +286,18 @@ IRFmodel <- eventReactive(input$performIRF, {
                    y = IRFdataset()[train_index1(), input$IRFyvar],#Ytrain(),#%>% select(input$IRFyvar),
                    xtest = data.matrix(Xtest()),
                    ytest = IRFdataset()[test_index1(), input$IRFyvar],
-                   n.iter = 1,   # Number of iterations
+                   n.iter = input$IRFiterations,   # Number of iterations
                    n.core = 1,    # Use 2 cores for parallel traininge
-                   interactions.return = c(1),
+                   int.return = as.numeric(1:input$IRFiterations),
                    # Return the iteration with highest OOB accuracy
                    select.iter = TRUE,
                    # Number of bootstrap samples to calculate stability scores
                    n.bootstrap = input$IRFnbootstrap,
                    # Use ranger as the underlying random forest package
-                   type = 'ranger',
+                   type = "randomForest",#'ranger',
                    # Parameters for RIT
-                   rit.param= rit.param,
-                   bootstrap.forest = FALSE
+                   rit.param= rit.param#,
+                   #bootstrap.forest = FALSE
       )
     }else{
       doParallel::registerDoParallel(cores = 2)
@@ -320,17 +305,17 @@ IRFmodel <- eventReactive(input$performIRF, {
                    y = IRFdataset()[train_index1(), input$IRFyvar],#%>% select(input$IRFyvar),
                    xtest = data.matrix(Xtest()),
                    ytest = IRFdataset()[test_index1(), input$IRFyvar],
-                   n.iter = 1,   # Number of iterations
+                   n.iter = input$IRFiterations,   # Number of iterations
                    n.core = 1,    # Use 2 cores for parallel traininge
                    # Return the iteration with highest OOB accuracy
                    select.iter = TRUE,
                    # Number of bootstrap samples to calculate stability scores
                    n.bootstrap = input$IRFnbootstrap,
                    # Use ranger as the underlying random forest package
-                   type = 'ranger',
+                   type = "randomForest",#'ranger',
                    # Parameters for RIT
-                   rit.param= rit.param,
-                   bootstrap.forest = FALSE
+                   rit.param= rit.param#,
+                   #bootstrap.forest = FALSE
       )
     }
   }
@@ -356,7 +341,8 @@ output$IRFoutputui<- renderUI({
 })
 importanceplot <- reactive({
   if(is.null(IRFmodel()))return(NULL)
-  iRF::varImpPlot(IRFmodel()$rf.list[[1]], main = "Variable Importance Plot", n.var = input$IRFvarimpninteractions)
+  iRF::varImpPlot(IRFmodel()$rf.list,#[[input$rfselected]], 
+                  main = "Variable Importance Plot", n.var = input$IRFvarimpninteractions)
 })
 output$IRFvarimp <- renderPlot({
   if(is.null(IRFmodel()))return(NULL)
@@ -383,10 +369,14 @@ downloadPlot("IRFvarimpdownload", importanceplot())
 interactionplot <- reactive({
   if(is.null(IRFmodel()))return(NULL)
   if(input$IRFinteractions == TRUE){
-    ggplot(data.frame(IRFmodel()$interaction[[1]])[1:input$IRFinteractionnuminteractions,], aes(x = Freq, y = Var1)) + geom_point(shape = 1) + theme_bw() + 
+    if(!is.null(av(input$IRFintx))){
+    ggplot(IRFmodel()$interaction, aes(y = int, x = !!as.symbol(input$IRFintx))) + geom_point(shape = 1) + theme_bw() + 
       labs(title = "Variable Interaction Plot") + theme(axis.text.y = element_text(size = input$IRFinteractionplotyaxissize),
                                                         axis.title.y = element_blank(),
                                                         plot.title = element_text(face = "bold", size = rel(1), hjust = 0.5))
+    }else {
+      NULL
+    }
   }else{
     NULL
   }
@@ -401,7 +391,10 @@ output$irfinteractionoutput <- renderUI({
     output <- tagList(
       wellPanel(
       tags$h3("Variable Interaction Plot"),
-      numericInput("IRFinteractionplotheight", "Select Plot Height:", value = 800, min = 100),
+      selectInput("IRFintx", "Select Variable to View on X Axis",
+                  choices = c("NULL", as.list(colnames(IRFmodel()$interaction))),
+                  selected = "NULL"),
+      numericInput("IRFinteractionplotheight", "Select Plot Height:", value = 600, min = 100),
       numericInput("IRFinteractionnuminteractions", "Select Number of Interactions to Show:", value = 10, min = 1, max = 20, step = 1),
       numericInput("IRFinteractionplotyaxissize", "Select Size of Y Axis Text:", value = 8, min = 1, max = 20, step = 1),
       downloadPlotUI("IRFinteractionplotdownload"))
@@ -439,7 +432,7 @@ output$partdepplot1 <- renderUI({
     ,
     if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
     selectInput("partdepclass", "Select Class of Output to Focus on:",
-                choices = c("NULL", as.list(levels(as.factor(sample_data[[input$IRFyvar]])))),
+                choices = c("NULL", as.list(levels(as.factor(sample_data(amplicondata$use)[[input$IRFyvar]])))),
                 selected = "NULL")
   }else{
     NULL
@@ -461,8 +454,10 @@ partialdependenceplot <- reactive({
   if(!is.null(av(input$partdepxvar))){
     if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
       if(!is.null(av(input$partdepclass))){
-        plot <- BiocGenerics::do.call("partialPlot", 
-                list(x=IRFmodel()$rf.list[[1]], pred.data=data.matrix(Xtrain()), 
+        #BiocGenerics::
+        plot <- do.call("partialPlot", 
+                list(x=IRFmodel()$rf.list,#[[input$rfselected]], 
+                     pred.data=data.matrix(Xtrain()), 
                      x.var = input$partdepxvar, which.class = input$partdepclass,
                      ylab = paste("Marginal Effect of", input$partdepxvar),
                      main = paste("Partial Dependence on", input$partdepxvar, "on", input$IRFyvar, input$partdepclass)))
@@ -471,11 +466,12 @@ partialdependenceplot <- reactive({
         NULL
       }
     }else if(is.integer(IRFdataset()[train_index1(), input$IRFyvar]) || is.numeric(IRFdataset()[train_index1(), input$IRFyvar])){
-      plot <- BiocGenerics::do.call("partialPlot", 
-                      list(x=IRFmodel()$rf.list[[1]], pred.data=data.matrix(Xtrain()), 
+      plot <- do.call("partialPlot", 
+                      list(x=IRFmodel()$rf.list,#[[input$rfselected]], 
+                           pred.data=data.matrix(Xtrain()), 
                            x.var = input$partdepxvar,
                            ylab = paste("Marginal Effect of", input$partdepxvar),
-                           main = paste("Partial Dependence on", input$partdepxvar, "on", input$IRFyvar)))
+                           main = paste("Partial Dependence of", input$partdepxvar, "on", input$IRFyvar)))
       plot
     }
   }else {
@@ -517,7 +513,7 @@ output$partialdependenceplotoutput <- renderUI({
 downloadPlot("partialdepplot", partialdependenceplot())
 varimportancetable <- reactive({
   if(is.null(IRFmodel()))return(NULL)
-  data.frame(IRFmodel()$rf.list[[1]]$importance)
+  data.frame(IRFmodel()$rf.list$importance)
 })
 output$varimportancetable1 <- renderDataTable({
   if(is.null(IRFmodel()))return(NULL)
@@ -553,6 +549,20 @@ output$varinteractiontable2 <- renderUI({
   )
   return(output)
 })
+
+output$irfplotui <- renderUI({
+  req(input$performIRF)
+  output <- tagList(
+    numericInput("rfselected", label = "Which Iteration Should be Used?", value = 1, min = 1, max = input$IRFiterations)
+    ,
+    tags$h3("Variable Importance Plot"),
+    numericInput("IRFvarimpplotsize", "Select Size of Plot:", value = 600, min = 100,width = "100%"),
+    numericInput("IRFvarimpninteractions", "How Many Variables Should be Shown?", value = 10, min = 1, max = 50, step = 1),
+    downloadPlotUI("IRFvarimpdownload")
+  )
+})
+
+
 output$irftableui <- renderUI({
   validate(
     need(input$makefile, "Please Upload an Amplicon Dataset"),
@@ -582,6 +592,32 @@ output$irftableui <- renderUI({
   return(output)
 })
 
+output$IRFtabledownloadUI <- renderUI({
+  req(input$parseIRF)
+  output <- tagList(
+    hr()
+    ,
+    radioButtons("IRFtabledownloadoptions", "Select Plot to Download",
+                choices = c("X Train",
+                            "Y Train",
+                            "X Test",
+                            "Y Test"),
+                selected = "X Train", inline = TRUE)
+    ,
+    downloadTableUI("IRFtables")
+  )
+  return(output)
+})
+selectedIRFTable <- reactive({
+  req(input$parseIRF)
+  switch(input$IRFtabledownloadoptions,
+         "X Train" = Xtrain(),
+         "Y Train" = Ytrain(),
+         "X Test" = Xtest(),
+         "Y Test" = Ytest())
+  #}
+})
+downloadTable("IRFtables", selectedIRFTable())
 
 ###Datatable outputs
 output$testoutput <- renderDataTable({

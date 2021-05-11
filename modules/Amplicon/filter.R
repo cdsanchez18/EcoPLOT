@@ -172,6 +172,8 @@ output$phyloseqfilteroptions <- renderUI({
                  step = 1)
     ,
     actionButton("phyloseqfilter", "Apply Filters", width = "100%")
+    ,
+    uiOutput("filtertabledownloadsidebar")
   )
   return(output)
 })
@@ -408,17 +410,15 @@ output$sidebarfilteroutputui <- renderUI({
 output$filtertabledownloadsidebar <- renderUI({
   req(amplicondata$use)
   output <- tagList(
-    fluidRow(
-      column(4,
-             wellPanel(
-  radioButtons("filtersamplecountplotdownload", "Select Histogram to Download",
+    hr()
+    ,
+    wellPanel(
+      radioButtons("filtersamplecountplotdownload", "Select Histogram to Download",
                choices = c("Original Sample Count",
                            "Original Taxa Count"),
                inline = TRUE)
-  ,
-  downloadPlotUI("filterhistogramplots"))
-      )
-    )
+      ,
+      downloadPlotUI("filterhistogramplots"))
   )
   return(output)
 })
@@ -454,11 +454,6 @@ output$mainpanelfilteroutputui <- renderUI({
     uiOutput("counthisttaxa")
     )
   )
-  #,
-  #splitLayout(
-  #  downloadPlotUI("originalsamplecounthistplot"),
-  #  downloadPlotUI("originaltaxacounthistplot")
-  #)
   ,
   hr()
   ,

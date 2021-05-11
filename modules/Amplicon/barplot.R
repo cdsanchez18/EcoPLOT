@@ -86,19 +86,12 @@ barplotplot1 <- reactive({
                  plot <-  ggplot(data = barplotfilter()) + 
                    geom_bar(aes(x = Sample, y = Abundance, fill = !!as.symbol(input$bptaxrank1)), stat = "identity", position = "stack") + #theme(axis.text.x = element_blank()) + 
                    labs(x = "Samples", y = "Abundance", #fill = input$bptaxrank1,
-                        title = paste(input$bptaxrank1, "Community Composition")) +
-                   #theme(legend.position= "right", axis.text.x = element_text(color = "black", size = input$bpaxistextsize, 
-                  #                                                            angle = input$bpaxisangle1),
-                   #      axis.text.y = element_text(color = "black", size = input$bpyaxistextsize,
-                  #                                  angle = input$bpyaxisangle1),
-                   #      axis.title.x = element_text(size = input$bpxaxislabelsize), axis.title.y = element_text(size = input$bpyaxislabelsize),
-                  #       legend.text = element_text(face = "italic")) + 
-                   theme_bw()
+                        title = paste(input$bptaxrank1, "Community Composition")) + theme_bw()
                  
                  if(!is.null(av(input$bpfacetoption)) && is.null(av(input$bpfacetoption2))){
-                   plot <- plot + facet_grid(paste("~", paste(input$bpfacetoption)), scales = "free_x", drop = TRUE)
+                   plot <- plot + facet_wrap(paste("~", paste(input$bpfacetoption)), scales = "free", drop = TRUE)
                  }else if(!is.null(av(input$bpfacetoption)) && !is.null(av(input$bpfacetoption2))){
-                   plot <- plot + facet_grid(paste(input$bpfacetoption, "~", paste(input$bpfacetoption2)), scales = "free_x", drop = TRUE)
+                   plot <- plot + facet_wrap(paste(input$bpfacetoption, "~", paste(input$bpfacetoption2)), scales = "free", drop = TRUE)
                  }else if(is.null(av(input$bpfacetoption)) && is.null(input$bpfacetoption2)){
                    plot 
                  }

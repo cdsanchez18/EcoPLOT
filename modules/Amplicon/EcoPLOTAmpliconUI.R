@@ -60,9 +60,9 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                                                        uiOutput("updatedmappingtableoutput")),
                                               tabPanel(value = 5, title = "Filtered Tree Table",
                                                        uiOutput("updatedtreetableoutput"))
-                                  ), id = "filtermain")),
-                      conditionalPanel("input.filtertabset == 1",
-                                       uiOutput("filtertabledownloadsidebar"))
+                                  ), id = "filtermain"))#,
+                      #conditionalPanel("input.filtertabset == 1",
+                      #                 uiOutput("filtertabledownloadsidebar"))
                       )),
            tabPanel("Community Composition",
                     fluidPage(

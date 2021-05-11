@@ -585,7 +585,7 @@ observeEvent(input$ordinationseparateselection, {
         where = "beforeEnd",
         ui = column(4,
                     tags$div(textInput(paste("ordinationselectionName", paste(ordinationcounter()), sep = ""), paste("Name for Group", paste(ordinationcounter())),
-                                       value = paste("Group", paste(ordinationcounter()))),
+                                       value = paste0("Group_", paste(ordinationcounter()))),
                              id = paste0("ordinationselection", paste(ordinationcounter())))
         )
       )

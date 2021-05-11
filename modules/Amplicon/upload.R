@@ -295,6 +295,7 @@ phyloseqobj <- eventReactive(input$makefile, {
                                         })
                        updated_mapping <- data.frame(sample_data(file))
                        updated_mapping$Row_ID <- 1:nrow(updated_mapping)
+                       updated_mapping$Sample <- rownames(updated_mapping)
                        sample_data(file) <- updated_mapping
                      }else if(input$fileformat == "qiime1"){
                        file <- tryCatch(merge_phyloseq(otufile(), mappingfile(), phylotree()),
@@ -332,6 +333,7 @@ phyloseqobj <- eventReactive(input$makefile, {
                                         })
                        updated_mapping <- data.frame(sample_data(file))
                        updated_mapping$Row_ID <- 1:nrow(updated_mapping)
+                       updated_mapping$Sample <- rownames(updated_mapping)
                        sample_data(file) <- updated_mapping
                      } else if(input$fileformat == "qiime1"){
                        file <- tryCatch(merge_phyloseq(otufile(), mappingfile()),

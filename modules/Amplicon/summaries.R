@@ -25,7 +25,7 @@ originalsamplehistplot <- reactive({
   ggplot(data.frame(sample_sums(phyloseqobj())), 
          aes(x = sample_sums(phyloseqobj()))) + geom_histogram() +
     xlab("Number of Reads") + ylab("Sample Count") + scale_x_log10(labels = scales::comma) +
-    labs(title= "Number of Reads per Sample")
+    labs(title= "Number of Reads per Sample") + theme_bw()
 })
 output$originalsamplecounthist <- renderPlot({
   if(is.null(phyloseqobj()))return(NULL)
@@ -46,7 +46,7 @@ originaltaxahistplot <- reactive({
   ggplot(data.frame(taxa_sums(phyloseqobj())), 
          aes(x = taxa_sums(phyloseqobj()))) + geom_histogram() + 
     xlab("Number of Reads") + ylab("ASV Count") + scale_x_log10(labels = scales::comma) +
-    labs(title= "Number of Reads per ASV")
+    labs(title= "Number of Reads per ASV") + theme_bw()
 })
 output$originaltaxacounthist <- renderPlot({
   if(is.null(phyloseqobj()))return(NULL)
@@ -65,7 +65,7 @@ updatedsamplehistplot <- reactive({
   ggplot(data.frame(sample_sums(updatedphyloseq())), 
          aes(x = sample_sums(updatedphyloseq()))) + geom_histogram() + 
     xlab("Number of Reads") + ylab("Sample Count") + scale_x_log10(labels = scales::comma)+
-    labs(title= "Number of Reads per Sample")
+    labs(title= "Number of Reads per Sample") + theme_bw()
 })
 output$updatedsamplecounthist <- renderPlot({
   if(is.null(updatedphyloseq()))return(NULL)
@@ -86,7 +86,7 @@ updatedtaxahistplot <- reactive({
   ggplot(data.frame(taxa_sums(updatedphyloseq())), 
          aes(x = taxa_sums(updatedphyloseq()))) + geom_histogram() + 
     xlab("Number of Reads") + ylab("ASV Count") + scale_x_log10(labels = scales::comma)+
-    labs(title= "Number of Reads per ASV")
+    labs(title= "Number of Reads per ASV") + theme_bw()
 })
 output$updatedtaxacounthist <- renderPlot({
   if(is.null(updatedphyloseq()))return(NULL)

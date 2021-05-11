@@ -2,7 +2,7 @@
 #Cran
 required.packages <- c("shiny", "readxl", "treeio", "colourpicker", "ggtree", "shinyjs",
                        "ggplot2", "vegan", "tidyr", "lubridate", "dplyr", "reshape2", "stringr", "shinythemes", #"shinycssloaders",
-                       "RColorBrewer", "DT", "htmltools", "dataPreparation", "iRF", "doParallel", "BiocGenerics", "plotly")
+                       "RColorBrewer", "DT", "htmltools", "dataPreparation", "iRF", "doParallel", "BiocGenerics", "plotly", "randomForest")
 new.packages <- required.packages[!(required.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, dependencies = TRUE)
 
