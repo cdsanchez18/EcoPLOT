@@ -143,7 +143,7 @@ test_index1 <- eventReactive(input$parseIRF, {
 Xtrain <- eventReactive(input$parseIRF, {
   if(is.null(train_index1()))return(NULL)
   if(!is.null(av(input$IRFyvar))){
-    data <- IRFdataset()[train_index1(), ] %>% select(-c(input$IRFyvar, input$IRFexclude, "Sample"))
+    data <- IRFdataset()[train_index1(), ] %>% select(-c(input$IRFyvar, input$IRFexclude, "Sample", "Row_ID"))
     data[sapply(data, is.character)] <- lapply(data[sapply(data, is.character)], 
                                                      as.factor)
     data
@@ -158,7 +158,7 @@ Ytrain <- eventReactive(input$parseIRF, {
 Xtest <- eventReactive(input$parseIRF, {
   if(is.null(test_index1()))return(NULL)
   if(!is.null(av(input$IRFyvar))){
-    data <- IRFdataset()[test_index1(),] %>% select(-c(input$IRFyvar, input$IRFexclude, "Sample"))
+    data <- IRFdataset()[test_index1(),] %>% select(-c(input$IRFyvar, input$IRFexclude, "Sample", "Row_ID"))
     data[sapply(data, is.character)] <- lapply(data[sapply(data, is.character)], 
                                                as.factor)
     data
