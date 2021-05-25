@@ -141,11 +141,15 @@ output$alphadivstatoptions <- renderUI({
 })
 alphadivstatresult <- eventReactive(input$performalphastats, {
   if(is.null(phyloseqobj()))return(NULL)
-  alphastats <- list()
-  for(i in input$alphaexclude){#sample_variables(ampliconuse())[!grepl(pattern = "ID",x = sample_variables(ampliconuse()))]){  
-    alphastats[[i]] <- pairwise.wilcox.test(phyloseqalpharichness()[[input$alphastatoptions]], sample_data(amplicondata$use)[[i]], p.adjust.method = "bonf")
-  }
-  alphastats
+  #alphastats <- list()
+  #for(i in input$alphaexclude){#sample_variables(ampliconuse())[!grepl(pattern = "ID",x = sample_variables(ampliconuse()))]){  
+  #  alphastats[[i]] <- pairwise.wilcox.test(phyloseqalpharichness()[[input$alphastatoptions]], sample_data(amplicondata$use)[[i]], p.adjust.method = "bonf")
+  #}
+  #alphastats
+  
+  result <- aov(input$alphastatoptions ~ sample_data(amplicondata$use)[[input$alphaexclude]])
+  result
+  
 })
 output$alphadivstatprint <- renderPrint({
   if(is.null(phyloseqobj()))return(NULL)

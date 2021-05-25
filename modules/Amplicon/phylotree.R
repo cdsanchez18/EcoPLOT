@@ -1,9 +1,9 @@
 #create tree plot-----
 output$treeoptions <- renderUI({
   req(amplicondata$use)
-  if(is.null(phy_tree(phyloseqobj()))){
-    output <- tags$h3("Phylogenetic Tree Required")
-  }else{
+  if(is.null(phylotree()))return(NULL)#{
+    #output <- tags$h3("Phylogenetic Tree Required")
+  #}else{
     withProgress(message = "Creating Plot Options",
                  detail = "This may take a while...", {
                    output <- tagList(
@@ -45,7 +45,7 @@ output$treeoptions <- renderUI({
                      )
                    )
                  })
-  }
+  #}
   return(output)
 })
 treeuse <- reactive({
@@ -96,8 +96,13 @@ output$phylotreeplotui <- renderUI({
   validate(
     need(input$makefile, "Please Upload a Dataset")
   )
-  req(input$phylotreeplotrender1)
-  if(is.null(phylotree()))return(NULL)
-  isolate(plotOutput("phylotreeplot", height = input$phylotreeplotheight1))
+  #req(input$phylotreeplotrender1)
+  #if(is.null(phylotree()))return(NULL)
+  if(is.null(phylotree())){
+    output <- tags$h3("No Tree File Uploaded")
+  }else{
+  output <- isolate(plotOutput("phylotreeplot", height = input$phylotreeplotheight1))
+  }
+  return(output)
 })
 EcoPLOT::downloadPlot(id = "phylotreeplotdownload", plotid = phylotreeplotrender())

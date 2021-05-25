@@ -370,7 +370,8 @@ interactionplot <- reactive({
   if(is.null(IRFmodel()))return(NULL)
   if(input$IRFinteractions == TRUE){
     if(!is.null(av(input$IRFintx))){
-    ggplot(IRFmodel()$interaction, aes(y = int, x = !!as.symbol(input$IRFintx))) + geom_point(shape = 1) + theme_bw() + 
+    ggplot(IRFmodel()$interaction[1:input$IRFinteractionnuminteractions, ], aes(y = int, x = !!as.symbol(input$IRFintx))) + 
+        geom_point(shape = 1) + theme_bw() + 
       labs(title = "Variable Interaction Plot") + theme(axis.text.y = element_text(size = input$IRFinteractionplotyaxissize),
                                                         axis.title.y = element_blank(),
                                                         plot.title = element_text(face = "bold", size = rel(1), hjust = 0.5))
@@ -394,7 +395,7 @@ output$irfinteractionoutput <- renderUI({
       selectInput("IRFintx", "Select Variable to View on X Axis",
                   choices = c("NULL", as.list(colnames(IRFmodel()$interaction))),
                   selected = "NULL"),
-      numericInput("IRFinteractionplotheight", "Select Plot Height:", value = 600, min = 100),
+      numericInput("IRFinteractionplotheight", "Select Plot Height:", value = 700, min = 100),
       numericInput("IRFinteractionnuminteractions", "Select Number of Interactions to Show:", value = 10, min = 1, max = 20, step = 1),
       numericInput("IRFinteractionplotyaxissize", "Select Size of Y Axis Text:", value = 8, min = 1, max = 20, step = 1),
       downloadPlotUI("IRFinteractionplotdownload"))

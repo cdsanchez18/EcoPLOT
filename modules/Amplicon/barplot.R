@@ -27,27 +27,44 @@ output$bpplotui <- renderUI({
                                  selected = "NULL",
                                  multiple = FALSE))
     ,
-    numericInput("bpplotsize", "Select Height of Plot:", value = 800)
+    radioButtons("bpplotlegendpos", "Select Legend Position",
+                 choices = c("Right" = "right",
+                             "Top" = "top",
+                             "Bottom"= "bottom"),
+                 inline = TRUE)
     ,
-    numericInput("barplotfontsize", "Select Text Size", value = 16)
+    fluidRow(
+      column(6,
+    numericInput("bpplotsize", "Select Height of Plot:", value = 800))
+    ,
+      column(6,
+    numericInput("barplotfontsize", "Select Text Size", value = 16))
+    )
     ,
     sliderInput("bpaxisangle1", "Select Angle of X Axis Text",
                 min = 0, max = 90, value = 45, step = 5)
     ,
+    fluidRow(
+      column(6,
     numericInput("bpaxistextsize", "Select Size of X Axis Text",
-                 min = 3, max = 20, value = 5)
+                 min = 3, max = 20, value = 5))
     ,
+    column(6,
     numericInput("bpxaxislabelsize", "Select Size of X Axis Label",
-                 min = 3, max = 30, value = 10)
+                 min = 3, max = 30, value = 10)))
     ,
+    
     sliderInput("bpyaxisangle1", "Select Angle of Y Axis Text",
                 min = 0, max = 90, value = 45, step = 5)
     ,
+    fluidRow(
+      column(6,
     numericInput("bpyaxistextsize", "Select Size of Y Axis Text",
-                 min = 3, max = 20, value = 5)
+                 min = 3, max = 20, value = 5))
     ,
+    column(6,
     numericInput("bpyaxislabelsize", "Select Size of Y Axis Label",
-                 min = 3, max = 30, value = 10)
+                 min = 3, max = 30, value = 10)))
     #,
     #actionButton("bptaxrender1", "Make Barplot", width = '100%')
   )
@@ -97,7 +114,7 @@ barplotplot1 <- reactive({
                  }
                })
   return(plot + theme(text = element_text(size = input$barplotfontsize),
-                      legend.position= "right", 
+                      legend.position= input$bpplotlegendpos, 
                       axis.text.x = element_text(color = "black", size = input$bpaxistextsize, angle = input$bpaxisangle1),
                       axis.text.y = element_text(color = "black", size = input$bpyaxistextsize, angle = input$bpyaxisangle1),
                       axis.title.x = element_text(size = input$bpxaxislabelsize), 

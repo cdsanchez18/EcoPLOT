@@ -17,7 +17,7 @@ if(length(new.packages.biocmanager)) BiocManager::install(new.packages.biocmanag
 #Devtools
 if(!requireNamespace("devtools", quietly = TRUE))
   install.packages("devtools")
-required.packages.devtools <- c("kalimu/shinyEventLogger", "CDSanchez18/EcoPLOT","jbisanz/qiime2R", "karlkumbier/iRF2.0")
+required.packages.devtools <- c("kalimu/shinyEventLogger", "CDSanchez18/EcoPLOT","jbisanz/qiime2R","karlkumbier/iRF2.0")
 required.packages.devtools2 <- c("shinyEventLogger", "EcoPLOT", "qiime2R", "iRF")
 new.packages.devtools <- required.packages.devtools[!(required.packages.devtools %in% installed.packages()[,"Package"])]
 if(length(new.packages.devtools)) devtools::install_github(new.packages.devtools, dependencies = TRUE)

@@ -205,9 +205,10 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                                                        #splitLayout(dataTableOutput("volcanotesttable")),
                                                        #splitLayout(downloadTableUI("volcanoselectionstable"),
                                                        #            downloadTableUI("volcanodesequpdated"))
-                                              ),
-                                              tabPanel(value=3, "Log2FoldChange Plot",
-                                                       uiOutput("log2foldchangegraphoutput"))))
+                                              )#,
+                                              #tabPanel(value=3, "Log2FoldChange Plot",
+                                              #         uiOutput("log2foldchangegraphoutput"))
+                                              ))
                       )
                     ))
          ))

@@ -92,7 +92,7 @@ output$volcanoplotui <- renderUI({
   if(is.null(phyloseqobj()) && is.null(deseqresults()))return(NULL)
   req(deseqresults())
   output <- tagList(
-    selectInput("volcanotaxrank1", "Select Taxonomic Rank to Depict:",
+    selectInput("volcanotaxrank1", "Select Taxonomic Rank to Depict",
                 choices = c("NULL", rank_names(amplicondata$original), "threshold"),
                 selected = "NULL")
     ,
@@ -100,12 +100,12 @@ output$volcanoplotui <- renderUI({
                  choices = c("Yes", "No"),
                  selected = "Yes", inline = TRUE)
     ,
-    radioButtons("volcanoplotlabels", "Label Enriched Points?",
+    radioButtons("volcanoplotlabels", "Show ID's of Significantly Enriched ASV's?",
                  choices = c("Yes", "No"),
                  selected = "No", inline = TRUE)
     ,
     conditionalPanel(condition = "input.volcanoplotlabels == 'Yes'",
-                     numericInput("volcanoplotlabelsthresh", "Select Numeric Threshold for Label:",
+                     numericInput("volcanoplotlabelsthresh", "Select Significance Threshold to be Labeled",
                                   2.5, min = 1.5, max = 10))
     ,
     radioButtons("volcanoplotlegendpos", "Select Legend Position",
@@ -113,10 +113,33 @@ output$volcanoplotui <- renderUI({
                              "Top" = "top",
                              "Bottom"= "bottom"))
     ,
-    numericInput("volcanoplotheight", "Select Height for Plot",
-                 min = 0, value = 800)
-    #,
-    #actionButton("volcanoplotrender1", "Render Volcano Plot:", width = "100%")
+    textInput("volcanoplottitle", "Create Title for Plot", placeholder = "Volcano Plot")
+    ,
+    #numericInput("volcanoplotheight", "Select Height for Plot",
+    #             min = 0, value = 800)
+    fluidRow(
+      column(6, 
+             numericInput("volcanoplotheight", "Select Plot Height:", value = 800, min = 200, max = 1600, step = 25))
+      ,
+      column(6,
+             numericInput("volcanofontsize", "Select Font Size", value = 24, min = 1, max = 50)))
+    ,
+    fluidRow(
+      column(6,
+             numericInput("volcanoaxistextsize", "Select Size of X Axis Text", value = 12, min = 1, max = 50)
+      ),
+      column(6,
+             numericInput("volcanoxaxislabelsize", "Select Size of X Axis Label", value = 10, min = 1, max = 50)
+      )
+    ),
+    fluidRow(
+      column(6,
+             numericInput("volcanoyaxistextsize", "Select Size of Y Axis Text", value = 12, min = 1, max = 50)
+      ),
+      column(6,
+             numericInput("volcanoyaxislabelsize", "Select Size of Y Axis Label", value = 10, min = 1, max = 50)
+      )
+    )
     ,
     hr()
     ,
@@ -160,7 +183,14 @@ volcanoplot <- reactive({
       return(NULL)
       }
     
-    return(plot + theme_bw() + theme(legend.position = input$volcanoplotlegendpos))
+    return(plot + labs(title = input$volcanoplottitle) + theme_bw() +
+             theme(legend.position = input$volcanoplotlegendpos,
+                   text = element_text(size = input$volcanofontsize),
+                   axis.text.x = element_text(color = "black", size = input$volcanoaxistextsize),
+                   axis.text.y = element_text(color = "black", size = input$volcanoyaxistextsize),
+                   axis.title.x = element_text(size = input$volcanoxaxislabelsize), 
+                   axis.title.y = element_text(size = input$volcanoyaxislabelsize)) #+ theme_bw()
+           )
 })
 
 

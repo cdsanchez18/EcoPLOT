@@ -153,7 +153,35 @@ output$ordinationplotoptions <- renderUI({
                              "No" = "no"),
                  selected = "no", inline = TRUE)
     ,
-    numericInput("betaheight", "Select Plot Height:", value = 800, min = 200, max = 1600, step = 25)
+    radioButtons("ordinationlegendpos", "Select Legend Position",
+                 choices = c("Right" = "right",
+                             "Top" = "top",
+                             "Bottom"= "bottom"),
+                 inline = TRUE)
+    ,
+    fluidRow(
+      column(6, 
+    numericInput("betaheight", "Select Plot Height:", value = 800, min = 200, max = 1600, step = 25))
+    ,
+    column(6,
+    numericInput("ordinationfontsize", "Select Font Size", value = 24, min = 1, max = 50)))
+    ,
+    fluidRow(
+      column(6,
+             numericInput("ordinationaxistextsize", "Select Size of X Axis Text", value = 12, min = 1, max = 50)
+             ),
+      column(6,
+             numericInput("ordinationxaxislabelsize", "Select Size of X Axis Label", value = 10, min = 1, max = 50)
+             )
+    ),
+    fluidRow(
+      column(6,
+             numericInput("ordinationyaxistextsize", "Select Size of Y Axis Text", value = 12, min = 1, max = 50)
+             ),
+      column(6,
+             numericInput("ordinationyaxislabelsize", "Select Size of Y Axis Label", value = 10, min = 1, max = 50)
+             )
+    )
     ,
     hr()
     ,
@@ -236,7 +264,7 @@ observe({
   #req(amplicondata$use)
   if(!is.null(av(input$phyloseqordinateoptions1))){
   if(input$phyloseqordinateoptions1 == "CCA" | input$phyloseqordinateoptions1 == "RDA" |input$phyloseqordinateoptions1 == "CAP"){
-    if(!is.null(input$formulaoptions1)){
+    if(!is.null(av(input$formulaoptions1))){
       ordinationobject$pco <- ordinate(
         physeq = isolate(amplicondata$use), 
         method = input$phyloseqordinateoptions1, 
@@ -244,7 +272,7 @@ observe({
         formula = as.formula(paste("~", paste(input$formulaoptions1, collapse = "+")))
       )
     }else{
-      NULL
+      ordinationobject$pco <-NULL
     }
   }else if(input$phyloseqordinateoptions1 == "PCoA" | input$phyloseqordinateoptions1 == "NMDS"){
     #isolate(
@@ -256,7 +284,7 @@ observe({
     #)
   }
   }else{
-    NULL
+    ordinationobject$pco <-NULL
   }
 })
 
@@ -324,7 +352,7 @@ observe({
                      ) + 
                      geom_text(
                        mapping = label_map, 
-                       size = 4,  
+                       size = 10,  
                        data = arrowdf, 
                        show.legend = FALSE
                      ) + theme_bw()
@@ -358,7 +386,7 @@ observe({
                                      ) + 
                                      geom_text(
                                        mapping = label_map, 
-                                       size = 4,  
+                                       size = 10,  
                                        data = arrowdf, 
                                        show.legend = FALSE
                                      )) + theme_bw()
@@ -391,7 +419,7 @@ observe({
                                      ) + 
                                      geom_text(
                                        mapping = label_map, 
-                                       size = 4,  
+                                       size = 10,  
                                        data = arrowdf, 
                                        show.legend = FALSE
                                      )) + theme_bw()
@@ -407,7 +435,12 @@ downloadPlot(id = "ordinationplotoutputdownload", plotid = ordinationobject$upda
 output$ordinationplotoutput <- renderPlot({
   #req(amplicondata$use)
   #ordinationplotoutput1()
-  ordinationobject$updateplot
+  ordinationobject$updateplot + theme(text = element_text(size = input$ordinationfontsize),
+                                      legend.position= input$ordinationlegendpos, 
+                                      axis.text.x = element_text(color = "black", size = input$ordinationaxistextsize),
+                                      axis.text.y = element_text(color = "black", size = input$ordinationyaxistextsize),
+                                      axis.title.x = element_text(size = input$ordinationxaxislabelsize), 
+                                      axis.title.y = element_text(size = input$ordinationyaxislabelsize))
 })
 output$ordinationplotoutputUI <- renderUI({
   validate(

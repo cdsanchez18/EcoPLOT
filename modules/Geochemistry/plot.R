@@ -149,11 +149,35 @@ output$environmentplotUI <- renderUI({
                        colourpicker::colourInput("environmentcolor1", "Select Color",
                                                  value = "black"))
       ,
-      numericInput("environmentplotheight", "Select Plot Height",
-                   value = 500)
+      radioButtons("environmentplotlegendpos", "Select Legend Position",
+                   choices = c("Right" = "right",
+                               "Top" = "top",
+                               "Bottom"= "bottom"),
+                   inline = TRUE)
       ,
-      numericInput("environmentplottextsize", "Select Text Size",
-                  value = 16)
+      fluidRow(
+        column(6, 
+               numericInput("environmentplotheight", "Select Plot Height:", value = 800, min = 200, max = 1600, step = 25))
+        ,
+        column(6,
+               numericInput("environmentplottextsize", "Select Font Size", value = 24, min = 1, max = 50)))
+      ,
+      fluidRow(
+        column(6,
+               numericInput("environmentaxistextsize", "Select Size of X Axis Text", value = 12, min = 1, max = 50)
+        ),
+        column(6,
+               numericInput("environmentxaxislabelsize", "Select Size of X Axis Label", value = 10, min = 1, max = 50)
+        )
+      ),
+      fluidRow(
+        column(6,
+               numericInput("environmentyaxistextsize", "Select Size of Y Axis Text", value = 12, min = 1, max = 50)
+        ),
+        column(6,
+               numericInput("environmentyaxislabelsize", "Select Size of Y Axis Label", value = 10, min = 1, max = 50)
+        )
+      )
       ,
       downloadPlotUI("environmentplotdownload")
     )
@@ -313,7 +337,13 @@ environmentplot <- reactive({
   }else {
     return(NULL)
   }
-  return(plot + theme_bw() + theme(text = element_text(size = input$environmentplottextsize)))
+  return(plot + theme_bw() +
+           theme(legend.position = input$environmentplotlegendpos,
+                 text = element_text(size = input$environmentfontsize),
+                 axis.text.x = element_text(color = "black", size = input$environmentaxistextsize),
+                 axis.text.y = element_text(color = "black", size = input$environmentyaxistextsize),
+                 axis.title.x = element_text(size = input$environmentxaxislabelsize), 
+                 axis.title.y = element_text(size = input$environmentyaxislabelsize)))
 })
 #prints correlation coefficient when viewing a scatter plot
 output$environmentcorrelation <- renderPrint({

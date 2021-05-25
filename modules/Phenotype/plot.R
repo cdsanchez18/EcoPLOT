@@ -156,7 +156,8 @@ output$phenotypeplotUI <- renderUI({
                        radioButtons("phenotyperegressionline", "Add Linear Regression?",
                                     choices = c("Yes",
                                                 "No"),
-                                    selected = "No"))
+                                    selected = "No",
+                                    inline = TRUE))
       ,
       conditionalPanel(condition = "input.phenotypeplottype == 'boxplot'",
                        radioButtons("phenotypefreeyaxis", "Free Y Axis?",
@@ -169,11 +170,35 @@ output$phenotypeplotUI <- renderUI({
                        colourpicker::colourInput("phenotypecolor1", "Select Color",
                                                  value = "black"))
       ,
-      numericInput("phenotypeplotheight", "Select Plot Height",
-                   value = 500)
+      radioButtons("phenotypeplotlegendpos", "Select Legend Position",
+                   choices = c("Right" = "right",
+                               "Top" = "top",
+                               "Bottom"= "bottom"),
+                   inline = TRUE)
       ,
-      numericInput("phenotypeplottextsize", "Select Text Size",
-                   value = 16)
+      fluidRow(
+        column(6, 
+               numericInput("phenotypeplotheight", "Select Plot Height:", value = 800, min = 200, max = 1600, step = 25))
+        ,
+        column(6,
+               numericInput("phenotypeplottextsize", "Select Font Size", value = 24, min = 1, max = 50)))
+      ,
+      fluidRow(
+        column(6,
+               numericInput("phenotypeaxistextsize", "Select Size of X Axis Text", value = 12, min = 1, max = 50)
+        ),
+        column(6,
+               numericInput("phenotypexaxislabelsize", "Select Size of X Axis Label", value = 10, min = 1, max = 50)
+        )
+      ),
+      fluidRow(
+        column(6,
+               numericInput("phenotypeyaxistextsize", "Select Size of Y Axis Text", value = 12, min = 1, max = 50)
+        ),
+        column(6,
+               numericInput("phenotypeyaxislabelsize", "Select Size of Y Axis Label", value = 10, min = 1, max = 50)
+        )
+      )
       ,
       downloadPlotUI("phenotypeplotdownload")
     )
@@ -326,7 +351,13 @@ phenotypeplot <- reactive({
   }else {
     return(NULL)
   }
-  return(plot + theme_bw()+ theme(text = element_text(size = input$phenotypeplottextsize)))
+  return(plot + theme_bw() +
+           theme(legend.position = input$phenotypeplotlegendpos,
+                 text = element_text(size = input$phenotypeplottextsize),
+                 axis.text.x = element_text(color = "black", size = input$phenotypeaxistextsize),
+                 axis.text.y = element_text(color = "black", size = input$phenotypeyaxistextsize),
+                 axis.title.x = element_text(size = input$phenotypexaxislabelsize), 
+                 axis.title.y = element_text(size = input$phenotypeyaxislabelsize)))
 })
 #prints correlation coefficient when viewing a scatter plot
 output$phenotypecorrelation <- renderPrint({
