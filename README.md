@@ -1,8 +1,3 @@
----
-output: 
-  html_document: 
-    keep_md: yes 
----
 # EcoPLOT
 
 [EcoPLOT](https://github.com/cdsanchez18/EcoPLOT) 
