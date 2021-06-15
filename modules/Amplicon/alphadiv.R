@@ -176,7 +176,7 @@ phyloseqplot <- reactive({
                    #theme_bw()
                    
                  if(!is.null(av(input$phylofacet)) && !is.null(av(input$phylofacet2))){
-                   plot <- plot + facet_wrap(paste(input$phylofacet, paste("~", paste(input$phylofacet2))), scales = "free_y")
+                   plot <- plot + facet_grid(paste(input$phylofacet2, paste("~", paste(input$phylofacet))), scales = "free")
                  }else if(!is.null(av(input$phylofacet))){
                    plot <- plot + facet_grid(paste("~", paste(input$phylofacet))) 
                  }

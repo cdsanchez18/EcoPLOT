@@ -90,18 +90,21 @@ phylotreeplotrender <- eventReactive(input$phylotreeplotrender1, {
 output$phylotreeplot <- renderPlot({
   req(input$phylotreeplotrender1)
   if(is.null(phylotree()))return(NULL)
-  isolate(phylotreeplotrender())
+  phylotreeplotrender()
 })
 output$phylotreeplotui <- renderUI({
   validate(
     need(input$makefile, "Please Upload a Dataset")
   )
+  validate(
+    need(input$phylotreeplotrender1, "Plot Will Appear Here")
+    )
   #req(input$phylotreeplotrender1)
   #if(is.null(phylotree()))return(NULL)
   if(is.null(phylotree())){
     output <- tags$h3("No Tree File Uploaded")
   }else{
-  output <- isolate(plotOutput("phylotreeplot", height = input$phylotreeplotheight1))
+  output <- plotOutput("phylotreeplot", height = input$phylotreeplotheight1)
   }
   return(output)
 })
