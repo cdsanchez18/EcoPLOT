@@ -1,4 +1,4 @@
-﻿Sample_ID,treatment,depth,replicate,compartment,total_carbon,nitrate,potassium,phosphorus,sand,silt,clay
+Sample_ID,treatment,depth,replicate,compartment,total_carbon,nitrate,potassium,phosphorus,sand,silt,clay
 RE_100,control,B,2,BS,49,19,266,35,55,25,20
 RE_110,drought,C,1,RS,48,16,275,33,55,25,20
 RE_227,drought,C,2,RS,48,17,269,33,55,25,20
