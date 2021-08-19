@@ -242,7 +242,7 @@ IRFmodel <- eventReactive(input$performIRF, {
   rit.param <- list(depth= input$IRFdepth, nchild= input$IRFnchild, ntree= input$IRFntree, class.id=1, class.cut=NULL)
   if(is.character(IRFdataset()[train_index1(), input$IRFyvar]) || is.factor(IRFdataset()[train_index1(), input$IRFyvar])){
     if(input$IRFinteractions == TRUE){
-      doParallel::registerDoParallel(cores = 2)
+      #doParallel::registerDoParallel(cores = 2)
       model <- iRF(x = data.matrix(Xtrain()),
                    y = as.factor(IRFdataset()[train_index1(), input$IRFyvar]),#%>% select(input$IRFyvar),
                    xtest = data.matrix(Xtest()),
@@ -261,7 +261,7 @@ IRFmodel <- eventReactive(input$performIRF, {
                    #bootstrap.forest = FALSE
       )
     }else{
-      doParallel::registerDoParallel(cores = 2)
+      #doParallel::registerDoParallel(cores = 2)
       model <- iRF(x = data.matrix(Xtrain()),
                    y = as.factor(IRFdataset()[train_index1(), input$IRFyvar]),#%>% select(input$IRFyvar),
                    xtest = data.matrix(Xtest()),
@@ -281,7 +281,7 @@ IRFmodel <- eventReactive(input$performIRF, {
     }
   }else if(is.numeric(IRFdataset()[train_index1(), input$IRFyvar]) || is.integer(IRFdataset()[train_index1(), input$IRFyvar])){
     if(input$IRFinteractions == TRUE){
-      doParallel::registerDoParallel(cores = 2)
+      #doParallel::registerDoParallel(cores = 2)
       model <- iRF(x = data.matrix(Xtrain()),
                    y = IRFdataset()[train_index1(), input$IRFyvar],#Ytrain(),#%>% select(input$IRFyvar),
                    xtest = data.matrix(Xtest()),
@@ -300,7 +300,7 @@ IRFmodel <- eventReactive(input$performIRF, {
                    #bootstrap.forest = FALSE
       )
     }else{
-      doParallel::registerDoParallel(cores = 2)
+      #doParallel::registerDoParallel(cores = 2)
       model <- iRF(x = data.matrix(Xtrain()),
                    y = IRFdataset()[train_index1(), input$IRFyvar],#%>% select(input$IRFyvar),
                    xtest = data.matrix(Xtest()),
