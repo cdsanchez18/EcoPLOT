@@ -6,7 +6,7 @@ output: html_document
 ---
 
 <div style="text-align:center">
-<h3><b>Citations</b></h3><br></br>
+<h1><b>Citations</b></h1><br></br>
 EcoPLOT is constructed from a novel combination of existing R packages. The EcoPLOT development team would like to recognize the following packages for their contributions.  <br></br>
 </div>
 
