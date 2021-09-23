@@ -1,0 +1,120 @@
+---
+title: "iRF_guide"
+output: 
+  html_document: 
+    theme: yeti
+---
+<div style="text-align:center"><h1><b> iRF Guide</b></h1>
+ This guide provides a step-by-step explanation of the steps required to successfully perform the <b> iterative Random Forest (iRF) </b> algorithm within EcoPLOT. </div>  
+
+<div style = "padding:10px;"></div>
+    
+**Note:** iRF is best utilized when Environmental, Phenotypic, and Amplicon datasets are present. It is meant to be used in combination with the other visual and statistical tools found within EcoPLOT. We recommend users get to know their dataset before using iRF so as not to draw conclusions that are not biologically relevant.  
+  
+<h2><b> Introduction to Machine Learning</h2></b>  
+  
+Machine learning (ML) is a branch of computing sciences in which algorithms are built to learn, adapt, and uncover patterns present in a dataset, often attempting to predict a target/response variable given its associated features.  
+  
+While there are multiple variations of machine learning, our focus in EcoPLOT is on **Supervised** learning, where a model uses pre-labeled data to predict the value or class of a response variable. For example, this form of ML can be used to predict plant height given bacterial soil community composition, providing an estimate on a continuous (in units ft, cm, etc...), binary (tall vs. short), or multiple class scale.  
+
+<h2><b> Introduction to iRF  </h2></b>  
+  
+The iterative random forest algorithm (iRF) is a tool that builds off of Random Forests, an exisitng type of ML, to discover high order interactions between abiotic and biotic factors in large, complex datasets. Random forests are particularly well suited for problems with variable classes are present and its application to biological systems has been demsontrated previously in the <i> Drosophila </i> embryo, where iRF returned known and unknown interactions between transcription factors. The application of iRF has the potential to uncover novel relationships between environmental factors present in one's data and is an effective tool for the generation of new hypotheses.  
+  
+In EcoPLOT we use a refined version of iRF which provides quicker run times when compared to the previous package version. For more information on this version of iRF, see the citation below. 
+  
+  
+<H2> <b>Step 1: Formatting your data for iRF</H2></b>
+  
+In order to perform iRF it is required that you have uploaded a 16S dataset to the <i> microbiome </i> tab that includes a mapping file. If you have previously uploaded files to the <i> Environment </i> or <i> Phenotype </i> tabs with matching sample ID's to your microbial data <b> and </b> you have merged them, they will be included in the iRF dataset.  
+  
+Clicking the button, "Prepare Data for iRF," will initiate the creation of this dataset. ML requires that each individual ASV be given its own column with their respective sample abundances in each row. Depending on the size of your dataset this can be a time intensive process.  Due to rendering limitations within Shiny, only columns 1-50 are shown in the table. The entire dataset, however, is available for download.  
+  
+<h2><b> Step 2: Creation of Test and Train Datasets</h2></b>  
+  
+Following formatting, the next step is to create the train and test datasets. The training dataset is used to create and train the model, whose accuracy is then evaulated against the testing dataset. Common practice is to place 80% of one's data in the training set, however EcoPLOT allows users the ability to specify. EcoPLOT only visualizes columns 1:50 for each created dataset, due to rendering limitations within Shiny. The entire dataset, however, is available for download.  
+  
+Included in this step is the selection of your output variable and the removal of unnecessary ones. Your output variable is your variable of interest, aka that feature which you eventually want to make a prediction on. This variable can be continuous or a factor variable, iRF recognizes both and will use a classification model for categorical variables and a regression model for continouous ones. It is also important to remove undesired variables from being included in the analysis. These variables are often unique to each individual sample and do not contain any importance in experimental design. Failure to remove these extraneous variables may affect the algorithm's performance.  
+  
+<b> NOTE: </b> The <b> Row_ID </b> and <b> Sample </b> variables will be excluded automatically. It is not necessary to explicitly remove these variables. 
+
+    
+  
+<h2><b> Step 3: Run IRF</h2></b>  
+  
+We recommend that iRF first be performed using the default parameters. Following a preliminary run, the parameters can be adjusted to better fit the model, although the prediction accuracy and interaction discovery of iRF are robust to parameters. The following parameters can be altered in EcoPLOT: 
+  <ul>
+  <li> <b> Depth:</b> Represents how maybe splits the tree has, aka how large the tree should be. Increasing depth can capture more information about your data, but it can also lead to overfitting. </li> 
+  <li> <b> nchild:</b> How many children should be included in each non-leaf node of the random intersection trees.</li>
+  <li> <b> ntree:</b> Refers to the number of trees to use in each iteration of the random forest. After a point, increasing tree number is negligible to improving the model.</li>
+  <li> <b> nbootstrap:</b> The number of bootstrap replicates to be used in the calculation of stability scores of discovered interactions. </li>
+  </ul>
+    <b> Note: </b>Depending on the size of your dataset, iRF can take multiple minutes to run. This is to be expected. Do not repeatedly click the 'Perform iRF' button, this will cause the function to run again immediately after it finishes. A notification will appear on screen while iRF is running. A results table will appear once it has completed.  
+    
+  
+
+
+<h2><b> Interpretation of iRF Results</h2></b>  
+  
+The following image depicts an example output, provided the user has chosen to have iRF search for variable interactions.  
+
+<center><img src = "../../../www/irf_output2.png"></center>
+  
+  As you can see, the output varies depending on the class of your selected output variable, be it continuous or categorical. Both output types list the number of trees used, give the number of variables used at each split of the tree, provide an error rate estimation of the model's performance, and identify which iteration was selected. 
+  
+  
+  For the **classification** model, an out of bag error estimate of error (OOB) is provided, which is calculated by counting how many points in the training or testing dataset were miscalculated and diving them by the total number of observations. The OOB error rate provides an estimate to the accuracy of the model. An OOB error rate and confusion matrix is provided for both the training and testing datasets.  
+  
+  The **regression** output gives three different values. The first, Mean of squared residuals gives the mean of the squared difference between predicted values and actual values in the training dataset, known as residuals. It can be thought of as a measurement of spread of the dependent varaible values. Second % variation explained, also known as R<sup>2</sup>, is a measure of how well the OOB predictions explain the output variable variance of the testing and training datasets. Lastly, MSE, or mean squared error, gives the average squared difference of the estimated values and the actual values. It is used as an indicator of model predictive quality and values closer to zero signify a stronger model.   
+  
+  Additionally, both model types provide the feature weights used to fit each variable entry in the random forest. For classification models this is the Mean Decrease in Gini Importance and for regression models it is the IncNodePurity. Both are measures of variable importance calculated from the Gini Impurity Index. Higher values translate to higher variable importance to the model.  
+  
+  
+
+<h2><b> View iRF Results Graphically </h2></b>  
+  
+  EcoPLOT provides three graphical representations of the iRF model for users to visualize: 
+  <ul>
+  <li> <b>Variable Importance Plot:</b> Returns a plot of important variables and their corresponding importance scores as measured by a Random Forest. Importance scores are determined by the mean decrease in Gini importance, a measurement of how a variable contributes to the purity/homogeneity of a node in the forest. The higher the Gini measurement, the more important the variable is in the model.</li>
+  <li><b>Partial Dependence Plot:</b> This plot shows the relative logit contribution of the selected variable on the class probability, if your y variable is categorical, or the outcome, if continuous. Essentially, this plot can be used to understand how the model interprets the effects of each predictor variable on the selected output variable. A negative value on the y-axis indicates that a predicion of that value or class is less likely given the independent variable value, whereas a positive value on the y-axis indicates that it is more likely. A value of zero implies no effect.</li>
+  <li> <b>Variable Interaction Plot:</b> Returns plot of variable interactions and their corresponding stability scores. Interactions are defined as variables that frequently appear together at splits of a tree in the forest. Variables that exhibit an interaction are listed together, separated by an underscore (_). Increasing the <b> depth </b> parameter can increase iRF's ability to uncover interactions. While statistically interesting, the returned interactions do not necessarily imply biological significance. We encourage users to generate novel hypotheses with their iRF results. The importance metrics provided for the interactions consist of the following as described by package authors: <br>
+  <ul>
+  <li>`int` indicates the interaction, with $+$ and $-$ describing whether the
+      interaction is characterized by high or low levels of the feature. For
+      instance, the interaction `X1+_X2+_X3+` corresponds to decision rules of
+      the form $1(x_1 > \cdot \& x_2 > \cdot \& x_3 > \cdot)
+  <li>`prevalence` indicates the proportion of class-1 leaf nodes that contain
+      the interaction, weighted y the size of the leaf nodes.
+  <li>`precision` indicates the proportion of class-1 observations that fall in
+      leaf nodes that contain the innteraction.
+  <li>`cpe` indicates the class prevalence enrichment, which is defined as the
+      difference in prevalence betweenn class-0 and class-1 leaf nodes.
+      `sta.cpe` indicates the proportion of times this value is greater than 0
+      across bootstrap replicates.
+  <li>`fsd` indicates the feature selection dependence, which is defined as the
+      difference between the prevalence of an interaction and its expected
+      prevalence if interacting features were selected independently of one
+      another. `sta.fsd` indicates the proportion of times this value is greater
+      than 0 across bootstrap replicates.
+  <li>`mip` indicates the mean increase in precision, which is defined as the
+      difference etween the precision of an interaction and the average
+      precision of lower order subsets. `sta.mip` indicates the proportion of
+      times this value is greater than 0 across bootstrap replicates.
+  <li>`stability` indicates the proportion of times the interaction was recovered by
+      RIT across bootstrap replicates.
+  </ul>
+  
+  <b> NOTE:</b> This plot will only appear if iRF was told to look for interactions.</li>
+  </ul>  
+  
+  Raw tables can be viewed and downloaded for both variable importance and variable interaction plots. 
+    
+<h2><b> Citations </h2></b>
+
+Basu,S. et al. (2018) Iterative random forests to discover predictive and stable high-order interactions. Proc. Natl. Acad. Sci., 115, 1943–1948.
+  
+Breiman, L. (2001), Random Forests, Machine Learning 45(1), 5-32.
+  
+Kumbier, K., Basu, S., Brown, J.B., Celniker, S., and Yu, B. (2018). Refining interaction search through signed iterative Random Forests. BioRxiv.
+
+

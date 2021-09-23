@@ -284,7 +284,8 @@ phyloseqobj <- eventReactive(input$makefile, {
                      } else if(input$fileformat == "qiime2"){
                        file <- tryCatch(qza_to_phyloseq(features = otufile(), 
                                                         taxonomy = taxonomyfile(), 
-                                                        metadata = mappingfile()),
+                                                        metadata = mappingfile(),
+                                                        tree = phylotree()),
                                         error = function(cond){
                                           message("Error")
                                           return(NULL)
@@ -307,6 +308,9 @@ phyloseqobj <- eventReactive(input$makefile, {
                                           message("Warning")
                                           return(NULL)
                                         })
+                       #if(is.null(access(file, "phy_tree")) || is.null(access(file, "otu_table")) || is.null(access(file, "sample_data")) || is.null(access(file, "tax_table"))){
+                         #file <- return(NULL)
+                       #}
                      }
                    }else if(is.null(phylotree())){
                      if(input$fileformat == "none"){
@@ -345,11 +349,20 @@ phyloseqobj <- eventReactive(input$makefile, {
                                           message("Warning")
                                           return(NULL)
                                         })
+                       if(is.null(access(file, "phy_tree"))|| is.null(access(file, "otu_table")) || is.null(access(file, "sample_data")) || is.null(access(file, "tax_table"))){
+                         file <- return(NULL)
+                       }
                      }
                    }
                  }
                })
-  return(file)
+  validate(
+    need(access(file, "otu_table"), "Error in OTU File Upload"),
+    need(access(file, "sample_data"), "Error in Mapping File Upload"),
+    need(access(file, "tax_table"), "Error in Taxonomy File Upload")
+  )
+  file
+  #return(file)
 })
 observe({
   if(!is.null(phyloseqobj()))return(NULL)

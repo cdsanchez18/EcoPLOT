@@ -1,0 +1,78 @@
+---
+title: "Contributing"
+output:
+  html_document:
+    theme: yeti
+  pdf_document: default
+---
+<div style="text-align:center"><h1><b>Contributing to EcoPLOT</b></h1></div>
+The EcoPLOT development team encourages user input. These topics include, but are not limited to, 
+<ul>
+<li>Reporting a bug</li>
+<li>Discussing the current state of the platform and its code</li>
+<li>Submitting a fix</li>
+<li>Proposing new software or analytical technique</li>
+<li>Becoming a maintainer</li>
+</ul>
+
+
+<h3><b> We Develop With <a href="https://github.com/cdsanchez18/EcoPLOT">GitHub</a> </b></h3> 
+We use GitHub to host our platform and its code, to track issues or bugs, and to accept pull requests from members of the community.  
+
+<h3><b>We Use The <a href= "https://guides.github.com/introduction/flow/index.html">GitHub Flow</a> Model To Propose Changes To The Codebase</b></h3>
+We provide an overview of this workflow below:
+<ol>
+<li>Fork the <b>EcoPLOT</b> repository and create your own branch.</li>
+<li>Ensure your commits and their associated commit messages are clear. </li>
+<li>Ensure you have provided tests for your code and that they pass said tests. </li>
+<ul>
+<li>For more information on writing tests in R, please consult this [link](https://r-pkgs.org/tests.html).</li>
+</ul>
+<li>Proofread your code against the EcoPLOT style guidelines (see below).</li>
+<li>When the above steps are completed, you are ready to make your Pull Request! </li>
+</ol>
+
+
+<h3><b> Code Linting/ Style Guide</b></h3>
+TThe EcoPLOT development team follows the [Tidyverse Style Guide](https://style.tidyverse.org/) when writing code. When proposing new additions or when submitting improved code, we ask that you please follow the guidelines of the style guide above. Before submission, please utilize the [styler package](https://styler.r-lib.org/) to automatically style your code. For a demonstration on how to utlize the styler package, please consult the demos on their website.
+
+<h3><b> Reporting Bugs Using <a href ="https://github.com/cdsanchez18/EcoPLOT/issues">GitHub Issues</a></b></h3>
+The EcoPLOT team uses GitHub Issues to track public bugs. To submit a new bug, simply create a new issue by opening one. <br></br>
+When submitting a bug please include a report that contains the following:
+<ul>
+<li>A summary of the issue</li>
+<li>Steps taken prior to the issue</li>
+<ul>
+<li>Provide sample code if possible or identify where in the codebase this error can be found.</li>
+</ul>
+<li>What you expected to happen versus what actually happened</li>
+<li>Specificity is key when reporting bug issues</li>
+</ul>
+
+<h3><b> Reporting New Features/Novel Analytical Techniques With Commit Notes</b></h3>
+We understand that R is a popular language used by researchers and we encourage all to propose new analytical techniques, workflows, or additional features. We encourage this to be done through [pull requests](https://github.com/cdsanchez18/EcoPLOT/pulls).<br></br>Please include a commit note that includes the following:
+<ul>
+<li>A comphrehensive summary of the feature/workflow being proposed</li>
+<li>An explanation of the utility of this tool to the exisitng platform</li>
+<li>A list of the packages it requires, if not already included in EcoPLOT</li>
+<li>Any publications that describe the technique, if any </li>
+</ul>
+
+<h3><b> Acknowledging the License</b> </h3> 
+EcoPLOT is operated under the MIT license. By submitting any changes to the codebase, you acknowledge that your submissions will be under the same license that covers the EcoPLOT platform. If you have any questions or concerns, feel free to reach out to <a href = "mailto:ecoplot@lbl.gov?subject=EcoPLOT Feedback">
+ecoplot@lbl.gov
+</a>
+
+<h3><b> A Note on Coding Style and App Structure</b> </h3> 
+EcoPLOT is organized into four modules, Environment, Phenotype, Microbiome, and IRF. Within each modules are various components that correspond to stages along the workflow. We ask that users continue to separate code by module and component in order to reduce line count and improve organization. 
+
+<h3><b> Hosting EcoPLOT on a Server </b></h3>
+At this time EcoPLOT is not hosted on a server and must be run locally on your personal device. The development team has discussed potentially hosting EcoPLOT on the web via [Shiny Servers](https://shiny.rstudio.com/articles/shiny-server.html). If you are interested in hosting and managing a version of EcoPLOT on your own server, please contact <a href = "mailto:ecoplot@lbl.gov?subject=EcoPLOT Server">
+ecoplot@lbl.gov
+</a> for more information. 
+
+
+<h3><b> References</b></h3>
+This guide is adapted from the open-source contribution guidelines for [Facebook Open Source](https://reactjs.org/docs/how-to-contribute.html)
+
+

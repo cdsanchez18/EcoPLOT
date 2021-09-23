@@ -1,0 +1,156 @@
+---
+title: "Amplicon Guide"
+output: 
+  html_document: 
+    theme: yeti
+---
+<div style="text-align:center;"><h1><b> Amplicon Data</b></h1>  
+The following guide explains how to operate within the Amplicon Data module of EcoPLOT. Here we explain the capabilities unique to this module.</div>  
+
+<h2><b>What is Amplicon Data?</b></h2>  
+  
+  In biology, an Amplicon refers to a piece of DNA that results from an amplification event, such as polymerase chain reaction (PCR). 16S Amplicons are generated from all or some of the 16S rRNA gene. As an essential gene, this region is slow to undergo mutations, but exhibits enough variability between microbial species that it is often used as a unique identifier of species identity. 
+  
+  The Amplicon Data module of EcoPLOT is well equipped to assist in your analysis of microbial communities from any ecosystem. 
+  
+<hr>
+
+<h2><b>Amplicon Data Format Guide</b></h2>  
+
+EcoPLOT accepts **.biom**, **.qza**, or non-formatted text files (**.csv**, **.tsv**) for upload. We require that you upload a corresponding mapping file with any upload.  
+  
+Additionally, you can upload a phylogenetic tree in **.newick** or **.nexus** file formats. Uploading a tree is optional.  
+  
+If the uploaded mapping file contains the same sample ID's to those contained in files previously uploaded to the Environment or Phenotype modules, they will be merged, allowing you to access all experimental design variables when constructing graphs or performing analyses.  
+
+<hr>  
+  
+<h2><b>Filtering of Data</b></h2>  
+  
+  EcoPLOT provides users with a variety of options to filter their data. Users can filter by individual ASV or taxonomic rank, by sample ID, or by experimental design. Multiple experimental design filters can be applied by clicking "Add Mapping Filter." Additionally, we allow for ASV's to be filtered by their presence in a minimum number of samples or by their individual counts.  
+  
+  Two separate histograms are shown displaying the number of reads per sample and per ASV for both the filtered and original datasets.  
+  
+  Users can access both the original and filtered datasets across module sections. 
+  
+  <hr>
+  
+<h2><b>Community Composition</b></h2>  
+  
+  The community composition tab provides an overview of the microbes present in your ecosystem. Filtering by minimum sample presence will group low abundance taxa together in the barplot, denoted as "low abundance."  
+  
+  **Note:** Lower taxonomic ranks may cause the plot legend to obstruct the plot itself. You may alter the position of the legend using the legend position option.  
+  
+  If a phylogenetic tree was uploaded, you may plot it in the "Phylogenetic Tree" tab. Plotting options are taken directly from the uploaded file and may take a bit to load. You may select which node and how many ancestral levels to show. 
+  
+  <hr>
+  
+<h2><b>Alpha Diversity</b></h2>  
+  
+  Alpha diversity measurements are used to estimate the diversity within a single sample. Alpha diversity focuses on observing species <b>evenness</b>, how similar each microbe is distributed within a sample, and <b>richness</b>, the number of different species present. In EcoPLOT, we provide users with a table of standard alpha diversity estimators (Observed ASV's, Chao1, ACE, Shannon, Simpson, Inverse Simpson, and Fisher). These methods can then be viewed graphically in the following tab, titled "Plot." <br> Below we explain the differences between each method so that you may determine which best suits your data:  
+  <ul>
+<li><b>Observed ASV's:</b> Is a richness measurement that counts the amount of unique ASV's per sample.  </li>
+<li><b>Chao-1 Index:</b>  Is a richness measurement that assumes each taxa follows a Poisson distribution. It well suited for data containing low abundance counts because it places more weight on low abundance taxa.</li>
+<li><b>ACE:</b> Is a richness measurement that introduces a correction factor when estimating diversity. </li>
+<li><b>Shannon:</b> This measurement combines the richness of a species within a sample with its abundance relative to other species. This measurement estimates species richness and evenness, but places more emphasis on species **richness**. </li>
+<li><b>Simpson:</b>  This method is similar to Shannon, however it places more emphasis on species **evenness**. </li>
+<li><b>Inverse Simpson:</b> This is the inverse of the Simpson method described above. It standardizes the regular Simpson measurement by giving species uniform evenness.</li>
+<li><b>Fisher:</b>This method assumes that the species abundance and total number of species follow a log scale. This method places a large importance on rare species.</li>
+</ul> 
+  
+  
+  The statistics tool provided in the sidebar of this tab will inform users of statistically significant differences between experimental design variables as given by a Tukey Pairwise Comparison. Users are asked to select which variables they would like to compare. Once selected, a print-out will show the pairwise comparisons and their corresponding significance. 
+  
+  <hr>
+  
+<h2><b>Beta Diversity</b></h2>   
+  
+  Beta diversity measurements estimate the diversity between samples or environments. To compare the taxonomic abundance profiles of between samples, you first create a dissimilarity matrix (distance matrix). Typically, distance methods perform pairwise comparisons between samples, however some, Weighted/Unweighted UniFrac, DPCoA, utilize a phylogenetic tree to incorporate evolutionary relationships in their distances. We list the distance methods avaiable in EcoPLOT below.
+  
+  <b>Standard Distance Methods:</b>
+  <ul>
+  <li><b>Bray-Curtis:</b> This method assigns values between 0 and 1 to each sample pair, representing the fraction of overabundant counts. The closer the value is to 1, the more similar the microbiomes of the two samples are.</li>
+  <li><b>Jaccard:</b>This method represents the fraction of unique features between two samples. It does not take into account abundance data, instead it focuses on those species shared out of the total number present.</li>
+  <li><b>Euclidean:</b>This is a species by species distance method that is calculated by taking the square root of the sum of the diffrences between ASV's between two samples.</li>
+  <li><b>JSD:</b></li>
+  </ul>
+  
+  <b>Require Phylogenetic Tree:</b>
+  <ul>
+  <li><b>DPCoA:</b> This function performs a double principle coordinate analysis. The distance based method is similar to euclidean distance, but it integrates information stored in phylogenetic tree.</li>
+  <li><b>Weighted UniFrac:</b>This distance measurement utilizes abundance data and a phylogenetic tree to calculate pairwise distances between samples. This method can take longer to perform than its unweighted counterpart.</li>
+  <li><b>Unweighted UniFrac:</b>While similar to the method above, Unweighted Unifrac distance is calculated using only presence/absence of species, not their abundances. For this reason, this method is considered to be quicker than the weighted UniFrac.</li>
+  </ul>
+  
+  Following the creation of a distance matrix, the information stored within is best visualized using an ordination plot. These plots can be either constrained or unconstrained, depending on the assumptions they make about the underlying structure of the data. Constrained analyses attempt to explain variation directly using explanatory variables, such as environmental factors, that were established in a hypothesis. The following ordination methods are available within EcoPLOT.  
+  
+  <b>Unconstrained:</b>
+  <ul>
+  <li><b>PCoA:</b>Principle coordinate analysis can be used on any distance based method mentioned above. This is the most commonly used unconstrained ordination method.</li>
+  <li><b>NMDS:</b>Non-metric MultiDimensional scaling can also be used on any distance based method mentioned previously. This is considered to be the non-metric equivalent of PCoA because it converts raw numerical values into ranks, which are then used in its calculation.</li>
+  </ul>
+    
+  <b>Constrained:</b>
+  <ul>
+  <li><b>CCA:</b>This stands for constrained correspondance analysis. The previously produced distance matrix undergoes a weighted linear regression on the identified constrained variables. </li>
+  <li><b>RDA:</b>This stands for redundancy analysis. This method utilizes an unweighted linear regression on the identified constrained variables.</li>
+  <li><b>CAP:</b>This stands for Constrained Analysis of Principle Coordinates and is commonly referred to as a distance-based RDA. This method allows for the use of non-Euclidean distance indexes, like Bray, to be used. If Euclidean derived distance matrixes are used, the results will appear very similar to the results of RDA.</li>
+  </ul>
+  
+  Following a visual analysis of your data, the final step is to perform statistics. In EcoPLOT we utilize <b>ADONIS</b> to analyze variance using distance matrices. Following an ADONIS< you are provided with a p-value with which will inform you of any statistically significant differences between experimental conditions. To perform an ADONIS within EcoPLOT, you are required to provide the right hand side (RHS) of a model formula. The RHS defines the independent variables you wish to test differences in. These variables can be continouous or quantitative (factors). As in other formulas, these independent variables can have interactions with other variables. We explain how to properly write a formula below. 
+  
+  <b> Formula Operators and Their Functions </b>
+  <ul>
+  <li><b>+</b> The plus sign (+) is used to add another independent variable to the formula. </li>
+  <li><b>-</b> The minus sign (-) indicates the removal of a term from an analysis. </li>
+  <li><b>:</b> The colon (:) indicates that you want the interaction between two variables and not the variables themselves.</li>
+  <li><b> \* </b> The asterisk (\*) indicates a crossing event and is used when you want to include two variables AND their interaction.</li>
+  </ul>
+  
+  <hr>
+  
+<h2><b>Heatmap</b></h2>  
+
+The heatmap function in EcoPLOT taken from the Phyloseq package and utilizes ordination methods to organize columns and rows. Because it utilizes a distance matrix, rendering times may vary depending on the size of your dataset. The default axis labels, "NULL", show sample ID and OTU, however can be overwritten by specifying a variable to show. 
+  
+  <hr>
+  
+<h2><b>Differential Abundance</b></h2>  
+  
+  In microbial studies, differential abundance analysis attempts to detect differences in taxonomic composition between samples or experimental design. EcoPLOT utilizes the DESeq package to perform differential abundance. This method performs a number of steps to normalize sample counts, estimate their dispersion, and finally fit them to the negative binomial model. The results include a table that includes the base means across samples, log2 fold changes, standard errors, test-statistics, p-values, and adjusted p-values.  
+  
+  The only requirement to peform DESeq in EcoPLOT is to specify your experimental design formula. Your chosen experimental design variable should have two factor levels. The factor levels being compared are displayed at the top of the module.  
+  
+  Additionally, after the results are given, EcoPLOT allows for the distribution of individual ASV's to be viewed graphically. Using the results table provided, the distribution of individual ASV's with significant p-values can be viewed graphically. To do so, simply enter the ASV ID you wish to see and click "Render ASV Count Plot."  
+  
+  
+  
+  <b> Volcano Plot </b> 
+  
+  Volcano plots are scatter plots showing significance versus fold-change on the axes to represent changes in large datasets, making them an effective way to view the results of differential expression analysis. In EcoPLOT, users can group significantly different ASV's with customized labels using the interative analysis tool.  
+  
+  
+  
+  <b> Log2FoldChange Plot </b>
+  
+  The log2foldchange plot displays the increased or decreased presence of taxonomic ranks by experimental design. For example, given two conditions, A and B, with values of 10 and 100 respectively, the fold change is 10 because B is 10 times greater than A. When B is greater than A, the value will be positive, whereas when A is greater it will be negative. When thinking of a log 2 fold change, it is helpful to know that a value of 1 means that B is twice as large as A, while a value of -2 would mean A is four times as large as B. By default, EcoPLOT will show all values on the plot, however these values can be filtered by specifying a log2foldchange threshold.  
+  
+  <hr>
+  
+<h2><b>Citations</b></h2>
+  
+Love MI, Huber W, Anders S (2014) Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology 15(12): 550
+
+McDonald D, et al. The Biological Observation Matrix (BIOM) format or: how I learned to stop worrying and love the ome-ome, Gigascience, 2012, vol. 1 pg. 7
+
+McMurdie and Holmes (2013) phyloseq: An R Package for Reproducible Interactive Analysis and Graphics of Microbiome Census Data. PLoS ONE. 8(4):e61217
+
+Rajaram, S., & Oono, Y. (2010). NeatMap–non-clustering heat map alternatives in R. BMC Bioinformatics, 11, 45. 
+
+
+
+
+
+
+
+

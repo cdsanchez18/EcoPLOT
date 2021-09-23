@@ -20,7 +20,7 @@ EcoPLOT_IRF <- tabPanel("IRF",
                             mainPanel(id = "IRF1",
                               tabsetPanel(id="IRF", 
                                           tabPanel(value = 1, "Guide",
-                                                   includeMarkdown("iRF_guide.RMD")),
+                                                   includeMarkdown("Modules/IRF/Guides/iRF_guide.RMD")),
                               tabPanel(value = 2, "Step 1: Format Data",
                               splitLayout(
                                 uiOutput("IRFdatasetoutputUI"))

@@ -5,7 +5,7 @@
 EcoPLOTGeochemUI <- tabPanel("Environmental Data",
                                  tabsetPanel(
                                    tabPanel("Guide",
-                                            includeMarkdown("environment_guide.rmd")),
+                                            includeMarkdown("modules/Geochemistry/Guides/environment_guide.rmd")),
                                    tabPanel("Upload File",
                                             titlePanel(""),
                                             fluidPage(
@@ -152,7 +152,7 @@ EcoPLOTGeochemUI <- tabPanel("Environmental Data",
                                                 mainPanel("",
                                                           tabsetPanel(id ="environmentstats",
                                                                       tabPanel(value = 1, "Guide",
-                                                                               includeMarkdown("stats_guide.Rmd")),
+                                                                               includeMarkdown("Guides/stats_guide.Rmd")),
                                                                       tabPanel(value = 2, "Parametric",
                                                                                uiOutput("environmentparametricMain")),
                                                                       tabPanel(value = 3, "Non-Parametric",

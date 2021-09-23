@@ -8,6 +8,6 @@
 EcoPLOTuploadUI <- tabPanel("Instructions",
                             useShinyjs(),
                             fluidPage(
-                              includeMarkdown("instructions.rmd")
+                              includeMarkdown("Guides/instructions.rmd")
                               )
                             )

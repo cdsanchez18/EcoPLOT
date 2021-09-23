@@ -1,0 +1,48 @@
+---
+title: "Code of Conduct"
+output: 
+  html_document: 
+    theme: yeti
+---
+
+<div style="text-align:center"><h1><b> EcoPLOT Code of Conduct</b></h1>
+EcoPLOT is a platform built for the dynamic and interactive analysis of biogeochemical datasets. Biogeochemical data can assume various levels of complexity and multidisciplinarity, and regularly includes microbial community, plant phenotypic, and geochemical data. The adaptability of the R programming language makes EcoPLOT well suited to adapt to the multilayered nature of biogeochemical data and enables meaningful research functionality across a variety of scientific disciplines. <br></br> In order to leverage the strengths of the EcoPLOT platform, the EcoPLOT developers have established a code of conduct that outlines best practices and expectations for all users who would like to contribute to and or utilize our platform. The EcoPLOT team is committed to promoting reproducible scientific research and invites all to a welcoming and inviting community. For questions or concerns, please direct all correspondance to <a href = "mailto:ecoplot@lbl.gov?subject=EcoPLOT Feedback">
+ecoplot@lbl.gov
+</a> .
+</div>
+
+<div style = "padding:10px;"></div>
+
+<h2><b> 1. Be Welcoming </h2></b>
+The EcoPLOT team invites users from all academic disciplines to our platform. We are dedicated to creating a collaborative environment free of harassment of any sort. This includes verbal and written language or imagery that targets a specific user or group of individuals. Anyone receiving harassment of any kind from members of the community are encouraged and should feel empowered to report it (see below). 
+
+<h2><b> 2. Be Respectful </h2></b>
+All EcoPLOT users and contributors agree to:
+<ul>
+<li>Maintain a positive environment by encouraging that diverse perspectives and ideas be supported and encouraged;</li>
+<li>Utilize constructive and inclusive vocabulary;</li>
+<li>Emulate FAIR research practices core to the EcoPLOT mission.</li>
+</ul>
+
+<h2><b> 3. Be Supportive, Positive, and Professional </h2></b>
+The EcoPLOT platform strives to:
+<ul>
+<li>Promote collaboration with research communities across a variety of scientific disciplines;</li>
+<li>Demonstrate trust through open and transparent communication with the community;</li>
+<li>Encourage users to contribute novel thoughts and ideas.</li>
+</ul>
+
+<div style="text-align:center">
+If you believe someone is violating the code of conduct, please report this in a timely manner by emailing <a href = "mailto:ecoplot@lbl.gov?subject=EcoPLOT Feedback">
+ecoplot@lbl.gov
+</a> .
+
+
+
+</div>
+
+
+
+
+
+

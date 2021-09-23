@@ -1,0 +1,62 @@
+---
+title: "FAQ"
+output: 
+  html_document: 
+    theme: yeti
+---
+<div style="text-align:center"><h1><b> EcoPLOT Frequently Asked Questions</b></h1>
+The following provides general troubleshooting guidelines for frequently encountered questions or concerns. This guide is meant to improve the user experience through explanation and example. Please consult the guides within in module for additional information. Should a question arise that is not covered below, please send and email to <a href = "mailto:ecoplot@lbl.gov?subject=EcoPLOT Feedback">
+ecoplot@lbl.gov
+</a> or consult the active <a href ="https://github.com/cdsanchez18/EcoPLOT/issues">Pull Requests</a> on our <a href="https://github.com/cdsanchez18/EcoPLOT">GitHub</a>. <br></br><br></br>
+Questions are organized based on theme.
+</div>
+
+<h2><b>A Note on Operating System</b></h2>
+<div style="text-align:center">
+EcoPLOT was developed within R Studio Version 1.2.5033 on a Mac running macOS Catalina Version 10.15.7. While we expect EcoPLOT to run on all operating systems, we understand users may experience some difficulties when utlizing a different operating system. The EcoPLOT development team actively seeks to troubleshoot any difficulties that may be encountered. 
+</div>
+<br></br>
+<h2><b>Installing EcoPLOT</b></h2>
+<div style="text-align:center">
+Installation instructions can be found in the README.md file located within the <a href="https://github.com/cdsanchez18/EcoPLOT">EcoPLOT GitHub Repository</a><br.</br>
+Please ensure you have downloaded <a href="https://www.rstudio.com/">R Studio</a> prior to attempting to run EcoPLOT.
+</div><br></br>
+  
+<p><b>Q: After running the commands, I am experiencing issues installing the required pacakges. What should I do?</b><br></br>
+A: We recommend that users restart their R session before attempting to run EcoPLOT in order to detach any previously loaded packages, which may cause issues during loading of EcoPLOT.</p>
+
+<p><b>Q: I am being asked to update packages after running the commands, should I update them?</b><br></br>
+A: We encourage users to keep their packages updated and ask that users select "All" when asked to update and "yes" when asked if they would like to install packages that require compilation.</p>
+
+<br></br>
+<h2><b>File Upload</b></h2>
+<p><b>Q: My files are not uploading to the Phenotype or Environment modules, what do I do?</b><br></br>
+A: File upload to each module requires that users follow a specific syntax. For reference, please consult the example data provided within each module. EcoPLOT currently accepts CSV, TSV, and Excel file formats. It is also important to note that delimeters (comma, tab, semicolon) be specified before uploading the data.</p>
+
+<p><b>Q: I am experiencing difficulties uploading my .QZA files to the amplicon module, what do I do?</b><br></br>
+A: There are three obligatory (ASV table, taxonomy, and mapping file) and one optional (tree) file when uploading .QZA formatted files. These files should have been generated and exported from QIIME2. It is important that the mapping file used is a .tsv formatted file.</p>
+
+<p><b>Q: I am having trouble uploading my .biom file to the amplicon module, what do I need to do?</b><br></br>
+A: Uploading to the amplicon module with .biom formatted files require proper formatting. These files should be the version 1 (json) format biom files generated from Qiime1. EcoPLOT does not accept binary/version 2 formatted biom files. You can run the following command within Qiime to convert your binary file into a json format <br></br><br></br>
+biom convert -i otu_table.biom -o otu_table_json.biom --table-type="OTU table" --to-json<br></br><br></br> Additionally, when uploading the mapping file, please be sure to specify the format (comma, tab, semicolon) before clicking upload.</p>
+
+<p><b>Q: I have uploaded files, but nothing happened. What should I do?</b><br></br>
+A: If no error messages were shown: Did you click the "Upload" button? A successful upload has occurred when a table appears in the main panel underneath "Data Summary".</p>
+
+<br></br>
+<h2><b>Merging Files</b></h2>
+<p><b>Q: How should my files be formatted in order to merge them successfully?</b><br></br>
+A: In order to merge files between modules, it is necessary that the first column within each dataset (mapping file for amplicon data) be titled "Sample_ID" and consist of a unique identifier. This unique ID will be used to merge datasets. It is not required that the same sample IDs be present across all files, but note that only those that are shared across each file will be merged. Absent data will be marked "NA". When in doubt, please consult the example data within each module to observe the proper format.</p>
+<br></br>
+<h2><b>Utilizing the Dynamic Selection Tool</b></h2>
+<p><b>Q: Why should I use the dynamic selection tool?</b><br></br>
+A: The purpose of dynamic selection (available in scatter and ordination plots) is to allow users to interactively explore their data using graphical analysis. Users are encouraged to use this tool to identify outliers or create novel variable groupings. After a new variable is created, this variable can be used across the EcoPLOT platform including for filtering, graphical and statistical analysis, and iRF. This interactive tool facilitates the identification of novel patterns within your dataset that may not have been predetermined by known experimental variables. </p>
+<br></br>
+<h2><b>Running iRF</b></h2>
+<p><b>Q: How do I properly utilize the iRF module?</b><br></br>
+A: The iterative random forest (iRF) module within EcoPLOT is meant to introduce researchers to supervised machine learning. Originally developed as a package in R, the iRF module walks users through the steps required to filter and prepare their data for machine learning. Users are encouraged to read through the iRF instructions page and consult the referenced literature to better interpret their results. It is our hope that this tool will better inform researchers as to possible relationships between factors in their datasets. </p>
+<br></br>
+<h2><b>Running iRF</b></h2>
+<p><b>Q: How do I access the log file created during my session?</b><br></br>
+A:The iterative random forest (iRF) module within EcoPLOT is meant to introduce microbiome and biogeochemistry researchers to supervised machine learning. Originally developed as a package in R, the iRF module walks users through the steps required to filter and prepare their data for machine learning. Users are encouraged to read through the iRF instructions page and consult the referenced literature to better interpret their results. It is our hope that this tool will better inform researchers about possible relationships between key factors in their datasets, including but not limited to chemical components, microbial taxa, and experimental design variables. 
+</p>
