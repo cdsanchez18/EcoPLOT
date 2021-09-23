@@ -8,7 +8,7 @@ EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
                              useShinyjs(),
          tabsetPanel(
            tabPanel("Guide",
-                    includeMarkdown("amplicon_guide.Rmd")),
+                    includeMarkdown("Modules/Amplicon/Guides/amplicon_guide.Rmd")),
            tabPanel("Upload Files",
                     fluidPage(
                       titlePanel("Menu"),
