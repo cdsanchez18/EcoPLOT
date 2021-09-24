@@ -11,8 +11,9 @@ NOTE: Running EcoPLOT locally requires the most [up to date version of R](https:
 The following code will launch EcoPLOT on your local system. After installing the first two required pacakges (shiny, devtools), EcoPLOT will automatically download, install, and load any additional required packages that are not currently installed on the user's package library upon launch.
 
 ```{r, eval=FALSE}
-install.packages("shiny") 
-install.packages("devtools")
+install.packages(c("shiny", "devtools"))
+library(shiny)
+library(devtools)
 shiny::runGitHub("EcoPLOT","CDSanchez18", ref = "master")
 ```
 
