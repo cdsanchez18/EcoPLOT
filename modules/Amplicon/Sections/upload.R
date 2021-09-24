@@ -287,17 +287,21 @@ phyloseqobj <- eventReactive(input$makefile, {
                                                         metadata = mappingfile(),
                                                         tree = phylotree()),
                                         error = function(cond){
-                                          message("Error")
+                                          showNotification("Error Uploading Files")
                                           return(NULL)
                                         },
                                         warning = function(cond){
                                           message("Warning")
                                           return(NULL)
                                         })
-                       updated_mapping <- data.frame(sample_data(file))
-                       updated_mapping$Row_ID <- 1:nrow(updated_mapping)
-                       updated_mapping$Sample <- rownames(updated_mapping)
-                       sample_data(file) <- updated_mapping
+                                if(!is.null(access(file, "otu_table")) || !is.null(access(file, "sample_data")) || !is.null(access(file, "tax_table")) || !is.null(access(file, "phy_tree"))){
+                                      updated_mapping <- data.frame(sample_data(file))
+                                      updated_mapping$Row_ID <- 1:nrow(updated_mapping)
+                                      updated_mapping$Sample <- rownames(updated_mapping)
+                                      sample_data(file) <- updated_mapping
+                                }else if(is.null(access(file, "otu_table")) || is.null(access(file, "sample_data")) || is.null(access(file, "tax_table")) || is.null(access(file, "phy_tree"))){
+                                      file <- return(NULL)
+                                }
                      }else if(input$fileformat == "qiime1"){
                        file <- tryCatch(merge_phyloseq(otufile(), mappingfile(), phylotree()),
                                         error = function(cond){
@@ -308,9 +312,6 @@ phyloseqobj <- eventReactive(input$makefile, {
                                           message("Warning")
                                           return(NULL)
                                         })
-                       #if(is.null(access(file, "phy_tree")) || is.null(access(file, "otu_table")) || is.null(access(file, "sample_data")) || is.null(access(file, "tax_table"))){
-                         #file <- return(NULL)
-                       #}
                      }
                    }else if(is.null(phylotree())){
                      if(input$fileformat == "none"){
@@ -328,17 +329,21 @@ phyloseqobj <- eventReactive(input$makefile, {
                                                taxonomy = taxonomyfile(), 
                                                metadata = mappingfile()),
                                         error = function(cond){
-                                          message("Error")
+                                          showNotification("Error in File Upload")
                                           return(NULL)
                                         },
                                         warning = function(cond){
                                           message("Warning")
                                           return(NULL)
                                         })
-                       updated_mapping <- data.frame(sample_data(file))
-                       updated_mapping$Row_ID <- 1:nrow(updated_mapping)
-                       updated_mapping$Sample <- rownames(updated_mapping)
-                       sample_data(file) <- updated_mapping
+                                if(!is.null(access(file, "otu_table")) || !is.null(access(file, "sample_data")) || !is.null(access(file, "tax_table"))){
+                                      updated_mapping <- data.frame(sample_data(file))
+                                      updated_mapping$Row_ID <- 1:nrow(updated_mapping)
+                                      updated_mapping$Sample <- rownames(updated_mapping)
+                                      sample_data(file) <- updated_mapping
+                                }else if(is.null(access(file, "otu_table")) || is.null(access(file, "sample_data")) || is.null(access(file, "tax_table"))){
+                                      file <- return(NULL)
+                       }
                      } else if(input$fileformat == "qiime1"){
                        file <- tryCatch(merge_phyloseq(otufile(), mappingfile()),
                                         error = function(cond){
@@ -349,20 +354,14 @@ phyloseqobj <- eventReactive(input$makefile, {
                                           message("Warning")
                                           return(NULL)
                                         })
-                       if(is.null(access(file, "phy_tree"))|| is.null(access(file, "otu_table")) || is.null(access(file, "sample_data")) || is.null(access(file, "tax_table"))){
+                       if(is.null(access(file, "otu_table")) || is.null(access(file, "sample_data")) || is.null(access(file, "tax_table"))){
                          file <- return(NULL)
                        }
                      }
                    }
                  }
                })
-  validate(
-    need(access(file, "otu_table"), "Error in OTU File Upload"),
-    need(access(file, "sample_data"), "Error in Mapping File Upload"),
-    need(access(file, "tax_table"), "Error in Taxonomy File Upload")
-  )
   file
-  #return(file)
 })
 observe({
   if(!is.null(phyloseqobj()))return(NULL)
