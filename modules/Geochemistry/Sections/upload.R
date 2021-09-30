@@ -56,6 +56,8 @@ output$environmentmergeUI <- renderUI({
     tags$div(tags$h4("Merge Environment and Phenotype Datasets"), align = "center")
     ,
     actionButton("environmentmergefiles", "Merge Files", width = "100%")
+    ,
+    hr()
     # ,
     # selectInput("environmentmergeColumn", "Select Common Column ID to Join By:",
     #             choices = c("NULL", as.list(intersect(colnames(environmentdata$table1), colnames(phenotypedata$table1)))),

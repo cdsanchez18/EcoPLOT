@@ -16,7 +16,7 @@ EcoPLOTGeochemUI <- tabPanel("Environmental Data",
                                               titlePanel("Menu"),
                                               sidebarLayout(
                                                 sidebarPanel("",
-                                                             #uiOutput("environmentfileupload")
+                                                             uiOutput("environmentmergeUI"),
                                                              checkboxInput("environmentexampledata", "Use Example Data", value = FALSE, width = "100%")
                                                              ,
                                                              fluidRow(
@@ -50,8 +50,7 @@ EcoPLOTGeochemUI <- tabPanel("Environmental Data",
                                                                                                "Double Quote" = '"',
                                                                                                "Single Quote" = "'"),
                                                                                    selected = '"')))
-                                                             ,
-                                                             uiOutput("environmentmergeUI")
+                                                             
                                                              #conditionalPanel("input.phenotypedata || input.phenotypeexampledata",
                                                               #                conditionalPanel("input.environmentdata || input.environmentexampledata",
                                                               #                                 hr()
