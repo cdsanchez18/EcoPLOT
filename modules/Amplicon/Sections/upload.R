@@ -96,11 +96,18 @@ output$fileuploadoptions <- renderUI({
     )
   }else if(input$fileformat == "qiime1"){
     output <- tagList(
+      radioButtons("taxparse1", "How is your Tax File Formatted?",
+                   choices = c("Default" = "parse_taxonomy_default",
+                               "Greengenes" = "parse_taxonomy_greengenes"),
+                   selected = "parse_taxonomy_default"),
       fileInput("otufile1", "Upload OTU File (.biom):",
                 multiple = FALSE,
                 accept = c(
                   ".biom"
                 )),
+      tags$div(tags$h5(tags$b("NOTE:"), "For Taxonomies Other Than", tags$b("Greengenes"),
+                       "use", tags$b("Default."),"This includes SILVA."),
+               align = "center"),
       radioButtons("mappingformat", "How is your Mapping File Formatted?",
                    choices = c("Tab" = "\t",
                                "Comma" = ",",
@@ -144,7 +151,11 @@ otufile <- eventReactive(input$makefile, {
       }else if(input$fileformat == "qiime2"){
         file <- inFile$datapath
       }else if(input$fileformat == "qiime1"){
-        file <- import_biom(BIOMfilename = inFile$datapath, parseFunction = parse_taxonomy_greengenes)
+        if(input$taxparse1 == "parse_taxonomy_default"){
+          file <- import_biom(BIOMfilename = inFile$datapath, parseFunction = parse_taxonomy_default)
+        }else if(input$taxparse1 == "parse_taxonomy_greengenes"){
+          file <- import_biom(BIOMfilename = inFile$datapath, parseFunction = parse_taxonomy_greengenes)
+        }
       }
     }else {
       NULL
@@ -246,7 +257,9 @@ output$phylomerge <- renderUI({
   output <- tagList(
     hr()
     ,
-    actionButton("mergefiles", "Merge Files", width = "100%")
+    actionButton("mergefiles", "Merge Files", width = "100%", icon = icon("bacteria", style = "font-size:24px;padding-right:10px"))
+    ,
+    hr()
   )
   return(output)
 })
