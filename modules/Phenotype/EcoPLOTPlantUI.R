@@ -49,7 +49,8 @@ EcoPLOTPlantUI <- tabPanel("Phenotype Data",
                                         titlePanel("Menu"),
                                         sidebarLayout(
                                           sidebarPanel("",
-                                                       #uiOutput("plantfileupload")
+                                                       uiOutput("phenotypemergeUI")
+                                                       ,
                                                        checkboxInput("phenotypeexampledata", "Use Example Data", value = FALSE, width = "100%")
                                                        ,
                                                        fluidRow(
@@ -83,8 +84,6 @@ EcoPLOTPlantUI <- tabPanel("Phenotype Data",
                                                                                          "Double Quote" = '"',
                                                                                          "Single Quote" = "'"),
                                                                              selected = '"')))
-                                                       ,
-                                                       uiOutput("phenotypemergeUI")
                                                        # conditionalPanel("input.environmentdata || input.environmentexampledata",
                                                        #                  conditionalPanel("input.phenotypedata || input.phenotypeexampledata",
                                                        #                  hr()
