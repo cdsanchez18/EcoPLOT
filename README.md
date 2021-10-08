@@ -20,5 +20,5 @@ shiny::runGitHub("EcoPLOT","CDSanchez18", ref = "master")
 
 
 ## The Data
-Example microbiome data is provided by Dr. Esther Singer. Example environmental and plant phenotypic datasets have been simulated for the purpose of demonstration.  
+Example microbiome data is provided by [Dr. Esther Singer](https://orcid.org/0000-0002-3126-2199). Example environmental and plant phenotypic datasets have been simulated for the purpose of demonstration.  
 
