@@ -56,7 +56,10 @@ A: The purpose of dynamic selection (available in scatter and ordination plots) 
 <p><b>Q: How do I properly utilize the iRF module?</b><br></br>
 A: The iterative random forest (iRF) module within EcoPLOT is meant to introduce researchers to supervised machine learning. Originally developed as a package in R, the iRF module walks users through the steps required to filter and prepare their data for machine learning. Users are encouraged to read through the iRF instructions page and consult the referenced literature to better interpret their results. It is our hope that this tool will better inform researchers as to possible relationships between factors in their datasets. </p>
 <br></br>
-<h2><b>Running iRF</b></h2>
+<p><b>Q: When using the example microbiome data, I am unable to successfully return results after running iRF. What do I do?</b><br></br>
+A: The example datasets provided within EcoPLOT are meant to be used together, meaning that before running iRF, you should merge the provided microbiome data with that included in the environment or phenotype modules. This requirement serves to demonstrate the merging capabilities provided within EcoPLOT.</p>
+<br></br>
+<h2><b>Other</b></h2>
 <p><b>Q: How do I access the log file created during my session?</b><br></br>
 A:The iterative random forest (iRF) module within EcoPLOT is meant to introduce microbiome and biogeochemistry researchers to supervised machine learning. Originally developed as a package in R, the iRF module walks users through the steps required to filter and prepare their data for machine learning. Users are encouraged to read through the iRF instructions page and consult the referenced literature to better interpret their results. It is our hope that this tool will better inform researchers about possible relationships between key factors in their datasets, including but not limited to chemical components, microbial taxa, and experimental design variables. 
 </p>
