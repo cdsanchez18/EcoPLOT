@@ -5,8 +5,8 @@ required.packages <- c("shiny", "readxl", "treeio", "colourpicker", "ggtree", "s
                        "stringr", "shinythemes",
                        #"RColorBrewer", 
                        "DT", "htmltools", "dataPreparation", #"iRF", 
-                       "doParallel", "BiocGenerics", "plotly")#, 
-                       #"randomForest")
+                       "doParallel", "BiocGenerics", "plotly", 
+                       "randomForest")
 new.packages <- required.packages[!(required.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages, dependencies = TRUE)
 
