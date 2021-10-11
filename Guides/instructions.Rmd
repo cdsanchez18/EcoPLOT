@@ -9,7 +9,7 @@ output:
 
 <H2><b>Overview</b></H2>
 <div style="padding:5px;"><center>
-EcoPLOT was developed to faciliate the exploration and study of multivariate, biogeochemical datasets. EcoPLOT is organized into three modules (Environmental Data, Phenotype Data, and Amplicon Data), each featuring a variety of statistical and graphical tools unique to each data type. Additionally, EcoPLOT allows users to perform machine learning in the form the iterative Random Forest. This feature promotes the generation of novel hypotheses and can guide future directions of study.<br> <br>Below we explain how to properly format your data for upload into EcoPLOT and highlight some of the unique features of our tool. For module specific instructions, please consult the guides at the beginning of each section.  </center></div>
+EcoPLOT was developed to faciliate the exploration and study of multivariate, biogeochemical datasets. EcoPLOT is organized into three modules (Environmental Data, Phenotype Data, and Microbiome Data), each featuring a variety of statistical and graphical tools unique to each data type. Additionally, EcoPLOT allows users to perform machine learning in the form the iterative Random Forest. This feature promotes the generation of novel hypotheses and can guide future directions of study.<br> <br>Below we explain how to properly format your data for upload into EcoPLOT and highlight some of the unique features of our tool. For module specific instructions, please consult the guides at the beginning of each section.  </center></div>
 
 <div style = "border-style:solid;padding:10px;">
   <center><img src = "../www/ecoplot_structure.png"></center>
@@ -19,7 +19,7 @@ EcoPLOT was developed to faciliate the exploration and study of multivariate, bi
 <H2><b> Formatting Your Data For Upload  </b></H2>
 EcoPLOT currently accepts **.csv** , **.tsv**, and **.xlsx** file formats.  
   
-The Amplicon Data module accepts **.biom** and **.qza** file formats in addition to those previously mentioned.  
+The Microbiome Data module accepts **.biom** and **.qza** file formats in addition to those previously mentioned.  
 
 The first column of each file uploaded to EcoPLOT should have the first column reserved for unique sample ID's (see below). This requirement does not apply to tables in **.biom** or **.qza** formats. These file formats should not be altered from their original formats.  
   

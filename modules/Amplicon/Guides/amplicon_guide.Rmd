@@ -1,21 +1,21 @@
 ---
-title: "Amplicon Guide"
+title: "Microbiome Guide"
 output: 
   html_document: 
     theme: yeti
 ---
-<div style="text-align:center;"><h1><b> Amplicon Data</b></h1>  
-The following guide explains how to operate within the Amplicon Data module of EcoPLOT. Here we explain the capabilities unique to this module.</div>  
+<div style="text-align:center;"><h1><b> Microbiome Data</b></h1>  
+The following guide explains how to operate within the Microbiome Data module of EcoPLOT. Here we explain the capabilities unique to this module.</div>  
 
-<h2><b>What is Amplicon Data?</b></h2>  
+<h2><b>What is Microbiome Data?</b></h2>  
   
-  In biology, an Amplicon refers to a piece of DNA that results from an amplification event, such as polymerase chain reaction (PCR). 16S Amplicons are generated from all or some of the 16S rRNA gene. As an essential gene, this region is slow to undergo mutations, but exhibits enough variability between microbial species that it is often used as a unique identifier of species identity. 
+  Microbiome data is used to understand the microbial composition within in a community sample. This is often done via amplicon analyses, in which a specific piece of DNA is amplified many times over via various methods (i.e. PCR). The DNA piece, referred to as the amplicon, is sequenced and compared with a database to determine the host's identity. Researchers commonly generate 16S amplicons. As an essential gene, the 16S region is slow to undergo mutations, but exhibits enough variability between microbial species that it is often used as a unique identifier of species identity. Amplicon counts of each species are collected within a metadata table that is to be interpreted by the researcher. 
   
-  The Amplicon Data module of EcoPLOT is well equipped to assist in your analysis of microbial communities from any ecosystem. 
+  The Microbiome Data module of EcoPLOT is well equipped to assist in your analysis of microbial communities from any ecosystem. 
   
 <hr>
 
-<h2><b>Amplicon Data Format Guide</b></h2>  
+<h2><b>Microbiome Data Format Guide</b></h2>  
 
 EcoPLOT accepts **.biom**, **.qza**, or non-formatted text files (**.csv**, **.tsv**) for upload. We require that you upload a corresponding mapping file with any upload.  
   
@@ -111,7 +111,7 @@ If the uploaded mapping file contains the same sample ID's to those contained in
   
 <h2><b>Heatmap</b></h2>  
 
-The heatmap function in EcoPLOT taken from the Phyloseq package and utilizes ordination methods to organize columns and rows. Because it utilizes a distance matrix, rendering times may vary depending on the size of your dataset. The default axis labels, "NULL", show sample ID and OTU, however can be overwritten by specifying a variable to show. 
+The heatmap function in EcoPLOT taken from the **Phyloseq** package and utilizes ordination methods to organize columns and rows. Because it utilizes a distance matrix, rendering times may vary depending on the size of your dataset. The default axis labels, "NULL", show sample ID and OTU, however can be overwritten by specifying a variable to show. 
   
   <hr>
   

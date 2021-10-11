@@ -4,7 +4,7 @@
 
 
 
-EcoPLOTAmpliconUI<- tabPanel("Amplicon Data",
+EcoPLOTAmpliconUI<- tabPanel("Microbiome Data",
                              useShinyjs(),
          tabsetPanel(
            tabPanel("Guide",

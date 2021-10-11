@@ -9,7 +9,7 @@ output:
 
 <div style = "padding:10px;"></div>
     
-**Note:** iRF is best utilized when Environmental, Phenotypic, and Amplicon datasets are present. It is meant to be used in combination with the other visual and statistical tools found within EcoPLOT. We recommend users get to know their dataset before using iRF so as not to draw conclusions that are not biologically relevant.  
+**Note:** iRF is best utilized when Environmental, Phenotypic, and Microbiome datasets are present. It is meant to be used in combination with the other visual and statistical tools found within EcoPLOT. We recommend users get to know their dataset before using iRF so as not to draw conclusions that are not biologically relevant.  
   
 <h2><b> Introduction to Machine Learning</h2></b>  
   
@@ -26,7 +26,7 @@ In EcoPLOT we use a refined version of iRF which provides quicker run times when
   
 <H2> <b>Step 1: Formatting your data for iRF</H2></b>
   
-In order to perform iRF it is required that you have uploaded a 16S dataset to the <i> microbiome </i> tab that includes a mapping file. If you have previously uploaded files to the <i> Environment </i> or <i> Phenotype </i> tabs with matching sample ID's to your microbial data <b> and </b> you have merged them, they will be included in the iRF dataset.  
+In order to perform iRF it is required that you have uploaded a Microbiome dataset to the <i> Microbiome Data</i> tab that includes a mapping file. If you have previously uploaded files to the <i> Environment </i> or <i> Phenotype </i> tabs with matching sample ID's to your microbial data <b> and </b> you have merged them, they will be included in the iRF dataset.  
   
 Clicking the button, "Prepare Data for iRF," will initiate the creation of this dataset. ML requires that each individual ASV be given its own column with their respective sample abundances in each row. Depending on the size of your dataset this can be a time intensive process.  Due to rendering limitations within Shiny, only columns 1-50 are shown in the table. The entire dataset, however, is available for download.  
   
