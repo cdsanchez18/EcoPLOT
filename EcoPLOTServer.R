@@ -2,8 +2,8 @@
 
 
 set_logging(js_console = FALSE,
-            file = FALSE)#paste(paste(format(Sys.Date(), format = "%Y%m%d"), 
-                               #format(Sys.time(), format = "%H%M"), sep = "_"), "EcoPLOT.log", sep = ""))
+            file = paste(paste(format(Sys.Date(), format = "%Y%m%d"), 
+                               format(Sys.time(), format = "%H%M"), sep = "_"), "EcoPLOT.log", sep = ""))
 
 
 EcoPLOTServer <- shinyServer(function(input, output, session){
