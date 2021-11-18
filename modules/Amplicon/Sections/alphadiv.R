@@ -52,6 +52,18 @@ output$alphadivoptions <- renderUI({
     ,
     fluidRow(
       column(6,
+    textInput(inputId = "alphaphylotitle", label = "Creat Plot Title",
+              placeholder = "Alpha Diversity")
+      ),
+    column(6,
+           numericInput(inputId = "alphaphylotitlesize", label = "Select Size of Title",
+                        value = 15, min = 3, max = 30))
+    )
+    ,
+    hr()
+    ,
+    fluidRow(
+      column(6,
     textInput(inputId = "alphaphyloseqxaxis1", label = "Create X axis Label",
               placeholder = "X Axis"))
     ,
@@ -76,7 +88,7 @@ output$alphadivoptions <- renderUI({
     numericInput("alphaphyloseqyaxislabelsize", "Select Size of Y Axis Label Text",
                  value = 10, min = 3, max = 30)))
     ,
-    numericInput("alphaphyloseqayaxistextsize", label = "Select Size of Y Axis Text",
+    numericInput("alphaphyloseqyaxistextsize", label = "Select Size of Y Axis Text",
                  value = 10, min = 3, max = 30)
     ,
     sliderInput(inputId = "alphaphyloseqyaxisangle", label = "Select Angle of Y Axis Text",
@@ -167,18 +179,20 @@ phyloseqplot <- reactive({
 
                    plot <- plot + geom_point(aes(color = if(!is.null(av(input$phylocolor))){!!as.symbol(input$phylocolor)}else{NULL})) +
                    labs(x = paste(input$alphaphyloseqxaxis1), y = paste(input$alphaphyloseqyaxis1),
-                        title = "Alpha Diversity", fill = if(!is.null(av(input$phylocolor))){input$phylocolor}else{NULL}) + theme_bw() +
-                   theme(legend.position= "right", 
+                        title = input$alphaphylotitle, fill = if(!is.null(av(input$phylocolor))){input$phylocolor}else{NULL}) + theme_bw() +
+                   theme(legend.position= "right",
                          text = element_text(size = input$alphaphyloseqtextsize),
+                         plot.title = element_text(size = input$alphaphylotitlesize),
                          axis.text.x = element_text(color = "black", size = input$alphaphyloseqxaxistextsize, angle = input$alphaphyloseqxaxisangle),
                          axis.text.y = element_text(color = "black", size = input$alphaphyloseqyaxistextsize, angle = input$alphaphyloseqyaxisangle),
-                         axis.title.x = element_text(size = input$alphaphyloseqxaxislabelsize), axis.title.y = element_text(size = input$alphaphyloseqyaxislabelsize)) #+ 
+                         axis.title.x = element_text(size = input$alphaphyloseqxaxislabelsize), 
+                         axis.title.y = element_text(size = input$alphaphyloseqyaxislabelsize)) #+ 
                    #theme_bw()
                    
                  if(!is.null(av(input$phylofacet)) && !is.null(av(input$phylofacet2))){
                    plot <- plot + facet_grid(paste(input$phylofacet2, paste("~", paste(input$phylofacet))), scales = "free")
                  }else if(!is.null(av(input$phylofacet))){
-                   plot <- plot + facet_grid(paste("~", paste(input$phylofacet))) 
+                   plot <- plot + facet_grid(paste("~", paste(input$phylofacet)), scales = "free") 
                  }
                  if(input$phyloseqalphapoints == "No"){
                    plot$layers <- plot$layers[-1]
