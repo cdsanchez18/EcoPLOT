@@ -225,14 +225,17 @@ threedplot <- reactive({
       distance = distancematrix()
     )
     ordinationdata <- data.frame(ordinationobject$vectors) 
-    ordinationdata$Sample_ID <- rownames(ordinationdata)
-    ordinationdata <- left_join(ordinationdata, data.frame(sample_data(amplicondata$use)))
-    plot <- plot_ly(ordinationdata, x = ~Axis.1, y = ~Axis.2, z = ~Axis.3,
+    ordinationdata$Sample <- row.names(ordinationdata)
+    data <- data.frame(sample_data(amplicondata$use))
+    merge <- dplyr::full_join(ordinationdata, data, by = "Sample")#data.frame(phyloseq::sample_data(isolate(amplicondata$use))))
+      
+    plot <- plotly::plot_ly(merge, x = ~Axis.1, y = ~Axis.2, z = ~Axis.3,
                     type="scatter3d", mode = "markers", 
                     color = if(!is.null(av(input$threedordinationcoloroptions1))){~get(input$threedordinationcoloroptions1)}else{NULL}
                     ) #ifelse(!is.null(av(input$threedordinationcoloroptions1)), ~get(input$threedordinationcoloroptions1),#paste("~", paste(input$threedordinationcoloroptions1)), 
                                                #      "NULL"))
     #if(!is.null(av(input$threedordinationcoloroptions1)))
+    plot
   }else{
     plot <- NULL
   }
