@@ -74,7 +74,8 @@ output$irfUIoptions <- renderUI({
                      )
     ,
     conditionalPanel(condition = "input.IRF == 5",
-                     uiOutput("irfplotui")
+                     uiOutput("irfplotui"),
+                     downloadPlotUI(id = "IRFvarimpdownload")
                      #tags$h3("Variable Importance Plot"),
                      #numericInput("IRFvarimpplotsize", "Select Size of Plot:", value = 800, min = 100,width = "100%"),
                      #numericInput("IRFvarimpninteractions", "How Many Variables Should be Shown?", value = 30, min = 1, max = 50, step = 1),
@@ -85,7 +86,7 @@ output$irfUIoptions <- renderUI({
   
   return(output)
 })
-
+iRFvalues <- reactiveValues()
 
 IRFdataset <- eventReactive(input$makeIRFdataset, {
   if(is.null(phyloseqobj()))return(NULL)
@@ -260,7 +261,7 @@ IRFmodel <- eventReactive(input$performIRF, {
                    rit.param= rit.param#,
                    #bootstrap.forest = FALSE
       )
-    }else{
+    }else if(input$IRFinteractions == FALSE){
       #doParallel::registerDoParallel(cores = 2)
       model <- iRF(x = data.matrix(Xtrain()),
                    y = as.factor(IRFdataset()[train_index1(), input$IRFyvar]),#%>% select(input$IRFyvar),
@@ -299,7 +300,7 @@ IRFmodel <- eventReactive(input$performIRF, {
                    rit.param= rit.param#,
                    #bootstrap.forest = FALSE
       )
-    }else{
+    }else if(input$IRFinteractions == FALSE){
       #doParallel::registerDoParallel(cores = 2)
       model <- iRF(x = data.matrix(Xtrain()),
                    y = IRFdataset()[train_index1(), input$IRFyvar],#%>% select(input$IRFyvar),
@@ -364,7 +365,13 @@ output$IRFplotui <- renderUI({
     )
   return(output)
 })
-downloadPlot("IRFvarimpdownload", importanceplot())
+# observe({
+#   if(is.null(IRFmodel()))return(NULL)
+#   if(is.null(importanceplot()))return(NULL)
+#   iRFvalues$importanceplot <- importanceplot()
+# })
+  downloadPlot(id = "IRFvarimpdownload", plotid = importanceplot())#importanceplot())
+#downloadPlot(id = "IRFvarimpdownload", plotid = importanceplot())#importanceplot())
 
 interactionplot <- reactive({
   if(is.null(IRFmodel()))return(NULL)
@@ -521,6 +528,7 @@ output$varimportancetable1 <- renderDataTable({
   varimportancetable()
 })
 downloadTable("downloadvarimptable", varimportancetable())
+downloadTable("downloadinteractiontable", varinteractiontable())
 varinteractiontable <- reactive({
   if(is.null(IRFmodel()$interaction))return(NULL)
   data.frame(IRFmodel()$interaction)
@@ -558,8 +566,8 @@ output$irfplotui <- renderUI({
     ,
     tags$h3("Variable Importance Plot"),
     numericInput("IRFvarimpplotsize", "Select Size of Plot:", value = 600, min = 100,width = "100%"),
-    numericInput("IRFvarimpninteractions", "How Many Variables Should be Shown?", value = 10, min = 1, max = 50, step = 1),
-    downloadPlotUI("IRFvarimpdownload")
+    numericInput("IRFvarimpninteractions", "How Many Variables Should be Shown?", value = 10, min = 1, max = 50, step = 1)#,
+    #downloadPlotUI(id = "IRFvarimpdownload")
   )
 })
 
