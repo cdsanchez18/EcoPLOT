@@ -1,7 +1,7 @@
 ##list required packages and install via the proper function if mising
 #Cran
 required.packages <- c("shiny", "readxl", "treeio", "colourpicker", "ggtree", "shinyjs",
-                       "ggplot2", "vegan", "tidyr", "lubridate", "dplyr", "reshape2", 
+                       "ggplot2", "vegan", "tidyr", "lubridate", "plyr", "dplyr", "reshape2", 
                        "stringr", "shinythemes",
                        #"RColorBrewer", 
                        "DT", "htmltools", "dataPreparation", #"iRF", 
