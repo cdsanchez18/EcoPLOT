@@ -342,11 +342,23 @@ output$IRFoutputui<- renderUI({
 })
 importanceplot <- reactive({
   if(is.null(IRFmodel()))return(NULL)
-  iRF::varImpPlot(IRFmodel()$rf.list,#[[input$rfselected]], 
-                  main = "Variable Importance Plot", n.var = input$IRFvarimpninteractions)
+  #data <- 
+    data.frame(iRF::varImpPlot(IRFmodel()$rf.list,#[[input$rfselected]], 
+                  main = "Variable Importance Plot", n.var = input$IRFvarimpninteractions))
+  # data$Factor <- row.names(data)
+  # data <- arrange(data, desc(MeanDecreaseGini), Factor)
+  # 
+  # plot <- ggplot(data[1:input$IRFvarimpninteractions, ], aes(x = MeanDecreaseGini, 
+  #                                                   y = reorder(Factor, MeanDecreaseGini))) +
+  #   geom_point(shape = 1) + theme_bw() +
+  #   labs(title = "Variable Importance Plot") + theme(axis.title.y = element_blank())
+  # 
+  # plot
+  
 })
 output$IRFvarimp <- renderPlot({
   if(is.null(IRFmodel()))return(NULL)
+  #iRFvalues$importanceplot
   importanceplot()
 })
 output$IRFplotui <- renderUI({
@@ -373,11 +385,12 @@ output$IRFplotui <- renderUI({
   downloadPlot(id = "IRFvarimpdownload", plotid = importanceplot())#importanceplot())
 #downloadPlot(id = "IRFvarimpdownload", plotid = importanceplot())#importanceplot())
 
-interactionplot <- reactive({
+#interactionplot <- reactive({
+  observe({
   if(is.null(IRFmodel()))return(NULL)
   if(input$IRFinteractions == TRUE){
     if(!is.null(av(input$IRFintx))){
-    ggplot(IRFmodel()$interaction[1:input$IRFinteractionnuminteractions, ], aes(y = int, x = !!as.symbol(input$IRFintx))) + 
+    iRFvalues$interactionplot <- ggplot(IRFmodel()$interaction[1:input$IRFinteractionnuminteractions, ], aes(y = int, x = !!as.symbol(input$IRFintx))) + 
         geom_point(shape = 1) + theme_bw() + 
       labs(title = "Variable Interaction Plot") + theme(axis.text.y = element_text(size = input$IRFinteractionplotyaxissize),
                                                         axis.title.y = element_blank(),
@@ -391,9 +404,9 @@ interactionplot <- reactive({
 })
 output$interactionplotrender <- renderPlot({
   if(is.null(IRFmodel()))return(NULL)
-  interactionplot()
+  iRFvalues$interactionplot#interactionplot()
 })
-downloadPlot("IRFinteractionplotdownload", interactionplot())
+downloadPlot("IRFinteractionplotdownload", iRFvalues$interactionplot)#interactionplot())
 output$irfinteractionoutput <- renderUI({
   if(input$IRFinteractions == TRUE){
     output <- tagList(
@@ -471,7 +484,7 @@ partialdependenceplot <- reactive({
                      main = paste("Partial Dependence on", input$partdepxvar, "on", input$IRFyvar, input$partdepclass)))
        plot
        }else{
-        NULL
+        plot <- NULL
       }
     }else if(is.integer(IRFdataset()[train_index1(), input$IRFyvar]) || is.numeric(IRFdataset()[train_index1(), input$IRFyvar])){
       plot <- do.call("partialPlot", 
@@ -484,7 +497,6 @@ partialdependenceplot <- reactive({
     }
   }else {
     plot <- NULL
-    plot
   }
   plot
 })
@@ -562,8 +574,8 @@ output$varinteractiontable2 <- renderUI({
 output$irfplotui <- renderUI({
   req(input$performIRF)
   output <- tagList(
-    numericInput("rfselected", label = "Which Iteration Should be Used?", value = 1, min = 1, max = input$IRFiterations)
-    ,
+    #numericInput("rfselected", label = "Which Iteration Should be Used?", value = 1, min = 1, max = input$IRFiterations)
+    #,
     tags$h3("Variable Importance Plot"),
     numericInput("IRFvarimpplotsize", "Select Size of Plot:", value = 600, min = 100,width = "100%"),
     numericInput("IRFvarimpninteractions", "How Many Variables Should be Shown?", value = 10, min = 1, max = 50, step = 1)#,
