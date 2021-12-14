@@ -207,7 +207,16 @@ output$threeDordinationplotoptions <- renderUI({
                 label = "Create Title for Plot",
                 placeholder = "Title")
       ,
+      textInput(inputId = "threedordinationlegendtitle1",
+                label = "Create Title for Legend",
+                placeholder = "Legend")
+      ,
       selectInput("threedordinationcoloroptions1", "Select Variable to Color:",
+                  choices = c("NULL", sample_variables(amplicondata$original)),
+                  selected = "NULL",
+                  multiple = FALSE)
+      ,
+      selectInput("threedordinationshapeoptions1", "Select Variable to Shape:",
                   choices = c("NULL", sample_variables(amplicondata$original)),
                   selected = "NULL",
                   multiple = FALSE)
@@ -231,10 +240,9 @@ threedplot <- reactive({
       
     plot <- plotly::plot_ly(merge, x = ~Axis.1, y = ~Axis.2, z = ~Axis.3,
                     type="scatter3d", mode = "markers", 
-                    color = if(!is.null(av(input$threedordinationcoloroptions1))){~get(input$threedordinationcoloroptions1)}else{NULL}
-                    ) #ifelse(!is.null(av(input$threedordinationcoloroptions1)), ~get(input$threedordinationcoloroptions1),#paste("~", paste(input$threedordinationcoloroptions1)), 
-                                               #      "NULL"))
-    #if(!is.null(av(input$threedordinationcoloroptions1)))
+                    color = if(!is.null(av(input$threedordinationcoloroptions1))){~get(input$threedordinationcoloroptions1)}else{NULL},
+                    symbol = if(!is.null(av(input$threedordinationshapeoptions1))){~get(input$threedordinationshapeoptions1)}else{NULL}
+                    ) %>% layout(legend = list(x = 100, y = 0.5, title = list(text = input$threedordinationlegendtitle1)))
     plot
   }else{
     plot <- NULL
