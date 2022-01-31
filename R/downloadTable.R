@@ -15,7 +15,7 @@ downloadTable <- function(id, tableid) {
         content = function(file) {
           sep <- switch(input$tablefiletype, "csv" = ",", "tsv" = "\t")
           utils::write.table(x = tableid, file, sep = sep,
-                      row.names = FALSE)
+                      row.names = TRUE)
         }
       )
     }
