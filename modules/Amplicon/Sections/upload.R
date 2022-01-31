@@ -204,7 +204,7 @@ mappingfile <- eventReactive(input$makefile, {
     inFile <- input$mappingfile1
     if(!is.null(inFile)){
       if(input$fileformat == "none" || input$fileformat == "qiime1"){
-        obj <- read.csv(file = inFile$datapath, sep = input$mappingformat) %>% na.omit()
+        obj <- read.csv(file = inFile$datapath, sep = input$mappingformat) #%>% na.omit()
         rownames(obj) <- obj[[1]]
         if(is.data.frame(obj)){
           obj$Sample <- rownames(obj)
