@@ -123,6 +123,7 @@ barplotplot1 <- reactive({
 })
 
 output$barplotplot <- renderPlot({
+  req(barplotplot1())
   barplotplot1()
 })
 output$stackedbarplotgraph <- renderUI({
