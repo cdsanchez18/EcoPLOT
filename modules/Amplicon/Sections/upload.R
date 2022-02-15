@@ -141,7 +141,7 @@ otufile <- eventReactive(input$makefile, {
     inFile <- input$otufile1
     if(!is.null(inFile)){
       if(input$fileformat == "none"){
-        obj <- read.csv(file = inFile$datapath, row.names = 1) %>% na.omit()
+        obj <- read.csv(file = inFile$datapath, row.names = 1) #%>% na.omit()
         if(is.matrix(obj)){
           file <- phyloseq::otu_table(obj, taxa_are_rows = TRUE)
         }else {
@@ -170,7 +170,7 @@ taxonomyfile <- eventReactive(input$makefile, {
     inFile <- input$taxfile1
     if(!is.null(inFile)){
       if(input$fileformat == "none"){
-        obj <- read.csv(file = inFile$datapath, row.names = 1) %>% na.omit()
+        obj <- read.csv(file = inFile$datapath, row.names = 1) #%>% na.omit()
         file <- obj
         file <- as.matrix(file)
         file <- tax_table(file) 
